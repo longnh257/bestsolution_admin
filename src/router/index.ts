@@ -4,6 +4,7 @@ import SimpleMenu from "../layouts/SimpleMenu/SimpleMenu.vue";
 import TopMenu from "../layouts/TopMenu/TopMenu.vue";
 import Page1 from "../pages/Page1.vue";
 import Page2 from "../pages/Page2.vue";
+import Login from "../pages/Login.vue";
 
 const routes = [
   {
@@ -21,6 +22,10 @@ const routes = [
         component: Page2,
       },
     ],
+  },
+  {
+    path: "/login",
+    component: Login,
   },
   {
     path: "/simple-menu",
