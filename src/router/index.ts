@@ -4,7 +4,11 @@ import SimpleMenu from "../layouts/SimpleMenu/SimpleMenu.vue";
 import TopMenu from "../layouts/TopMenu/TopMenu.vue";
 import Page1 from "../pages/Page1.vue";
 import Page2 from "../pages/Page2.vue";
+import Page3 from "../pages/Page3.vue";
 import Login from "../pages/Login.vue";
+import Salon from "../pages/Salon.vue";
+import auth from '../middleware/auth';
+import log from '../middleware/log';
 
 const routes = [
   {
@@ -15,13 +19,30 @@ const routes = [
         path: "/",
         name: "side-menu-page-1",
         component: Page1,
+        meta: {
+          middleware: [auth],
+    },
       },
       {
         path: "page-2",
         name: "side-menu-page-2",
         component: Page2,
       },
+      {
+        path: "/Salon",
+        name: "Salon",
+        component: Salon,
+        meta: {
+          middleware: [auth],
+    },
+      },
+      {
+        path: "page-3",
+        name: "side-menu-page-3",
+        component: Page3,
+      },
     ],
+    
   },
   {
     path: "/login",

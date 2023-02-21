@@ -5,6 +5,36 @@ import logoUrl from "../assets/images/logo.svg";
 import illustrationUrl from "../assets/images/illustration.svg";
 import { FormInput, FormCheck } from "../base-components/Form";
 import Button from "../base-components/Button";
+
+import axios from 'axios';
+import { onMounted } from "vue";
+import { method } from "lodash";
+import router from "../router";
+
+
+var data = {
+    email:'',
+    password:'',
+}
+
+const onSubmit = () => {
+   axios.post('http://dev.api.booking.kendemo.com:3008/api/v1/admin/login',{
+        email  :data.email , 
+        password : data.password,
+    })
+    .then(function (response) {
+      // handle success
+      localStorage.setItem('access_token',response.data.data.access_token)
+      router.push(`/`)
+      console.log(response,data.email,data.password);
+      
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
+    ;
+}
 </script>
 
 <template>
@@ -68,11 +98,13 @@ import Button from "../base-components/Button";
                 type="text"
                 class="block px-4 py-3 intro-x login__input min-w-full xl:min-w-[350px]"
                 placeholder="Email"
+                v-model="data.email"
               />
               <FormInput
                 type="password"
                 class="block px-4 py-3 mt-4 intro-x login__input min-w-full xl:min-w-[350px]"
                 placeholder="Password"
+                v-model="data.password"
               />
             </div>
             <div
@@ -93,6 +125,7 @@ import Button from "../base-components/Button";
               <Button
                 variant="primary"
                 class="w-full px-4 py-3 align-top xl:w-32 xl:mr-3"
+                @click="onSubmit"
               >
                 Login
               </Button>
