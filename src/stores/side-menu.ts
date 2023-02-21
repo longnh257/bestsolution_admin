@@ -17,7 +17,7 @@ export const useSideMenuStore = defineStore("sideMenu", {
   state: (): SideMenuState => ({
     menu: [
       {
-        icon: "Salon",
+        icon: "Home",
         pageName: "Salon",
         title: "Salon",
       },
