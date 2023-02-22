@@ -3,10 +3,10 @@ import SideMenu from "../layouts/SideMenu/SideMenu.vue";
 import SimpleMenu from "../layouts/SimpleMenu/SimpleMenu.vue";
 import TopMenu from "../layouts/TopMenu/TopMenu.vue";
 import Page1 from "../pages/Page1.vue";
-import Page2 from "../pages/Page2.vue";
-import Page3 from "../pages/Page3.vue";
 import Login from "../pages/Login.vue";
-import Salon from "../pages/Salon.vue";
+import ListSalon from "../pages/Salon/List.vue";
+import CreateSalon from "../pages/Salon/Create.vue";
+import CreateSalon1 from "../pages/Salon/Create1.vue";
 import auth from '../middleware/auth';
 
 const routes = [
@@ -18,64 +18,39 @@ const routes = [
     },
     children: [
       {
-        path: "/",
+        path: "/dashboard",
         name: "side-menu-page-1",
         component: Page1,
       },
       {
-        path: "page-2",
-        name: "side-menu-page-2",
-        component: Page2,
+        path: "salon",
+        children : [
+          {
+            path: "",
+            name: "salon-list",
+            component: ListSalon,
+          },
+          {
+            path: "create",
+            name: "salon-create",
+            component: CreateSalon,
+          },
+          {
+            path: "create1",
+            name: "salon-create1",
+            component: CreateSalon1,
+          },
+        ]
       },
-      {
-        path: "/Salon",
-        name: "Salon",
-        component: Salon,
-      },
-      {
-        path: "page-3",
-        name: "side-menu-page-3",
-        component: Page3,
-      },
+     
+      
     ],
-    
   },
   {
     path: "/login",
     component: Login,
   },
-  {
-    path: "/simple-menu",
-    component: SimpleMenu,
-    children: [
-      {
-        path: "page-1",
-        name: "simple-menu-page-1",
-        component: Page1,
-      },
-      {
-        path: "page-2",
-        name: "simple-menu-page-2",
-        component: Page2,
-      },
-    ],
-  },
-  {
-    path: "/top-menu",
-    component: TopMenu,
-    children: [
-      {
-        path: "page-1",
-        name: "top-menu-page-1",
-        component: Page1,
-      },
-      {
-        path: "page-2",
-        name: "top-menu-page-2",
-        component: Page2,
-      },
-    ],
-  },
+ 
 ];
 
 const router = createRouter({

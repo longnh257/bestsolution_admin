@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import _ from "lodash";
-import Button from "../base-components/Button";
-import Pagination from "../base-components/Pagination";
-import { FormInput, FormSelect } from "../base-components/Form";
-import Lucide from "../base-components/Lucide";
-import Tippy from "../base-components/Tippy";
-import { Dialog, Menu } from "../base-components/Headless";
-import Table from "../base-components/Table";
-import Preview from "../base-components/Preview";
-import { FormSwitch } from "../base-components/Form";
+import Button from "../../base-components/Button";
+import Pagination from "../../base-components/Pagination";
+import { FormInput, FormSelect } from "../../base-components/Form";
+import Lucide from "../../base-components/Lucide";
+import Tippy from "../../base-components/Tippy";
+import { Dialog, Menu } from "../../base-components/Headless";
+import Table from "../../base-components/Table";
+import Preview from "../../base-components/Preview";
 import axios from 'axios';
-import { onMounted, onBeforeMount, ref, reactive,defineComponent} from "vue";
+import { onMounted, ref} from "vue";
+import router from "../../router";
 
 const deleteConfirmationModal = ref(false);
 const setDeleteConfirmationModal = (value: boolean) => {
@@ -30,6 +30,7 @@ const searchSalon = () => {
    axios.get('http://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon',{
       params: {
         page : 1,
+        num_per_page:10,
         txt_search : txt_search,
       }
     })
@@ -60,7 +61,7 @@ const refreshSearch = () => {
     <div
       class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
     >
-      <Button variant="primary" class="mr-2 shadow-md">
+      <Button variant="primary" class="mr-2 shadow-md" @click="router.push({name:'salon-create'})">
         Thêm mới salon
       </Button>
       <Menu>
@@ -109,7 +110,7 @@ const refreshSearch = () => {
           <Table.Tr>
             <Table.Th class="border-b-0 whitespace-nowrap"> Hình Ảnh </Table.Th>
             <Table.Th class="border-b-0 whitespace-nowrap">
-              Tên Salon
+              Salon
             </Table.Th>
          
             <Table.Th class="text-center border-b-0 whitespace-nowrap">
@@ -185,10 +186,39 @@ const refreshSearch = () => {
             </Table.Td>
            
             <Table.Td
-              class="first:rounded-l-md last:rounded-r-md w-56 bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b] py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400"
+              class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b] py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400"
             >
+
+                
               <div class="flex items-center justify-center">
-                <a class="flex items-center mr-3" href="#">
+                <Menu>
+                <Menu.Button :as="Button" class="px-2 !box" style="box-shadow:none !important">
+                  <span class="flex items-center justify-center w-5 h-5">
+                  <Lucide icon="MoreVertical" class="block mx-auto" />
+                  </span>
+                </Menu.Button>
+                <Menu.Items class="w-40">
+                  <Menu.Item >
+                    <Lucide icon="Printer" class="w-4 h-4 mr-2" /> Print
+                  </Menu.Item>
+                  <Menu.Item>
+                    <Lucide icon="FileText" class="w-4 h-4 mr-2" /> Edit
+                  </Menu.Item>
+                  <Menu.Item 
+                  style="color:red"
+                  href="#"
+                  @click="
+                    (event) => {
+                      event.preventDefault();
+                      setDeleteConfirmationModal(true);
+                    }
+                  "
+                  >
+                    <Lucide icon="FileText" class="w-4 h-4 mr-2" /> Delete
+                  </Menu.Item>
+                </Menu.Items>
+              </Menu>
+                <!-- <a class="flex items-center mr-3" href="#">
                   <Lucide icon="CheckSquare" class="w-4 h-4 mr-1" />
                   Edit
                 </a>
@@ -203,7 +233,7 @@ const refreshSearch = () => {
                   "
                 >
                   <Lucide icon="Trash2" class="w-4 h-4 mr-1" /> Delete
-                </a>
+                </a> -->
               </div>
             </Table.Td>
           </Table.Tr>
