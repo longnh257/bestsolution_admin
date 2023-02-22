@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import _ from "lodash";
-import { ref } from "vue";
+import { reactive, ref, provide } from "vue";
 import fakerData from "../../utils/faker";
 import Button from "../../base-components/Button";
+import Preview from "../../base-components/Preview";
+import TomSelect from "../../base-components/TomSelect";
+import { ClassicEditor } from "../../base-components/Ckeditor";
+import Alert from "../../base-components/Alert";
+import Lucide from "../../base-components/Lucide";
+import axios from "axios";
+import Notification from "../../base-components/Notification";
+import { NotificationElement } from "../../base-components/Notification";
 import {
   FormInput,
   FormInline,
@@ -13,15 +21,42 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
-import TomSelect from "../../base-components/TomSelect";
-import { ClassicEditor } from "../../base-components/Ckeditor";
-import Alert from "../../base-components/Alert";
-import Lucide from "../../base-components/Lucide";
-import Tippy from "../../base-components/Tippy";
-import Table from "../../base-components/Table";
 
-const subcategory = ref(["0"]);
-const editorData = ref("<p>Content of the editor.</p>");
+let data = {
+  name: "",
+  phone: "",
+  password: "",
+  salon_name: "",
+  salon_phone: "",
+  salon_address: "",
+};
+
+var err = ref([]);
+var showPassword = ref(true) ;
+
+// Success notification
+const errorNotification = ref<NotificationElement>();
+
+const saveSalon = () => {
+  submit();
+};
+const saveNew = () => {};
+
+const submit = () => {
+  axios
+    .post("http://dev.api.booking.kendemo.com:3008/api/v1/salon/sign-up", data)
+    .then(function (response) {
+      // handle success
+      console.log(response.data.data);
+    })
+    .catch(function (error) {
+      err.value = error.response.data.message;
+      errorNotification.value?.showToast();
+    });
+};
+provide("bind[errorNotification]", (el: NotificationElement) => {
+  errorNotification.value = el;
+});
 </script>
 
 <template>
@@ -29,9 +64,8 @@ const editorData = ref("<p>Content of the editor.</p>");
     <h2 class="mr-auto text-lg font-medium">Thêm Mới Salon</h2>
   </div>
   <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6">
-    <div class="col-span-11 intro-y 2xl:col-span-9 ">
-    
-      <!-- BEGIN: Product Information -->
+    <div class="col-span-11 intro-y 2xl:col-span-9">
+      <!-- BEGIN: Account Info -->
       <div class="p-5 mt-5 intro-y box">
         <div
           class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
@@ -39,98 +73,129 @@ const editorData = ref("<p>Content of the editor.</p>");
           <div
             class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
           >
-            <Lucide icon="User" class="w-4 h-4 mr-2" /> 
-            Thông Tin Tài Khoản
+            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin tài khoản
           </div>
           <div class="mt-5">
-            <FormInline
-              class="flex-col items-start pt-5 mt-5 xl:flex-row first:mt-0 first:pt-0"
-            >
-              <FormLabel class="xl:w-64 xl:!mr-10">
-                <div class="text-left">
-                  <div class="flex items-center">
-                    <div class="font-medium">Tên chủ salon</div>
-                    <div
-                      class="ml-2 px-2 py-0.5 bg-slate-200 text-slate-600 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md"
-                    >
-                      Required
-                    </div>
-                  </div>
-                </div>
-              </FormLabel>
-              <div class="flex-1 w-full mt-3 xl:mt-0">
+            <div>
+              <FormLabel htmlFor="crud-form-1">Tên chủ salon</FormLabel>
+              <FormInput
+                id="crud-form-1"
+                type="text"
+                class="w-full"
+                placeholder="Tên chủ salon"
+                v-model="data.name"
+              />
+            </div>
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Số điện thoại</FormLabel>
+              <FormInput
+                id="crud-form-2"
+                type="text"
+                v-model="data.phone"
+                class="w-full"
+                placeholder="Số điện thoại"
+              />
+            </div>
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-3">Mật Khẩu</FormLabel>
+              
+              <InputGroup v-if="!showPassword">
                 <FormInput
-                  id="product-name"
-                  type="text"
-                  placeholder="Product name"
+                id="crud-form-3"
+                type="text"
+                v-model="data.password"
+                class="w-full"
+                placeholder="Mật Khẩu"
                 />
-              </div>
-            </FormInline>
-            <FormInline
-              class="flex-col items-start pt-5 mt-5 xl:flex-row first:mt-0 first:pt-0"
-            >
-              <FormLabel class="xl:w-64 xl:!mr-10">
-                <div class="text-left">
-                  <div class="flex items-center">
-                    <div class="font-medium">Số Điện Thoại</div>
-                    <div
-                      class="ml-2 px-2 py-0.5 bg-slate-200 text-slate-600 dark:bg-darkmode-300 dark:text-slate-400 text-xs rounded-md"
-                    >
-                      Required
-                    </div>
-                  </div>
-                </div>
-              </FormLabel>
-              <div class="flex-1 w-full mt-3 xl:mt-0">
-                <FormSelect id="category">
-                  <option
-                    v-for="(faker, fakerKey) in _.take(fakerData, 9)"
-                    :key="fakerKey"
-                    :value="faker.categories[0].name"
-                  >
-                    {{ faker.categories[0].name }}
-                  </option>
-                </FormSelect>
-              </div>
-            </FormInline>
-            <FormInline
-              class="flex-col items-start pt-5 mt-5 xl:flex-row first:mt-0 first:pt-0"
-            >
-              <FormLabel class="xl:w-64 xl:!mr-10">
-                <div class="text-left">
-                  <div class="flex items-center">
-                    <div class="font-medium">Subcategory</div>
-                  </div>
-                  <div class="mt-3 text-xs leading-relaxed text-slate-500">
-                    You can add a new subcategory or choose from the existing
-                    subcategory list.
-                  </div>
-                </div>
-              </FormLabel>
-              <div class="flex-1 w-full mt-3 xl:mt-0">
-                <TomSelect
-                  v-model="subcategory"
-                  :options="{
-                    placeholder: 'Etalase',
-                  }"
-                  class="w-full"
-                  multiple
-                >
-                  <option
-                    v-for="(faker, fakerKey) in _.take(fakerData, 2)"
-                    :key="fakerKey"
-                    :value="fakerKey"
-                  >
-                    {{ faker.categories[0].name }}
-                  </option>
-                </TomSelect>
-              </div>
-            </FormInline>
+               
+                <InputGroup.Text id="input-group-1"  style="cursor: pointer;"  @click="showPassword = !showPassword">
+                  <Lucide icon="Eye" />
+                </InputGroup.Text>
+              </InputGroup> 
+              <InputGroup v-else>
+                <FormInput
+                id="crud-form-3"
+                type="password"
+                v-model="data.password"
+                class="w-full"
+                placeholder="Mật Khẩu"
+                />
+                <InputGroup.Text id="input-group-1"  style="cursor: pointer;" @click="showPassword = !showPassword">
+                  <Lucide icon="EyeOff" />
+                </InputGroup.Text>
+              </InputGroup>
+            </div>
+
           </div>
         </div>
       </div>
-      <!-- END: Product Information -->
-    
+      <!-- END: Account Info -->
+      <!-- BEGIN: Salon Info -->
+      <div class="p-5 mt-5 intro-y box">
+        <div
+          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
+            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin Salon
+          </div>
+          <div class="mt-5">
+            <div>
+              <FormLabel htmlFor="crud-form-1">Tên Salon</FormLabel>
+              <FormInput
+                id="crud-form-1"
+                type="text"
+                class="w-full"
+                placeholder="Tên chủ salon"
+                v-model="data.salon_name"
+              />
+            </div>
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Số điện thoại liên hệ</FormLabel>
+              <FormInput
+                id="crud-form-2"
+                type="text"
+                v-model="data.phone"
+                class="w-full"
+                placeholder="Số điện thoại"
+              />
+            </div>
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-3">Mật Khẩu</FormLabel>
+              
+              <InputGroup v-if="!showPassword">
+                <FormInput
+                id="crud-form-3"
+                type="text"
+                v-model="data.password"
+                class="w-full"
+                placeholder="Mật Khẩu"
+                />
+               
+                <InputGroup.Text id="input-group-1"  style="cursor: pointer;"  @click="showPassword = !showPassword">
+                  <Lucide icon="Eye" />
+                </InputGroup.Text>
+              </InputGroup> 
+              <InputGroup v-else>
+                <FormInput
+                id="crud-form-3"
+                type="password"
+                v-model="data.password"
+                class="w-full"
+                placeholder="Mật Khẩu"
+                />
+                <InputGroup.Text id="input-group-1"  style="cursor: pointer;" @click="showPassword = !showPassword">
+                  <Lucide icon="EyeOff" />
+                </InputGroup.Text>
+              </InputGroup>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!-- END: Salon Info -->
+
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
         <Button
           type="button"
@@ -141,14 +206,32 @@ const editorData = ref("<p>Content of the editor.</p>");
         <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
+          @click="saveNew"
         >
           Save & Add New Product
         </Button>
-        <Button variant="primary" type="button" class="w-full py-3 md:w-52">
+        <Button
+          variant="primary"
+          type="button"
+          class="w-full py-3 md:w-52"
+          @click="saveSalon"
+        >
           Save
         </Button>
       </div>
     </div>
-   
+  </div>
+  <div class="p-5">
+    <!-- BEGIN: Success Notification -->
+    <Notification refKey="errorNotification" class="flex">
+      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
+      <div class="ml-4 mr-4">
+        <div class="font-medium">Có lỗi xảy ra!</div>
+        <div class="mt-1 text-slate-500">
+          {{ err }}
+        </div>
+      </div>
+    </Notification>
+    <!-- END: Success Notification -->
   </div>
 </template>
