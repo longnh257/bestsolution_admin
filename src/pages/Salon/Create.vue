@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import _ from "lodash";
 import { reactive, ref, provide } from "vue";
-import fakerData from "../../utils/faker";
 import Button from "../../base-components/Button";
-import Preview from "../../base-components/Preview";
-import TomSelect from "../../base-components/TomSelect";
-import { ClassicEditor } from "../../base-components/Ckeditor";
-import Alert from "../../base-components/Alert";
 import Lucide from "../../base-components/Lucide";
 import axios from "axios";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
+import Table from "../../base-components/Table";
 import {
   FormInput,
   FormInline,
@@ -23,25 +19,43 @@ import {
 } from "../../base-components/Form";
 
 let data = {
+  images: [{}],
   name: "",
   phone: "",
   password: "",
   salon_name: "",
+  salon_email: "",
   salon_phone: "",
   salon_address: "",
+  salon_description: "",
+  salon_number_employees: "",
+  salon_country: "US",
+  salon_state: "NJ",
+  salon_city: "Sayreville",
+  salon_zipcode: "",
+  salon_timezone: "UTC",
+  salon_tz: "UTC +7",
+  salon_lat: "34.088808",
+  salon_lng: "-118.406125",
+  lang: "",
+  input_option: "1",
 };
 
-var err = ref([]);
-var showPassword = ref(true) ;
 
-// Success notification
-const errorNotification = ref<NotificationElement>();
+let staffs = ref([]);
+
+data.images.splice(0, 1);
+
+let listImgs: any = ref([]);
+var err = ref([]);
+var showPassword = ref(true);
 
 const saveSalon = () => {
   submit();
 };
 const saveNew = () => {};
 
+const errorNotification = ref<NotificationElement>();
 const submit = () => {
   axios
     .post("http://dev.api.booking.kendemo.com:3008/api/v1/salon/sign-up", data)
@@ -57,6 +71,21 @@ const submit = () => {
 provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el;
 });
+
+const previewImages = (e: any) => {
+  for (var i = 0; i < e.target.files.length; i++) {
+    let file: any = e.target.files[i];
+    data.images.push(file);
+    listImgs.value.push(URL.createObjectURL(file));
+  }
+};
+
+const revokePreview = (index: any) => {
+  URL.revokeObjectURL(listImgs.value[index]);
+  listImgs.value.splice(index, 1);
+  data.images.splice(index, 1);
+  console.log(data);
+};
 </script>
 
 <template>
@@ -98,34 +127,41 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-3">Mật Khẩu</FormLabel>
-              
+
               <InputGroup v-if="!showPassword">
                 <FormInput
-                id="crud-form-3"
-                type="text"
-                v-model="data.password"
-                class="w-full"
-                placeholder="Mật Khẩu"
+                  id="crud-form-3"
+                  type="text"
+                  v-model="data.password"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
                 />
-               
-                <InputGroup.Text id="input-group-1"  style="cursor: pointer;"  @click="showPassword = !showPassword">
+
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPassword = !showPassword"
+                >
                   <Lucide icon="Eye" />
                 </InputGroup.Text>
-              </InputGroup> 
+              </InputGroup>
               <InputGroup v-else>
                 <FormInput
-                id="crud-form-3"
-                type="password"
-                v-model="data.password"
-                class="w-full"
-                placeholder="Mật Khẩu"
+                  id="crud-form-3"
+                  type="password"
+                  v-model="data.password"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
                 />
-                <InputGroup.Text id="input-group-1"  style="cursor: pointer;" @click="showPassword = !showPassword">
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPassword = !showPassword"
+                >
                   <Lucide icon="EyeOff" />
                 </InputGroup.Text>
               </InputGroup>
             </div>
-
           </div>
         </div>
       </div>
@@ -138,7 +174,7 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
           <div
             class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
           >
-            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin Salon
+            <Lucide icon="Home" class="w-4 h-4 mr-2" /> Thông tin Salon
           </div>
           <div class="mt-5">
             <div>
@@ -152,6 +188,16 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
               />
             </div>
             <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Địa chỉ salon</FormLabel>
+              <FormInput
+                id="crud-form-2"
+                type="text"
+                v-model="data.salon_address"
+                class="w-full"
+                placeholder="Số điện thoại"
+              />
+            </div>
+            <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Số điện thoại liên hệ</FormLabel>
               <FormInput
                 id="crud-form-2"
@@ -162,39 +208,134 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
               />
             </div>
             <div class="mt-3">
-              <FormLabel htmlFor="crud-form-3">Mật Khẩu</FormLabel>
-              
-              <InputGroup v-if="!showPassword">
-                <FormInput
-                id="crud-form-3"
+              <FormLabel htmlFor="crud-form-2">Email</FormLabel>
+              <FormInput
+                id="crud-form-2"
                 type="text"
-                v-model="data.password"
+                v-model="data.salon_email"
                 class="w-full"
-                placeholder="Mật Khẩu"
-                />
-               
-                <InputGroup.Text id="input-group-1"  style="cursor: pointer;"  @click="showPassword = !showPassword">
-                  <Lucide icon="Eye" />
-                </InputGroup.Text>
-              </InputGroup> 
-              <InputGroup v-else>
-                <FormInput
-                id="crud-form-3"
-                type="password"
-                v-model="data.password"
-                class="w-full"
-                placeholder="Mật Khẩu"
-                />
-                <InputGroup.Text id="input-group-1"  style="cursor: pointer;" @click="showPassword = !showPassword">
-                  <Lucide icon="EyeOff" />
-                </InputGroup.Text>
-              </InputGroup>
+                placeholder="Số điện thoại"
+              />
             </div>
-
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
+              <FormInline class="flex-col items-start mt-3 xl:flex-row">
+                <div
+                  class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400"
+                >
+                  <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
+                    <div
+                      v-for="(image, index) in listImgs"
+                      :key="image"
+                      class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
+                    >
+                      <img class="rounded-md" alt="" :src="image" />
+                      <Tippy
+                        content="Remove this image?"
+                        class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
+                        @click="revokePreview(index)"
+                      >
+                        <Lucide icon="X" class="w-4 h-4" />
+                      </Tippy>
+                    </div>
+                  </div>
+                  <div
+                    class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer"
+                  >
+                    <Lucide icon="Image" class="w-4 h-4 mr-2" />
+                    <span class="mr-1 text-primary"> Upload a file </span>
+                    or drag and drop
+                    <FormInput
+                      id="horizontal-form-1"
+                      type="file"
+                      class="absolute top-0 left-0 w-full h-full opacity-0"
+                      @change="previewImages"
+                    />
+                  </div>
+                </div>
+              </FormInline>
+            </div>
           </div>
         </div>
       </div>
       <!-- END: Salon Info -->
+
+      <!-- BEGIN: Staff & Service Info -->
+      <div class="p-5 mt-5 intro-y box">
+        <div
+          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
+            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin dịch vụ & thợ
+          </div>
+          <div class="mt-5">
+            <div
+              class="flex items-centertext-base font-medium border-slate-200/60 dark:border-darkmode-400"
+            >
+              <Lucide icon="User" class="w-4 h-4 mr-2" /> Dịch Vụ
+            </div>
+            <FormInline
+              class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0"
+            >
+              <div class="flex-1 w-full mt-3 xl:mt-0">
+                <div class="overflow-x-auto">
+                  <Table class="border">
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
+                        >
+                            Dịch Vụ
+                        </Table.Th>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
+                        >
+                        Giá Tiền
+                        </Table.Th>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800"
+                        ></Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      <Table.Tr v-for="(staff,index) in staffs" :key="index">
+                        <Table.Td class="!px-2">
+                          <FormInput
+                            type="text"
+                            class="min-w-[6rem]"
+                          />
+                        </Table.Td>
+                        <Table.Td class="!px-2">
+                          <FormInput
+                            type="text"
+                            class="min-w-[6rem]"
+                          />
+                        </Table.Td>
+                       
+                        <Table.Td class="!pl-4 text-slate-500">
+                          <a href="">
+                            <Lucide icon="Trash2" class="w-4 h-4"  style="margin: 0 auto"/>
+                          </a>
+                        </Table.Td>
+                      </Table.Tr>
+                    </Table.Tbody>
+                  </Table>
+                </div>
+                <Button
+                  variant="outline-primary"
+                  class="w-full mt-4 border-dashed"
+                >
+                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Add New Wholesale
+                  Price
+                </Button>
+              </div>
+            </FormInline>
+          </div>
+        </div>
+      </div>
+      <!-- END: Staff & Service  Info -->
 
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
         <Button

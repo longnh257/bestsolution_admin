@@ -43,7 +43,7 @@ const hideSearchDropdown = () => {
         ]"
       >
         <img
-          alt="Enigma Tailwind HTML Admin Template"
+          alt="123 Best Solution"
           class="w-6"
           :src="logoUrl"
         />
@@ -54,7 +54,7 @@ const hideSearchDropdown = () => {
             props.layout == 'simple-menu' && 'hidden',
           ]"
         >
-          Enigma
+          123 Best Solution
         </span>
       </RouterLink>
       <!-- END: Logo -->
