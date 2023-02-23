@@ -7,6 +7,7 @@ import axios from "axios";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Table from "../../base-components/Table";
+import {normalizeInput} from "../../utils/helper";
 import {
   FormInput,
   FormInline,
@@ -17,7 +18,10 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
+import { helperNameMap } from "@vue/compiler-core";
 
+let services = ref([{ name: "", price: "", avatar: "" }]);
+let staffs = ref([{ name: "", phone: "", avatar: "" }]);
 let data = {
   images: [{}],
   name: "",
@@ -39,16 +43,15 @@ let data = {
   salon_lng: "-118.406125",
   lang: "",
   input_option: "1",
+  services: "",
+  staffs: "",
 };
-
-
-let staffs = ref([]);
 
 data.images.splice(0, 1);
 
 let listImgs: any = ref([]);
-var err = ref([]);
-var showPassword = ref(true);
+let err = ref([]);
+let showPassword = ref(true);
 
 const saveSalon = () => {
   submit();
@@ -84,6 +87,18 @@ const revokePreview = (index: any) => {
   URL.revokeObjectURL(listImgs.value[index]);
   listImgs.value.splice(index, 1);
   data.images.splice(index, 1);
+  console.log(data);
+};
+
+const addService = () => {
+  services.value.push({ name: "", price: "", avatar: "" });
+  data.services = JSON.stringify(services);
+  console.log(data);
+};
+
+const addStaff = () => {
+  staffs.value.push({ name: "", phone: "", avatar: "" });
+  data.staffs = JSON.stringify(staffs);
   console.log(data);
 };
 </script>
@@ -260,7 +275,7 @@ const revokePreview = (index: any) => {
       </div>
       <!-- END: Salon Info -->
 
-      <!-- BEGIN: Staff & Service Info -->
+      <!-- BEGIN: service & Service Info -->
       <div class="p-5 mt-5 intro-y box">
         <div
           class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
@@ -268,7 +283,7 @@ const revokePreview = (index: any) => {
           <div
             class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
           >
-            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin dịch vụ & thợ
+            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin dịch vụ
           </div>
           <div class="mt-5">
             <div
@@ -287,12 +302,12 @@ const revokePreview = (index: any) => {
                         <Table.Th
                           class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
                         >
-                            Dịch Vụ
+                          Dịch Vụ
                         </Table.Th>
                         <Table.Th
                           class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
                         >
-                        Giá Tiền
+                          Giá Tiền
                         </Table.Th>
                         <Table.Th
                           class="!px-2 bg-slate-50 dark:bg-darkmode-800"
@@ -300,23 +315,32 @@ const revokePreview = (index: any) => {
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                      <Table.Tr v-for="(staff,index) in staffs" :key="index">
+                      <Table.Tr
+                        v-for="(service, index) in services"
+                        :key="index"
+                      >
                         <Table.Td class="!px-2">
                           <FormInput
                             type="text"
                             class="min-w-[6rem]"
+                            v-model="service.name"
                           />
                         </Table.Td>
                         <Table.Td class="!px-2">
                           <FormInput
                             type="text"
                             class="min-w-[6rem]"
+                            v-model="service.price"
                           />
                         </Table.Td>
-                       
+
                         <Table.Td class="!pl-4 text-slate-500">
                           <a href="">
-                            <Lucide icon="Trash2" class="w-4 h-4"  style="margin: 0 auto"/>
+                            <Lucide
+                              icon="Trash2"
+                              class="w-4 h-4"
+                              style="margin: 0 auto"
+                            />
                           </a>
                         </Table.Td>
                       </Table.Tr>
@@ -326,6 +350,7 @@ const revokePreview = (index: any) => {
                 <Button
                   variant="outline-primary"
                   class="w-full mt-4 border-dashed"
+                  @click="addService"
                 >
                   <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Add New Wholesale
                   Price
@@ -334,8 +359,81 @@ const revokePreview = (index: any) => {
             </FormInline>
           </div>
         </div>
+        <div
+          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
+            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin thợ
+          </div>
+          <div class="mt-5">
+            <FormInline
+              class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0"
+            >
+              <div class="flex-1 w-full mt-3 xl:mt-0">
+                <div class="overflow-x-auto">
+                  <Table class="border">
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
+                        >
+                          Tên Thợ
+                        </Table.Th>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
+                        >
+                          Số Điện Thoại
+                        </Table.Th>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800"
+                        ></Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      <Table.Tr v-for="(staff, index) in staffs" :key="index">
+                        <Table.Td class="!px-2">
+                          <FormInput
+                            type="text"
+                            class="min-w-[6rem]"
+                            v-model="staff.name"
+                          />
+                        </Table.Td>
+                        <Table.Td class="!px-2">
+                          <FormInput
+                            type="text"
+                            class="min-w-[6rem]"
+                            v-model="staff.phone"
+                          />
+                        </Table.Td>
+
+                        <Table.Td class="!pl-4 text-slate-500">
+                          <a href="">
+                            <Lucide
+                              icon="Trash2"
+                              class="w-4 h-4"
+                              style="margin: 0 auto"
+                            />
+                          </a>
+                        </Table.Td>
+                      </Table.Tr>
+                    </Table.Tbody>
+                  </Table>
+                </div>
+                <Button
+                  variant="outline-primary"
+                  class="w-full mt-4 border-dashed"
+                  @click="addStaff"
+                >
+                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm Thợ Price
+                </Button>
+              </div>
+            </FormInline>
+          </div>
+        </div>
       </div>
-      <!-- END: Staff & Service  Info -->
+      <!-- END: service & Service  Info -->
 
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
         <Button
