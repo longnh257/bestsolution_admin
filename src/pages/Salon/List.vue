@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import _ from "lodash";
-import App from "./App.vue";
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";
 import { FormInput, FormSelect } from "../../base-components/Form";

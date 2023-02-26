@@ -6,35 +6,33 @@ import illustrationUrl from "../assets/images/illustration.svg";
 import { FormInput, FormCheck } from "../base-components/Form";
 import Button from "../base-components/Button";
 
-import axios from 'axios';
+import axios from "axios";
 import { onMounted } from "vue";
 import { method } from "lodash";
 import router from "../router";
 
-
 var data = {
-    email:'',
-    password:'',
-}
+  email: "",
+  password: "",
+};
 
 const onSubmit = () => {
-   axios.post('http://dev.api.booking.kendemo.com:3008/api/v1/admin/login',{
-        email  :data.email , 
-        password : data.password,
+  axios
+    .post("http://dev.api.booking.kendemo.com:3008/api/v1/admin/login", {
+      email: data.email,
+      password: data.password,
     })
     .then(function (response) {
       // handle success
-      localStorage.setItem('access_token',response.data.data.access_token)
-      router.push(`/`)
-      console.log(response,data.email,data.password);
-      
+      localStorage.setItem("access_token", response.data.data.access_token);
+      router.push(`/`);
+      console.log(response, data.email, data.password);
     })
     .catch(function (error) {
       // handle error
       console.log(error);
-    })
-    ;
-}
+    });
+};
 </script>
 
 <template>
@@ -129,7 +127,7 @@ const onSubmit = () => {
               >
                 Login
               </Button>
-            <!--   <Button
+              <!--   <Button
                 variant="outline-secondary"
                 class="w-full px-4 py-3 mt-3 align-top xl:w-32 xl:mt-0"
               >

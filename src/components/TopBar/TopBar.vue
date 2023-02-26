@@ -8,6 +8,8 @@ import { Menu, Popover } from "../../base-components/Headless";
 import fakerData from "../../utils/faker";
 import _ from "lodash";
 import { TransitionRoot } from "@headlessui/vue";
+import axios from "axios";
+import router from "../../router";
 
 const props = defineProps<{
   layout?: "side-menu" | "simple-menu" | "top-menu";
@@ -19,6 +21,20 @@ const showSearchDropdown = () => {
 };
 const hideSearchDropdown = () => {
   searchDropdown.value = false;
+};
+const logout = () => {
+  axios
+    .post(`http://dev.api.booking.kendemo.com:3008/api/v1/admin/logout`)
+    .then(function (response) {
+      // handle success
+      localStorage.removeItem("access_token");
+      router.push(`/`);
+      console.log(response);
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    });
 };
 </script>
 
@@ -42,11 +58,7 @@ const hideSearchDropdown = () => {
           props.layout == 'top-menu' && 'w-auto',
         ]"
       >
-        <img
-          alt="123 Best Solution"
-          class="w-6"
-          :src="logoUrl"
-        />
+        <img alt="123 Best Solution" class="w-6" :src="logoUrl" />
         <span
           :class="[
             'ml-3 text-lg text-white',
@@ -67,12 +79,12 @@ const hideSearchDropdown = () => {
           props.layout == 'top-menu' && 'md:pl-10',
         ]"
       >
-        <Breadcrumb.Link to="/">Application</Breadcrumb.Link>
-        <Breadcrumb.Link to="/" :active="true"> Dashboard </Breadcrumb.Link>
+        <!--        <Breadcrumb.Link to="/">Dashboard</Breadcrumb.Link> -->
+        <!--   <Breadcrumb.Link to="/" :active="true"> Dashboard </Breadcrumb.Link> -->
       </Breadcrumb>
       <!-- END: Breadcrumb -->
       <!-- BEGIN: Search -->
-      <div class="relative mr-3 intro-x sm:mr-6">
+      <!-- <div class="relative mr-3 intro-x sm:mr-6">
         <div class="relative hidden sm:block">
           <FormInput
             type="text"
@@ -176,10 +188,10 @@ const hideSearchDropdown = () => {
             </div>
           </div>
         </TransitionRoot>
-      </div>
+      </div> -->
       <!-- END: Search -->
       <!-- BEGIN: Notifications -->
-      <Popover class="mr-4 intro-x sm:mr-6">
+      <!--    <Popover class="mr-4 intro-x sm:mr-6">
         <Popover.Button
           class="relative text-white/70 outline-none block before:content-[''] before:w-[8px] before:h-[8px] before:rounded-full before:absolute before:top-[-2px] before:right-0 before:bg-danger"
         >
@@ -220,7 +232,7 @@ const hideSearchDropdown = () => {
             </div>
           </div>
         </Popover.Panel>
-      </Popover>
+      </Popover> -->
       <!-- END: Notifications -->
       <!-- BEGIN: Account Menu -->
       <Menu>
@@ -255,7 +267,7 @@ const hideSearchDropdown = () => {
             <Lucide icon="HelpCircle" class="w-4 h-4 mr-2" /> Help
           </Menu.Item>
           <Menu.Divider class="bg-white/[0.08]" />
-          <Menu.Item class="hover:bg-white/5">
+          <Menu.Item class="hover:bg-white/5" @click="logout">
             <Lucide icon="ToggleRight" class="w-4 h-4 mr-2" /> Logout
           </Menu.Item>
         </Menu.Items>
