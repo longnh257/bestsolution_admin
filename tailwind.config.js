@@ -9,7 +9,11 @@ const toRGB = (value) => {
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,vue}"],
+  content: [
+    "./src/**/*.{js,jsx,ts,vue}",
+    "./src/**/*.{html,js}",
+    "./node_modules/tw-elements/dist/js/**/*.js",
+  ],
   safelist: [
     {
       pattern: /animate-delay-.+/,
@@ -105,6 +109,7 @@ module.exports = {
     },
   },
   plugins: [
+    require("tw-elements/dist/plugin"),
     require("@tailwindcss/forms"),
     plugin(function ({ addBase, matchUtilities }) {
       addBase({

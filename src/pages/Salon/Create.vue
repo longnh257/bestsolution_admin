@@ -7,7 +7,9 @@ import axios from "axios";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Table from "../../base-components/Table";
-import {normalizeInput} from "../../utils/helper";
+import { normalizeInput } from "../../utils/helper";
+import Tippy from "../../base-components/Tippy";
+
 import {
   FormInput,
   FormInline,
@@ -22,8 +24,62 @@ import { helperNameMap } from "@vue/compiler-core";
 
 let services = ref([{ name: "", price: "", avatar: "" }]);
 let staffs = ref([{ name: "", phone: "", avatar: "" }]);
+let schedules = ref([
+  {
+    id: 1,
+    day: 0,
+    day_name: "Thứ 2",
+    start: "08:00",
+    end: "18:30",
+  },
+  {
+    id: 2,
+    day: 1,
+    day_name: "Thứ 3",
+    start: "08:00",
+    end: "18:30",
+  },
+  {
+    id: 3,
+    day: 2,
+    day_name: "Thứ 4",
+    start: "08:00",
+    end: "18:30",
+  },
+  {
+    id: 4,
+    day: 3,
+    day_name: "Thứ 5",
+    start: "08:00",
+    end: "18:30",
+  },
+  {
+    id: 5,
+    day: 4,
+    day_name: "Thứ 6",
+    start: "08:00",
+    end: "18:30",
+  },
+  {
+    id: 6,
+    day: 5,
+    day_name: "Thứ 7",
+    start: "08:00",
+    end: "18:30",
+  },
+  {
+    id: 7,
+    day: 6,
+    day_name: "Chủ nhật",
+    start: "08:00",
+    end: "18:30",
+  },
+]);
+
+const maskedValue = ref('')
+const bindedObject = reactive({})
+
 let data = {
-  images: [{}],
   name: "",
   phone: "",
   password: "",
@@ -43,8 +99,10 @@ let data = {
   salon_lng: "-118.406125",
   lang: "",
   input_option: "1",
-  services: "",
-  staffs: "",
+  services: services.value,
+  staffs: staffs.value,
+  schedules: schedules.value,
+  images: [{}],
 };
 
 data.images.splice(0, 1);
@@ -60,6 +118,8 @@ const saveNew = () => {};
 
 const errorNotification = ref<NotificationElement>();
 const submit = () => {
+  console.log(data);
+
   axios
     .post("http://dev.api.booking.kendemo.com:3008/api/v1/salon/sign-up", data)
     .then(function (response) {
@@ -77,7 +137,7 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
 
 const previewImages = (e: any) => {
   for (var i = 0; i < e.target.files.length; i++) {
-    let file: any = e.target.files[i];
+    let file = e.target.files[i];
     data.images.push(file);
     listImgs.value.push(URL.createObjectURL(file));
   }
@@ -87,20 +147,44 @@ const revokePreview = (index: any) => {
   URL.revokeObjectURL(listImgs.value[index]);
   listImgs.value.splice(index, 1);
   data.images.splice(index, 1);
-  console.log(data);
 };
 
 const addService = () => {
   services.value.push({ name: "", price: "", avatar: "" });
-  data.services = JSON.stringify(services);
-  console.log(data);
 };
 
 const addStaff = () => {
   staffs.value.push({ name: "", phone: "", avatar: "" });
-  data.staffs = JSON.stringify(staffs);
-  console.log(data);
 };
+
+const deleteService = (index: any) => {
+  if (services.value.length > 1) {
+    services.value.splice(index, 1);
+  } else {
+    services.value[index].name = "";
+    services.value[index].price = "";
+  }
+};
+
+const deleteStaff = (index: any) => {
+  if (staffs.value.length > 1) {
+    staffs.value.splice(index, 1);
+  } else {
+    staffs.value[index].name = "";
+    staffs.value[index].phone = "";
+  }
+};
+/* 
+const phoneMask  =  (e:any,i:any) => {
+  console.log(normalizeInput(staffs.value[i].phone, staffs.value[i].phone));
+  
+  e.target.value = normalizeInput(staffs.value[i].phone, staffs.value[i].phone)
+  console.log(staffs.value);
+  
+} */
+const maskphone = () => {
+  data.phone = bindedObject.unmasked  
+}
 </script>
 
 <template>
@@ -135,9 +219,9 @@ const addStaff = () => {
               <FormInput
                 id="crud-form-2"
                 type="text"
-                v-model="data.phone"
                 class="w-full"
                 placeholder="Số điện thoại"
+                v-maska="bindedObject" v-model="maskedValue" data-maska="(###) ###-####" @change="maskphone"
               />
             </div>
             <div class="mt-3">
@@ -217,7 +301,7 @@ const addStaff = () => {
               <FormInput
                 id="crud-form-2"
                 type="text"
-                v-model="data.phone"
+                v-model="data.salon_phone"
                 class="w-full"
                 placeholder="Số điện thoại"
               />
@@ -258,15 +342,109 @@ const addStaff = () => {
                     class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer"
                   >
                     <Lucide icon="Image" class="w-4 h-4 mr-2" />
-                    <span class="mr-1 text-primary"> Upload a file </span>
-                    or drag and drop
+                    <span class="mr-1 text-primary"> Tải lên file</span>
                     <FormInput
                       id="horizontal-form-1"
                       type="file"
                       class="absolute top-0 left-0 w-full h-full opacity-0"
+                      multiple
                       @change="previewImages"
                     />
                   </div>
+                </div>
+              </FormInline>
+            </div>
+            <div
+              class="mt-3 flex"
+              v-for="schedule in schedules"
+              :key="schedule.id"
+            >
+              <FormInline class="flex-row flex w-1/2">
+                <FormLabel htmlFor="" class="text-left w-20 mt-3">
+                  {{ schedule.day_name }}
+                </FormLabel>
+                <div
+                  class="relative w-full"
+                  id="timepicker-with-button"
+                  data-te-timepicker-init
+                  data-te-format24="true"
+                  data-te-input-wrapper-init
+                >
+                  <input
+                    type="text"
+                    class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
+                    id="form4"
+                    style="border-bottom: 1px solid rgb(226 232 240)"
+                    v-model="schedule.start"
+                  />
+                  <button
+                    tabindex="0"
+                    type="button"
+                    class="timepicker-toggle-button absolute right-2.5 top-1/2 ml-auto h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent fill-neutral-700 outline-none transition-all duration-[300ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:fill-[#3b71ca] focus:fill-[#3b71ca] dark:fill-white dark:hover:fill-[#3b71ca] dark:focus:fill-[#3b71ca]"
+                    data-te-toggle="timepicker-with-button"
+                    data-te-timepicker-toggle-button
+                  >
+                    <span data-te-timepicker-icon>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="h-5 w-5 hover:text-[#3b71ca] focus:text-[#3b71ca] dark:text-white dark:hover:text-[#3b71ca] dark:focus:text-[#3b71ca]"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              </FormInline>
+              <FormInline class="flex-row flex w-1/2">
+                <FormLabel htmlFor="" class="text-left w-20 mt-3">
+                  Đến
+                </FormLabel>
+                <div
+                  class="relative w-full"
+                  id="timepicker-with-button"
+                  data-te-timepicker-init
+                  data-te-format24="true"
+                  data-te-input-wrapper-init
+                >
+                  <input
+                    type="text"
+                    class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
+                    id="form4"
+                    style="border-bottom: 1px solid rgb(226 232 240)"
+                    v-model="schedule.end"
+                  />
+                  <button
+                    tabindex="0"
+                    type="button"
+                    class="timepicker-toggle-button absolute right-2.5 top-1/2 ml-auto h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent fill-neutral-700 outline-none transition-all duration-[300ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:fill-[#3b71ca] focus:fill-[#3b71ca] dark:fill-white dark:hover:fill-[#3b71ca] dark:focus:fill-[#3b71ca]"
+                    data-te-toggle="timepicker-with-button"
+                    data-te-timepicker-toggle-button
+                  >
+                    <span data-te-timepicker-icon>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="h-5 w-5 hover:text-[#3b71ca] focus:text-[#3b71ca] dark:text-white dark:hover:text-[#3b71ca] dark:focus:text-[#3b71ca]"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5"
+                        />
+                      </svg>
+                    </span>
+                  </button>
                 </div>
               </FormInline>
             </div>
@@ -277,6 +455,44 @@ const addStaff = () => {
 
       <!-- BEGIN: service & Service Info -->
       <div class="p-5 mt-5 intro-y box">
+        <div class="mb-5">
+          <FormLabel htmlFor="" class=" text-base font-medium ">Hình ảnh Dịch Vụ, Thợ</FormLabel>
+          <FormInline class="flex-col items-start mt-3 xl:flex-row">
+            <div
+              class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400"
+            >
+              <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
+                <div
+                  v-for="(image, index) in listImgs"
+                  :key="image"
+                  class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
+                >
+                  <img class="rounded-md" alt="" :src="image" />
+                  <Tippy
+                    content="Remove this image?"
+                    class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
+                    @click="revokePreview(index)"
+                  >
+                    <Lucide icon="X" class="w-4 h-4" />
+                  </Tippy>
+                </div>
+              </div>
+              <div
+                class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer"
+              >
+                <Lucide icon="Image" class="w-4 h-4 mr-2" />
+                <span class="mr-1 text-primary"> Tải lên file</span>
+                <FormInput
+                  id=""
+                  type="file"
+                  class="absolute top-0 left-0 w-full h-full opacity-0"
+                  multiple
+                  @change="previewImages"
+                />
+              </div>
+            </div>
+          </FormInline>
+        </div>
         <div
           class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
         >
@@ -286,11 +502,6 @@ const addStaff = () => {
             <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin dịch vụ
           </div>
           <div class="mt-5">
-            <div
-              class="flex items-centertext-base font-medium border-slate-200/60 dark:border-darkmode-400"
-            >
-              <Lucide icon="User" class="w-4 h-4 mr-2" /> Dịch Vụ
-            </div>
             <FormInline
               class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0"
             >
@@ -335,11 +546,12 @@ const addStaff = () => {
                         </Table.Td>
 
                         <Table.Td class="!pl-4 text-slate-500">
-                          <a href="">
+                          <a style="cursor: pointer">
                             <Lucide
                               icon="Trash2"
                               class="w-4 h-4"
                               style="margin: 0 auto"
+                              @click="deleteService(index)"
                             />
                           </a>
                         </Table.Td>
@@ -352,8 +564,7 @@ const addStaff = () => {
                   class="w-full mt-4 border-dashed"
                   @click="addService"
                 >
-                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Add New Wholesale
-                  Price
+                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm dịch vụ
                 </Button>
               </div>
             </FormInline>
@@ -409,11 +620,12 @@ const addStaff = () => {
                         </Table.Td>
 
                         <Table.Td class="!pl-4 text-slate-500">
-                          <a href="">
+                          <a style="cursor: pointer">
                             <Lucide
                               icon="Trash2"
                               class="w-4 h-4"
                               style="margin: 0 auto"
+                              @click="deleteStaff(index)"
                             />
                           </a>
                         </Table.Td>
@@ -426,7 +638,7 @@ const addStaff = () => {
                   class="w-full mt-4 border-dashed"
                   @click="addStaff"
                 >
-                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm Thợ Price
+                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm Thợ
                 </Button>
               </div>
             </FormInline>

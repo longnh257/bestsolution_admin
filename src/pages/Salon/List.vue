@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import _ from "lodash";
+import App from "./App.vue";
 import Button from "../../base-components/Button";
 import Pagination from "../../base-components/Pagination";
 import { FormInput, FormSelect } from "../../base-components/Form";
@@ -30,7 +31,6 @@ const searchSalon = () => {
    axios.get('http://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon',{
       params: {
         page : 1,
-        num_per_page:10,
         txt_search : txt_search,
       }
     })
