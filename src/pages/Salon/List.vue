@@ -9,8 +9,10 @@ import { Dialog, Menu } from "../../base-components/Headless";
 import Table from "../../base-components/Table";
 import Preview from "../../base-components/Preview";
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { onMounted, ref ,provide} from "vue";
 import router from "../../router";
+import Notification from "../../base-components/Notification";
+import { NotificationElement } from "../../base-components/Notification";
 
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
@@ -24,8 +26,19 @@ onMounted(() => {
   searchSalon();
 });
 
-const salonIndex : any = ref("")
-const salonId: any  = ref("")
+const salonIndex: any = ref("");
+const salonId: any = ref("");
+
+let err = ref([]);
+let scc = ref([]);
+const errorNotification = ref<NotificationElement>();
+const successNotification = ref<NotificationElement>();
+  provide("bind[errorNotification]", (el: NotificationElement) => {
+  errorNotification.value = el;
+});
+provide("bind[successNotification]", (el: NotificationElement) => {
+  successNotification.value = el;
+});
 
 const setDeleteConfirmationModal = (
   value: boolean,
@@ -36,11 +49,30 @@ const setDeleteConfirmationModal = (
   selectedSalonIndex.value = salonIndex;
   selectedSalonId.value = salonId;
 };
-const deleteSalon = (salonIndex:any, salonId:any) => {
-  console.log(selectedSalonIndex.value);
-
+const deleteSalon = (salonIndex: any, salonId: any) => {
   dataArr.value.splice(selectedSalonIndex.value, 1);
   deleteConfirmationModal.value = false;
+  dataArr.value.splice(salonIndex,1)
+
+  axios
+    .post(
+      "http://dev.api.booking.kendemo.com:3008/api/v1/admin/delete-salon",
+      { id: salonId },
+      {
+        headers: {
+          Authorization: "Bearer " + access_token,
+        },
+      }
+    )
+    .then(function (response) {
+      scc.value = response.data.message
+      successNotification.value?.showToast();
+    })
+    .catch(function (error) {
+      err.value = error.response.data.message;
+      errorNotification.value?.showToast();
+      console.log(error);
+    });
 };
 const searchSalon = () => {
   axios
@@ -67,7 +99,6 @@ const searchSalon = () => {
 
 const activeSalon = (id: any, index: any) => {
   dataArr.value[index].status = !dataArr.value[index].status;
-  console.log(id);
 
   axios
     .post(
@@ -80,30 +111,31 @@ const activeSalon = (id: any, index: any) => {
       }
     )
     .then(function (response) {
-      console.log(response.data);
-      console.log(2);
+      scc.value = response.data.message
+      successNotification.value?.showToast();
     })
     .catch(function (error) {
-      // handle error
+      err.value = error.response.data.message;
+      errorNotification.value?.showToast();
       console.log(error);
     });
 };
 const approveSalon = (id: any, index: any) => {
+  dataArr.value[index].status = 1;
+  dataArr.value[index].partner.is_approve = 1;
   axios
-    .get("http://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon", {
-      params: {
-        page: 1,
-        txt_search: txt_search,
-      },
-      headers: {
-        Authorization: "Bearer " + access_token,
-      },
-    })
+    .post(
+      "http://dev.api.booking.kendemo.com:3008/api/v1/salon/approve",
+      { id: id },
+      {
+        headers: {
+          Authorization: "Bearer " + access_token,
+        },
+      }
+    )
     .then(function (response) {
-      // handle success
-
-      dataArr.value = response.data.data;
-      console.log(dataArr.value);
+      scc.value = response.data.message
+      successNotification.value?.showToast();
     })
     .catch(function (error) {
       // handle error
@@ -437,4 +469,26 @@ const refreshSearch = () => {
     </Dialog.Panel>
   </Dialog>
   <!-- END: Delete Confirmation Modal -->
+  <div class="p-5">
+    <!-- BEGIN: Success Notification -->
+    <Notification refKey="errorNotification" class="flex">
+      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
+      <div class="ml-4 mr-4">
+        <div class="font-medium">Có lỗi xảy ra!</div>
+        <div class="mt-1 text-slate-500">
+          {{ err }}
+        </div>
+      </div>
+    </Notification>
+    <Notification refKey="successNotification" class="flex">
+      <Lucide icon="CheckCircle" class="text-success" />
+      <div class="ml-4 mr-4">
+        <div class="font-medium">Thành Công</div>
+        <div class="mt-1 text-slate-500">
+          {{ scc }}
+        </div>
+      </div>
+    </Notification>
+    <!-- END: Success Notification -->
+  </div>
 </template>
