@@ -10,7 +10,8 @@ import Table from "../../base-components/Table";
 import { normalizeInput } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
-import VueGoogleAutocomplete from "vue-google-autocomplete";
+import VueGoogleAutocomplete from "../../../node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue";
+
 
 import {
   FormInput,
@@ -24,9 +25,9 @@ import {
 } from "../../base-components/Form";
 import { helperNameMap } from "@vue/compiler-core";
 
-const services = ref([{ name: "", price: "", avatar: "" }]);
-const staffs = ref([{ name: "", phone: "", avatar: "" }]);
-const schedules = ref([
+const services = ref<any[]>([{ name: "", price: "", avatar: "" }]);
+const staffs = ref<any[]>([{ name: "", phone: "", avatar: "" }]);
+const schedules = ref<any[]>([
   {
     id: 1,
     day: 0,
@@ -79,7 +80,7 @@ const schedules = ref([
 ]);
 
 const maskedValue = ref("");
-const bindedObject = reactive({});
+const bindedObject = reactive({unmasked:""});
 
 let data = {
   name: "",
@@ -116,6 +117,8 @@ let listStaffImgs: any = ref([]);
 let err = ref([]);
 let scc = ref([]);
 let showPassword = ref(true);
+let salonIndex = ref();
+let salonId = ref();
 
 const saveSalon = () => {
   submit();
@@ -150,12 +153,16 @@ const submit = () => {
   fd.append("schedules", JSON.stringify(data.schedules));
 
   for(let index in data.images.value){
-      fd.append('images[]',data.images.value[index])
+      fd.append('images',data.images.value[index]);
   }
 
   for(let index in data.fileList.value){
-      fd.append('fileList[]',data.fileList.value[index])
+      fd.append('fileList',data.fileList.value[index])
   }
+
+
+  console.log(data);
+  
 
   axios
     .post(`http://dev.api.booking.kendemo.com:3008/api/v1/salon/sign-up`, fd, {
@@ -236,11 +243,11 @@ const deleteStaff = (index: any) => {
   }
 };
 
-const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
+const maskphone = (key:any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
     staffs.value[index][key] = bindedObject.unmasked;
   } else {
-    data[key] = bindedObject.unmasked;
+    /* data[key] = bindedObject.unmasked; */
   }
 };
 

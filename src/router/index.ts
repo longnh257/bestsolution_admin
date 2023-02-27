@@ -6,7 +6,6 @@ import Page1 from "../pages/Page1.vue";
 import Login from "../pages/Login.vue";
 import ListSalon from "../pages/Salon/List.vue";
 import CreateSalon from "../pages/Salon/Create.vue";
-import CreateSalon1 from "../pages/Salon/Create1.vue";
 import auth from '../middleware/auth';
 
 const routes = [
@@ -35,11 +34,7 @@ const routes = [
             name: "salon-create",
             component: CreateSalon,
           },
-          {
-            path: "create1",
-            name: "salon-create1",
-            component: CreateSalon1,
-          },
+         
         ]
       },
      

@@ -8,50 +8,116 @@ import Tippy from "../../base-components/Tippy";
 import { Dialog, Menu } from "../../base-components/Headless";
 import Table from "../../base-components/Table";
 import Preview from "../../base-components/Preview";
-import axios from 'axios';
-import { onMounted, ref} from "vue";
+import axios from "axios";
+import { onMounted, ref } from "vue";
 import router from "../../router";
 
 const deleteConfirmationModal = ref(false);
-const setDeleteConfirmationModal = (value: boolean) => {
-  deleteConfirmationModal.value = value;
-};
 const deleteButtonRef = ref(null);
 
-
-const dataArr = ref([])
-let txt_search = ''
-
+const dataArr = ref<any[]>([]);
+const selectedSalonIndex = ref();
+const selectedSalonId = ref();
+let txt_search = "";
+let access_token = localStorage.getItem("access_token");
 onMounted(() => {
-  searchSalon()
-})
+  searchSalon();
+});
 
+const salonIndex : any = ref("")
+const salonId: any  = ref("")
+
+const setDeleteConfirmationModal = (
+  value: boolean,
+  salonIndex: any = null,
+  salonId: any = null
+) => {
+  deleteConfirmationModal.value = value;
+  selectedSalonIndex.value = salonIndex;
+  selectedSalonId.value = salonId;
+};
+const deleteSalon = (salonIndex:any, salonId:any) => {
+  console.log(selectedSalonIndex.value);
+
+  dataArr.value.splice(selectedSalonIndex.value, 1);
+  deleteConfirmationModal.value = false;
+};
 const searchSalon = () => {
-   axios.get('http://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon',{
+  axios
+    .get("http://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon", {
       params: {
-        page : 1,
-        txt_search : txt_search,
-      }
+        page: 1,
+        txt_search: txt_search,
+      },
+      headers: {
+        Authorization: "Bearer " + access_token,
+      },
     })
     .then(function (response) {
       // handle success
-      dataArr.value = response.data.data
+
+      dataArr.value = response.data.data;
+      console.log(dataArr.value);
     })
     .catch(function (error) {
       // handle error
       console.log(error);
+    });
+};
+
+const activeSalon = (id: any, index: any) => {
+  dataArr.value[index].status = !dataArr.value[index].status;
+  console.log(id);
+
+  axios
+    .post(
+      "http://dev.api.booking.kendemo.com:3008/api/v1/salon/active",
+      { id: id },
+      {
+        headers: {
+          Authorization: "Bearer " + access_token,
+        },
+      }
+    )
+    .then(function (response) {
+      console.log(response.data);
+      console.log(2);
     })
-    ;
-}
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    });
+};
+const approveSalon = (id: any, index: any) => {
+  axios
+    .get("http://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon", {
+      params: {
+        page: 1,
+        txt_search: txt_search,
+      },
+      headers: {
+        Authorization: "Bearer " + access_token,
+      },
+    })
+    .then(function (response) {
+      // handle success
+
+      dataArr.value = response.data.data;
+      console.log(dataArr.value);
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    });
+};
 
 const refreshSearch = () => {
   console.log(txt_search);
-  
-  if(txt_search == ''){
-    searchSalon()
-  }
-}
 
+  if (txt_search == "") {
+    searchSalon();
+  }
+};
 </script>
 
 <template>
@@ -60,7 +126,11 @@ const refreshSearch = () => {
     <div
       class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
     >
-      <Button variant="primary" class="mr-2 shadow-md" @click="router.push({name:'salon-create'})">
+      <Button
+        variant="primary"
+        class="mr-2 shadow-md"
+        @click="router.push({ name: 'salon-create' })"
+      >
         Thêm mới salon
       </Button>
       <Menu>
@@ -108,24 +178,27 @@ const refreshSearch = () => {
         <Table.Thead>
           <Table.Tr>
             <Table.Th class="border-b-0 whitespace-nowrap"> Hình Ảnh </Table.Th>
-            <Table.Th class="border-b-0 whitespace-nowrap">
-              Salon
-            </Table.Th>
-         
+            <Table.Th class="border-b-0 whitespace-nowrap"> Salon </Table.Th>
+
             <Table.Th class="text-center border-b-0 whitespace-nowrap">
               Địa chỉ
             </Table.Th>
-            <Table.Th class="text-center border-b-0 whitespace-nowrap" style="width:500px;"> 
-             Mô tả
+            <Table.Th
+              class="text-center border-b-0 whitespace-nowrap"
+              style="width: 500px"
+            >
+              Trạng Thái
             </Table.Th>
             <Table.Th class="text-center border-b-0 whitespace-nowrap">
             </Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-           <Table.Tr v-for="item in dataArr" 
-           :key="item.id"    
-           class="intro-x">
+          <Table.Tr
+            v-for="(item, index) in dataArr"
+            :key="item.id"
+            class="intro-x"
+          >
             <Table.Td
               class="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
             >
@@ -139,27 +212,30 @@ const refreshSearch = () => {
                     :content="`Uploaded at ${item.images[0].created_at}`"
                   />
                 </div>
-                 <div class="w-10 h-10 -ml-5 image-fit zoom-in" v-if="item.images[1]">
+                <div
+                  class="w-10 h-10 -ml-5 image-fit zoom-in"
+                  v-if="item.images[1]"
+                >
                   <Tippy
                     as="img"
                     alt="Midone Tailwind HTML Admin Template"
                     class="rounded-full shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"
-                   :src="item.images[1].image"
+                    :src="item.images[1].image"
                     :content="`Uploaded at ${item.images[1].created_at}`"
                   />
                 </div>
-                <div class="w-10 h-10 -ml-5 image-fit zoom-in" v-if="item.images[2]">
+                <div
+                  class="w-10 h-10 -ml-5 image-fit zoom-in"
+                  v-if="item.images[2]"
+                >
                   <Tippy
                     as="img"
                     alt="Midone Tailwind HTML Admin Template"
                     class="rounded-full shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"
-                  :src="item.images[2].image"
+                    :src="item.images[2].image"
                     :content="`Uploaded at ${item.images[2].created_at}`"
                   />
                 </div>
-               
-               
-                
               </div>
             </Table.Td>
             <Table.Td
@@ -168,8 +244,16 @@ const refreshSearch = () => {
               <a href="" class="font-medium whitespace-nowrap">
                 {{ item.name }}
               </a>
-              <div class="text-slate-500 text-xs whitespace-nowrap mt-0.5" style="display:flex; align-items:center">
-               <Lucide icon="PhoneCall" class="block mx-auto" style="margin:0 3px;width:13px" /> {{ item.phone }}
+              <div
+                class="text-slate-500 text-xs whitespace-nowrap mt-0.5"
+                style="display: flex; align-items: center"
+              >
+                <Lucide
+                  icon="PhoneCall"
+                  class="block mx-auto"
+                  style="margin: 0 3px; width: 13px"
+                />
+                {{ item.phone }}
               </div>
             </Table.Td>
             <Table.Td
@@ -178,61 +262,97 @@ const refreshSearch = () => {
               {{ item.address }}
             </Table.Td>
             <Table.Td
-              class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
-              style="max-width:500px;"
+              class="first:rounded-l-md last:rounded-r-md text-center text-danger bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
+              style="max-width: 500px"
+              v-if="item.status == 0 && item.partner.is_approve == 1"
             >
-            <!--   {{ item.description }} -->
+              Đang Bị Khóa
             </Table.Td>
-           
+            <Table.Td
+              class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
+              style="max-width: 500px"
+              v-if="item.status == 0 && item.partner.is_approve == 0"
+            >
+              Đang Chờ Chấp Thuận
+            </Table.Td>
+            <Table.Td
+              class="first:rounded-l-md last:rounded-r-md text-center text-success bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
+              style="max-width: 500px"
+              v-if="item.status == 1 && item.partner.is_approve == 1"
+            >
+              Đang Hoạt Động
+            </Table.Td>
+
             <Table.Td
               class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b] py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400"
             >
-
-                
               <div class="flex items-center justify-center">
                 <Menu>
-                <Menu.Button :as="Button" class="px-2 !box" style="box-shadow:none !important">
-                  <span class="flex items-center justify-center w-5 h-5">
-                  <Lucide icon="MoreVertical" class="block mx-auto" />
-                  </span>
-                </Menu.Button>
-                <Menu.Items class="w-40">
-                  <Menu.Item >
-                    <Lucide icon="Printer" class="w-4 h-4 mr-2" /> Print
-                  </Menu.Item>
-                  <Menu.Item>
-                    <Lucide icon="FileText" class="w-4 h-4 mr-2" /> Edit
-                  </Menu.Item>
-                  <Menu.Item 
-                  style="color:red"
-                  href="#"
-                  @click="
-                    (event) => {
-                      event.preventDefault();
-                      setDeleteConfirmationModal(true);
-                    }
-                  "
+                  <Menu.Button
+                    :as="Button"
+                    class="px-2 !box"
+                    style="box-shadow: none !important"
                   >
-                    <Lucide icon="FileText" class="w-4 h-4 mr-2" /> Delete
-                  </Menu.Item>
-                </Menu.Items>
-              </Menu>
-                <!-- <a class="flex items-center mr-3" href="#">
-                  <Lucide icon="CheckSquare" class="w-4 h-4 mr-1" />
-                  Edit
-                </a>
-                <a
-                  class="flex items-center text-danger"
-                  href="#"
-                  @click="
-                    (event) => {
-                      event.preventDefault();
-                      setDeleteConfirmationModal(true);
-                    }
-                  "
-                >
-                  <Lucide icon="Trash2" class="w-4 h-4 mr-1" /> Delete
-                </a> -->
+                    <span class="flex items-center justify-center w-5 h-5">
+                      <Lucide icon="MoreVertical" class="block mx-auto" />
+                    </span>
+                  </Menu.Button>
+                  <Menu.Items class="w-40">
+                    <Menu.Item
+                      class="text-success"
+                      href="#"
+                      v-if="item.status == 0 && item.partner.is_approve == 0"
+                      @click="
+                        (event:any) => {
+                          event.preventDefault();
+                          approveSalon(item.partner.id, index);
+                        }
+                      "
+                    >
+                      <Lucide icon="CheckCircle" class="w-4 h-4 mr-2" /> Chấp
+                      Thuận
+                    </Menu.Item>
+                    <Menu.Item
+                      class="text-success"
+                      href="#"
+                      v-if="item.status == 0 && item.partner.is_approve == 1"
+                      @click="
+                        (event:any) => {
+                          event.preventDefault();
+                          activeSalon(item.partner.id, index);
+                        }
+                      "
+                    >
+                      <Lucide icon="Unlock" class="w-4 h-4 mr-2" /> Mở Khóa
+                      Salon
+                    </Menu.Item>
+                    <Menu.Item
+                      class="text-danger"
+                      href="#"
+                      v-if="item.status == 1 && item.partner.is_approve == 1"
+                      @click="
+                        (event:any) => {
+                          event.preventDefault();
+                          activeSalon(item.partner.id, index);
+                        }
+                      "
+                    >
+                      <Lucide icon="Lock" class="w-4 h-4 mr-2" />Khóa Salon
+                    </Menu.Item>
+                    <Menu.Item
+                      class="text-danger"
+                      href="#"
+                      @click="
+                        (event:any) => {
+                          event.preventDefault();
+                          setDeleteConfirmationModal(true, index, item.id);
+                        }
+                      "
+                    >
+                      <Lucide icon="XCircle" class="w-4 h-4 mr-2" /> Xóa
+                    </Menu.Item>
+                  </Menu.Items>
+                </Menu>
               </div>
             </Table.Td>
           </Table.Tr>
@@ -285,10 +405,10 @@ const refreshSearch = () => {
     <Dialog.Panel>
       <div class="p-5 text-center">
         <Lucide icon="XCircle" class="w-16 h-16 mx-auto mt-3 text-danger" />
-        <div class="mt-5 text-3xl">Are you sure?</div>
+        <div class="mt-5 text-3xl">Xóa Salon?</div>
         <div class="mt-2 text-slate-500">
-          Do you really want to delete these records? <br />
-          This process cannot be undone.
+          Bạn có thật sự muốn xóa salon nay ?<br />
+          Tất cả dự liệu về salon, nhân viên ... sẽ không thể khôi phục.
         </div>
       </div>
       <div class="px-5 pb-8 text-center">
@@ -309,6 +429,7 @@ const refreshSearch = () => {
           type="button"
           class="w-24"
           ref="deleteButtonRef"
+          @click="($event) => deleteSalon(salonIndex.value, salonId.value)"
         >
           Delete
         </Button>
