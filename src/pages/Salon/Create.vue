@@ -163,7 +163,7 @@ const submit = () => {
   
 
   axios
-    .post(`http://dev.api.booking.kendemo.com:3008/api/v1/salon/sign-up`, fd, {
+    .post(`https://dev.api.booking.kendemo.com:3008/api/v1/salon/sign-up`, fd, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

@@ -56,7 +56,7 @@ const deleteSalon = (salonIndex: any, salonId: any) => {
 
   axios
     .post(
-      "http://dev.api.booking.kendemo.com:3008/api/v1/admin/delete-salon",
+      "https://dev.api.booking.kendemo.com:3008/api/v1/admin/delete-salon",
       { id: salonId },
       {
         headers: {
@@ -76,7 +76,7 @@ const deleteSalon = (salonIndex: any, salonId: any) => {
 };
 const searchSalon = () => {
   axios
-    .get("http://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon", {
+    .get("https://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon", {
       params: {
         page: 1,
         txt_search: txt_search,
@@ -102,7 +102,7 @@ const activeSalon = (id: any, index: any) => {
 
   axios
     .post(
-      "http://dev.api.booking.kendemo.com:3008/api/v1/salon/active",
+      "https://dev.api.booking.kendemo.com:3008/api/v1/salon/active",
       { id: id },
       {
         headers: {
@@ -125,7 +125,7 @@ const approveSalon = (id: any, index: any) => {
   dataArr.value[index].partner.is_approve = 1;
   axios
     .post(
-      "http://dev.api.booking.kendemo.com:3008/api/v1/salon/approve",
+      "https://dev.api.booking.kendemo.com:3008/api/v1/salon/approve",
       { id: id },
       {
         headers: {
