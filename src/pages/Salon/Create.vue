@@ -117,8 +117,6 @@ let listStaffImgs: any = ref([]);
 let err = ref([]);
 let scc = ref([]);
 let showPassword = ref(true);
-let salonIndex = ref();
-let salonId = ref();
 
 const saveSalon = () => {
   submit();
