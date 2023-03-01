@@ -126,6 +126,7 @@ const successNotification = ref<NotificationElement>();
 
 const fd = new FormData();
 const submit = () => {
+
   fd.append("name", data.name);
   fd.append("phone", data.phone);
   fd.append("salon_email", data.salon_email);
@@ -147,6 +148,7 @@ const submit = () => {
   fd.append("services", JSON.stringify(data.services));
   fd.append("staffs", JSON.stringify(data.staffs));
   fd.append("schedules", JSON.stringify(data.schedules));
+  
 
   for (let index in data.images.value) {
     fd.append("images", data.images.value[index]);
@@ -238,21 +240,21 @@ const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
     staffs.value[index][key] = bindedObject.unmasked;
   } else {
-    if(key === 'phone'){
+    if (key === "phone") {
       data.phone = bindedObject.unmasked;
     }
-    if(key === 'salon_phone'){
+    if (key === "salon_phone") {
       data.salon_phone = bindedObject.unmasked;
     }
   }
 };
 
-const getAddressData = (addressData: any, placeResultData: any, id: any) => {
-  /* console.log( placeResultData.address_components);
-  console.log( placeResultData);
-  console.log( addressData );
-  console.log( placeResultData.address_components[0].types); */
-  for (const item of placeResultData.address_components) {
+const getAddressData = ($e: any) => {
+  console.log($e.address_components);
+  console.log($e);
+  console.log($e);
+  console.log($e.address_components[0].types);
+  for (const item of $e.address_components) {
     if (item.types.includes("country")) {
       data.salon_country = item.short_name;
     }
@@ -266,13 +268,16 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
       data.salon_zipcode = item.short_name;
     }
   }
-  data.salon_lng = placeResultData.geometry.location.lng();
-  data.salon_lat = placeResultData.geometry.location.lat();
-  data.salon_address = placeResultData.name;
+  data.salon_lng = $e.geometry.location.lng();
+  data.salon_lat = $e.geometry.location.lat();
+  data.salon_address = $e.name;
   data.salon_tz =
     "UTC " +
-    (placeResultData.utc_offset_minutes < 0 ? "-" : "+") +
-    placeResultData.utc_offset_minutes / 60;
+    ($e.utc_offset_minutes < 0 ? "-" : "+") +
+    $e.utc_offset_minutes / 60;
+
+    console.log(data);
+    
 };
 </script>
 
@@ -395,7 +400,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                   border: solid 1px rgb(226 232 240 / var(--tw-border-opacity));
                 "
                 placeholder="Nhập địa chỉ"
-                v-on:placechanged="getAddressData"
+                @place_changed="getAddressData"
               >
               </GMapAutocomplete>
             </div>
@@ -790,7 +795,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
         >
           Cancel
         </Button> -->
-      <!--   <Button
+        <!--   <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
           @click="saveNew"

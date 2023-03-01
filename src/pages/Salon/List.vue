@@ -489,9 +489,9 @@ const refreshSearch = () => {
               setDeleteConfirmationModal(false);
             }
           "
-          class="w-24 mr-1"
+          class="w-24 mr-3"
         >
-          Cancel
+          Hủy
         </Button>
         <Button
           variant="danger"
@@ -500,7 +500,7 @@ const refreshSearch = () => {
           ref="deleteButtonRef"
           @click="($event) => deleteSalon(salonIndex.value, salonId.value)"
         >
-          Delete
+          Xóa
         </Button>
       </div>
     </Dialog.Panel>
