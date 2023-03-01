@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _, { forEach } from "lodash";
-import { reactive, ref, provide } from "vue";
+import { reactive, ref, onMounted, provide } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
 import axios from "axios";
@@ -10,7 +10,14 @@ import Table from "../../base-components/Table";
 import { normalizeInput } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
-/* import VueGoogleAutocomplete from "../../../node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue"; */
+import { useRoute } from "vue-router";
+
+import Progress from "../../base-components/Progress";
+import TinySlider, {
+  TinySliderElement,
+} from "../../base-components/TinySlider";
+import { Dialog, Menu, Tab } from "../../base-components/Headless";
+import { Tab as HeadlessTab } from "@headlessui/vue";
 
 import {
   FormInput,
@@ -25,139 +32,67 @@ import {
 import { helperNameMap } from "@vue/compiler-core";
 import { log } from "console";
 
-const services = ref<any[]>([{ name: "", price: "", avatar: "" }]);
-const staffs = ref<any[]>([{ name: "", phone: "", avatar: "" }]);
-const schedules = ref<any[]>([
-  {
-    id: 1,
-    day: 0,
-    day_name: "Thứ 2",
-    start: "08:00",
-    end: "18:30",
-  },
-  {
-    id: 2,
-    day: 1,
-    day_name: "Thứ 3",
-    start: "08:00",
-    end: "18:30",
-  },
-  {
-    id: 3,
-    day: 2,
-    day_name: "Thứ 4",
-    start: "08:00",
-    end: "18:30",
-  },
-  {
-    id: 4,
-    day: 3,
-    day_name: "Thứ 5",
-    start: "08:00",
-    end: "18:30",
-  },
-  {
-    id: 5,
-    day: 4,
-    day_name: "Thứ 6",
-    start: "08:00",
-    end: "18:30",
-  },
-  {
-    id: 6,
-    day: 5,
-    day_name: "Thứ 7",
-    start: "08:00",
-    end: "18:30",
-  },
-  {
-    id: 7,
-    day: 6,
-    day_name: "Chủ nhật",
-    start: "08:00",
-    end: "18:30",
-  },
-]);
+const route = useRoute();
+var salon_id = route.params.salon_id;
 
-const maskedValue = ref("");
-const bindedObject = reactive({ unmasked: "" });
-
-let data = {
-  name: "",
-  phone: "",
-  password: "",
-  salon_name: "",
-  salon_email: "",
-  salon_phone: "",
-  salon_address: "",
-  salon_description: "",
-  salon_number_employees: "",
-  salon_country: "",
-  salon_state: "",
-  salon_city: "",
-  salon_zipcode: "",
-  salon_timezone: "UTC",
-  salon_tz: "",
-  salon_lat: "",
-  salon_lng: "",
-  lang: "en",
-  services: services.value,
-  staffs: staffs.value,
-  schedules: schedules.value,
-  images: ref(["file"]),
-  fileList: ref(["file"]),
-};
-data.images.value.splice(0, 1);
-data.fileList.value.splice(0, 1);
+const announcementRef = ref<TinySliderElement>();
+const newProjectsRef = ref<TinySliderElement>();
+const todaySchedulesRef = ref<TinySliderElement>();
+const deleteConfirmationModal = ref(false);
+const deleteButtonRef = ref(null);
+const selectedImgIndex = ref();
+const selectedImgID = ref();
+let err = ref([]);
+let scc = ref([]);
+const salonIndex: any = ref("");
+const salonId: any = ref("");
+const salon = ref();
+const errorNotification = ref<NotificationElement>();
+const successNotification = ref<NotificationElement>();
+var salon_id = route.params.salon_id;
 
 let listImgs: any = ref([]);
 let listStaffImgs: any = ref([]);
-let err = ref([]);
-let scc = ref([]);
 let showPassword = ref(true);
+
+const maskedValue = ref("");
+const bindedObject = reactive({ unmasked: "" });
 
 const saveSalon = () => {
   submit();
 };
 const saveNew = () => {};
 
-const errorNotification = ref<NotificationElement>();
-const successNotification = ref<NotificationElement>();
-
 const fd = new FormData();
 const submit = () => {
-  fd.append("name", data.name);
-  fd.append("phone", data.phone);
-  fd.append("salon_email", data.salon_email);
-  fd.append("password", data.password);
-  fd.append("salon_name", data.salon_name);
-  fd.append("salon_phone", data.salon_phone);
-  fd.append("salon_address", data.salon_address);
-  fd.append("salon_description", data.salon_description);
-  fd.append("salon_country", data.salon_country);
-  fd.append("salon_city", data.salon_city);
-  fd.append("salon_state", data.salon_state);
-  fd.append("salon_zipcode", data.salon_zipcode);
-  fd.append("salon_number_employees", data.salon_number_employees);
-  fd.append("salon_timezone", data.salon_timezone);
-  fd.append("salon_tz", data.salon_tz);
-  fd.append("salon_lat", data.salon_lat);
-  fd.append("salon_lng", data.salon_lng);
-  fd.append("lang", data.lang);
-  fd.append("services", JSON.stringify(data.services));
-  fd.append("staffs", JSON.stringify(data.staffs));
-  fd.append("schedules", JSON.stringify(data.schedules));
-
-  for (let index in data.images.value) {
-    fd.append("images", data.images.value[index]);
-  }
-
-  for (let index in data.fileList.value) {
-    fd.append("fileList", data.fileList.value[index]);
+  console.log(1);
+  console.log(localStorage.getItem('access_token'));
+  fd.append("id", salon.value.id);
+  fd.append("name", salon.value.name);
+  fd.append("phone", salon.value.phone);
+  fd.append("salon_email", salon.value.salon_email);
+  fd.append("password", salon.value.password);
+  fd.append("salon_name", salon.value.salon_name);
+  fd.append("salon_phone", salon.value.salon_phone);
+  fd.append("salon_address", salon.value.salon_address);
+  fd.append("salon_description", salon.value.salon_description);
+  fd.append("salon_country", salon.value.salon_country);
+  fd.append("salon_city", salon.value.salon_city);
+  fd.append("salon_state", salon.value.salon_state);
+  fd.append("salon_zipcode", salon.value.salon_zipcode);
+  fd.append("salon_number_employees", salon.value.salon_number_employees);
+  fd.append("salon_timezone", salon.value.salon_timezone);
+  fd.append("salon_tz", salon.value.salon_tz);
+  fd.append("salon_lat", salon.value.salon_lat);
+  fd.append("salon_lng", salon.value.salon_lng);
+  fd.append("lang", salon.value.lang);
+  fd.append("schedules", JSON.stringify(salon.value.schedules));
+  for (let index in images.value) {
+    fd.append("images", images.value[index]);
   }
 
   axios
-    .post(`salon/sign-up`, fd, {
+    .post(`salon/update-salon`, fd, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -179,10 +114,13 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
 });
 
+const images = ref([""])
+images.value.splice(0,1)
+
 const previewImages = (e: any) => {
   for (var i = 0; i < e.target.files.length; i++) {
     let file = e.target.files[i];
-    data.images.value.push(file);
+    images.value.push(file);
     listImgs.value.push(URL.createObjectURL(file));
   }
 };
@@ -190,60 +128,25 @@ const previewImages = (e: any) => {
 const revokePreview = (index: any) => {
   URL.revokeObjectURL(listImgs.value[index]);
   listImgs.value.splice(index, 1);
-  data.images.value.splice(index, 1);
+  images.value.splice(index, 1);
 };
 
-const previewStaffImages = (e: any) => {
-  for (var i = 0; i < e.target.files.length; i++) {
-    let file = e.target.files[i];
-    data.fileList.value.push(file);
-    listStaffImgs.value.push(URL.createObjectURL(file));
+const setDeleteConfirmationModal = (
+  value: boolean,
+  imgIndex: any = null,
+  imgId: any = null
+) => {
+  deleteConfirmationModal.value = value;
+  selectedImgIndex.value = imgIndex;
+  selectedImgID.value = imgId;
+};
+
+const maskphone = (key: any) => {
+  if (key === "phone") {
+    salon.value.phone = bindedObject.unmasked;
   }
-};
-
-const revokeStaffPreview = (index: any) => {
-  URL.revokeObjectURL(listStaffImgs.value[index]);
-  listStaffImgs.value.splice(index, 1);
-  data.fileList.value.splice(index, 1);
-};
-
-const addService = () => {
-  services.value.push({ name: "", price: "", avatar: "" });
-};
-
-const addStaff = () => {
-  maskedValue.value = "";
-  staffs.value.push({ name: "", phone: "", avatar: "" });
-};
-
-const deleteService = (index: any) => {
-  if (services.value.length > 1) {
-    services.value.splice(index, 1);
-  } else {
-    services.value[index].name = "";
-    services.value[index].price = "";
-  }
-};
-
-const deleteStaff = (index: any) => {
-  if (staffs.value.length > 1) {
-    staffs.value.splice(index, 1);
-  } else {
-    staffs.value[index].name = "";
-    staffs.value[index].phone = "";
-  }
-};
-
-const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
-  if (isStaff) {
-    staffs.value[index][key] = bindedObject.unmasked;
-  } else {
-    if(key === 'phone'){
-      data.phone = bindedObject.unmasked;
-    }
-    if(key === 'salon_phone'){
-      data.salon_phone = bindedObject.unmasked;
-    }
+  if (key === "salon_phone") {
+    salon.value.salon_phone = bindedObject.unmasked;
   }
 };
 
@@ -254,33 +157,57 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
   console.log( placeResultData.address_components[0].types); */
   for (const item of placeResultData.address_components) {
     if (item.types.includes("country")) {
-      data.salon_country = item.short_name;
+      salon.value.salon_country = item.short_name;
     }
     if (item.types.includes("administrative_area_level_1")) {
-      data.salon_state = item.short_name;
+      salon.value.salon_state = item.short_name;
     }
     if (item.types.includes("administrative_area_level_2")) {
-      data.salon_city = item.short_name;
+      salon.value.salon_city = item.short_name;
     }
     if (item.types.includes("postal_code")) {
-      data.salon_zipcode = item.short_name;
+      salon.value.salon_zipcode = item.short_name;
     }
   }
-  data.salon_lng = placeResultData.geometry.location.lng();
-  data.salon_lat = placeResultData.geometry.location.lat();
-  data.salon_address = placeResultData.name;
-  data.salon_tz =
+  salon.value.salon_lng = placeResultData.geometry.location.lng();
+  salon.value.salon_lat = placeResultData.geometry.location.lat();
+  salon.value.salon_address = placeResultData.name;
+  salon.value.salon_tz =
     "UTC " +
     (placeResultData.utc_offset_minutes < 0 ? "-" : "+") +
     placeResultData.utc_offset_minutes / 60;
 };
+let deleteImgArr: any = [];
+const deleteImg = () => {
+  console.log(1);
+  console.log(selectedImgID.value, selectedImgIndex.value);
+  deleteImgArr.push(selectedImgID.value);
+  salon.value.images.splice(selectedImgIndex.value, 1);
+  deleteConfirmationModal.value = false;
+  console.log(deleteImgArr);
+};
+
+const getSalon = async () => {
+  const response = await axios.get(`salon/${salon_id}`, {
+    params: {
+      page: 1,
+    },
+   
+  });
+  salon.value = response.data.data;
+  console.log(salon.value);
+};
+
+onMounted(() => {
+  getSalon();
+});
 </script>
 
 <template>
   <div class="flex items-center mt-8 intro-y">
     <h2 class="mr-auto text-lg font-medium">Thêm Mới Salon</h2>
   </div>
-  <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6">
+  <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6" v-if="salon">
     <div class="col-span-11 intro-y 2xl:col-span-9">
       <!-- BEGIN: Account Info -->
       <div class="p-5 mt-5 intro-y box">
@@ -300,7 +227,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                 type="text"
                 class="w-full"
                 placeholder="Tên chủ salon"
-                v-model="data.name"
+                v-model="salon.name"
               />
             </div>
             <div class="mt-3">
@@ -309,7 +236,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                 id="crud-form-2"
                 type="text"
                 class="w-full"
-                placeholder="Số điện thoại dùng để đăng nhập"
+                :placeholder="salon.partner.phone"
                 v-maska="bindedObject"
                 v-model="maskedValue"
                 data-maska="##########"
@@ -323,7 +250,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                 <FormInput
                   id="crud-form-3"
                   type="text"
-                  v-model="data.password"
+                  v-model="salon.password"
                   class="w-full"
                   placeholder="Mật Khẩu"
                 />
@@ -340,7 +267,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                 <FormInput
                   id="crud-form-3"
                   type="password"
-                  v-model="data.password"
+                  v-model="salon.password"
                   class="w-full"
                   placeholder="Mật Khẩu"
                 />
@@ -375,7 +302,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                 type="text"
                 class="w-full"
                 placeholder="Tên chủ salon"
-                v-model="data.salon_name"
+                v-model="salon.partner.name"
               />
             </div>
             <div class="mt-3">
@@ -394,7 +321,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                   --tw-border-opacity: 1;
                   border: solid 1px rgb(226 232 240 / var(--tw-border-opacity));
                 "
-                placeholder="Nhập địa chỉ"
+                :placeholder="salon.full_address"
                 v-on:placechanged="getAddressData"
               >
               </GMapAutocomplete>
@@ -405,7 +332,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                 id="crud-form-2"
                 type="text"
                 class="w-full"
-                placeholder="Số điện thoại"
+                :placeholder="salon.phone"
                 v-maska="bindedObject"
                 v-model="maskedValue"
                 data-maska="(###) ###-####"
@@ -417,22 +344,10 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
               <FormInput
                 id="crud-form-2"
                 type="text"
-                v-model="data.salon_email"
+                v-model="salon.email"
                 class="w-full"
                 placeholder="Email"
               />
-            </div>
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Ngôn Ngữ</FormLabel>
-              <FormSelect
-                id="crud-form-2"
-                type="text"
-                v-model="data.lang"
-                class="w-full"
-              >
-                <option value="en">Tiếng Anh</option>
-                <option value="vi">Tiếng Việt</option>
-              </FormSelect>
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
@@ -441,6 +356,25 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                   class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400"
                 >
                   <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
+                    <div
+                      v-for="(image, index) in salon.images"
+                      :key="image"
+                      class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
+                    >
+                      <img class="rounded-md" alt="" :src="image.image" />
+                      <Tippy
+                        content="Remove this image?"
+                        class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
+                      >
+                        <Lucide
+                          icon="X"
+                          class="w-4 h-4"
+                          @click="
+                            setDeleteConfirmationModal(true, index, image.id)
+                          "
+                        />
+                      </Tippy>
+                    </div>
                     <div
                       v-for="(image, index) in listImgs"
                       :key="image"
@@ -478,7 +412,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
             >
               <div
                 class="flex"
-                v-for="schedule in schedules"
+                v-for="schedule in salon.schedules"
                 :key="schedule.id"
               >
                 <FormInline class="flex-row flex w-1/2">
@@ -497,7 +431,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                       class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
                       id="form4"
                       style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.start"
+                      v-model="schedule.start_time"
                     />
                     <button
                       tabindex="0"
@@ -541,7 +475,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
                       class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
                       id="form4"
                       style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.end"
+                      v-model="schedule.end_time"
                     />
                     <button
                       tabindex="0"
@@ -574,7 +508,7 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
               <ClassicEditor
-                v-model="data.salon_description"
+                v-model="salon.description"
                 class="mt-4"
                 aria-placeholder="Thông Tin Giới Thiệu Về Salon"
               />
@@ -584,226 +518,27 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
       </div>
       <!-- END: Salon Info -->
 
-      <!-- BEGIN: service & Service Info -->
-      <div class="p-5 mt-5 intro-y box">
-        <div class="mb-5">
-          <FormLabel htmlFor="" class="text-base font-medium"
-            >Hình ảnh Dịch Vụ, Thợ</FormLabel
-          >
-          <FormInline class="flex-col items-start mt-3 xl:flex-row">
-            <div
-              class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400"
-            >
-              <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
-                <div
-                  v-for="(image, index) in listStaffImgs"
-                  :key="image"
-                  class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
-                >
-                  <img class="rounded-md" alt="" :src="image" />
-                  <Tippy
-                    content="Remove this image?"
-                    class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
-                    @click="revokeStaffPreview(index)"
-                  >
-                    <Lucide icon="X" class="w-4 h-4" />
-                  </Tippy>
-                </div>
-              </div>
-              <div
-                class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer"
-              >
-                <Lucide icon="Image" class="w-4 h-4 mr-2" />
-                <span class="mr-1 text-primary"> Tải lên file</span>
-                <FormInput
-                  id="staff-image"
-                  type="file"
-                  class="absolute top-0 left-0 w-full h-full opacity-0"
-                  multiple
-                  @change="previewStaffImages"
-                />
-              </div>
-            </div>
-          </FormInline>
-        </div>
-        <div
-          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
-            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin dịch vụ
-          </div>
-          <div class="mt-5">
-            <FormInline
-              class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0"
-            >
-              <div class="flex-1 w-full mt-3 xl:mt-0">
-                <div class="overflow-x-auto">
-                  <Table class="border">
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
-                        >
-                          Dịch Vụ
-                        </Table.Th>
-                        <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
-                        >
-                          Giá Tiền
-                        </Table.Th>
-                        <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800"
-                        ></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      <Table.Tr
-                        v-for="(service, index) in services"
-                        :key="index"
-                      >
-                        <Table.Td class="!px-2">
-                          <FormInput
-                            type="text"
-                            class="min-w-[6rem]"
-                            v-model="service.name"
-                          />
-                        </Table.Td>
-                        <Table.Td class="!px-2">
-                          <FormInput
-                            type="text"
-                            class="min-w-[6rem]"
-                            v-model="service.price"
-                          />
-                        </Table.Td>
-
-                        <Table.Td class="!pl-4 text-slate-500">
-                          <a style="cursor: pointer">
-                            <Lucide
-                              icon="Trash2"
-                              class="w-4 h-4"
-                              style="margin: 0 auto"
-                              @click="deleteService(index)"
-                            />
-                          </a>
-                        </Table.Td>
-                      </Table.Tr>
-                    </Table.Tbody>
-                  </Table>
-                </div>
-                <Button
-                  variant="outline-primary"
-                  class="w-full mt-4 border-dashed"
-                  @click="addService"
-                >
-                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm dịch vụ
-                </Button>
-              </div>
-            </FormInline>
-          </div>
-        </div>
-        <div
-          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
-            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin thợ
-          </div>
-          <div class="mt-5">
-            <FormInline
-              class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0"
-            >
-              <div class="flex-1 w-full mt-3 xl:mt-0">
-                <div class="overflow-x-auto">
-                  <Table class="border">
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
-                        >
-                          Tên Thợ
-                        </Table.Th>
-                        <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
-                        >
-                          Số Điện Thoại
-                        </Table.Th>
-                        <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800"
-                        ></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      <Table.Tr v-for="(staff, index) in staffs" :key="index">
-                        <Table.Td class="!px-2">
-                          <FormInput
-                            type="text"
-                            class="min-w-[6rem]"
-                            v-model="staff.name"
-                          />
-                        </Table.Td>
-                        <Table.Td class="!px-2">
-                          <FormInput
-                            type="text"
-                            class="min-w-[6rem]"
-                            v-maska="bindedObject"
-                            v-model="maskedValue"
-                            data-maska="(###) ###-####"
-                            @change="maskphone(`phone`, true, index)"
-                          />
-                        </Table.Td>
-
-                        <Table.Td class="!pl-4 text-slate-500">
-                          <a style="cursor: pointer">
-                            <Lucide
-                              icon="Trash2"
-                              class="w-4 h-4"
-                              style="margin: 0 auto"
-                              @click="deleteStaff(index)"
-                            />
-                          </a>
-                        </Table.Td>
-                      </Table.Tr>
-                    </Table.Tbody>
-                  </Table>
-                </div>
-                <Button
-                  variant="outline-primary"
-                  class="w-full mt-4 border-dashed"
-                  @click="addStaff"
-                >
-                  <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm Thợ
-                </Button>
-              </div>
-            </FormInline>
-          </div>
-        </div>
-      </div>
-      <!-- END: service & Service  Info -->
-
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
-        <!-- <Button
+        <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
         >
           Cancel
-        </Button> -->
-      <!--   <Button
+        </Button>
+        <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
           @click="saveNew"
         >
           Save & Add New Product
-        </Button> -->
+        </Button>
         <Button
           variant="primary"
           type="button"
           class="w-full py-3 md:w-52"
           @click="saveSalon"
         >
-          Tạo Salon
+          Save
         </Button>
       </div>
     </div>
@@ -830,4 +565,48 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
     </Notification>
     <!-- END: Success Notification -->
   </div>
+  <!-- BEGIN: Delete Confirmation Modal -->
+  <Dialog
+    :open="deleteConfirmationModal"
+    @close="
+      () => {
+        setDeleteConfirmationModal(false);
+      }
+    "
+    :initialFocus="deleteButtonRef"
+  >
+    <Dialog.Panel>
+      <div class="p-5 text-center">
+        <Lucide icon="XCircle" class="w-16 h-16 mx-auto mt-3 text-danger" />
+        <div class="mt-5 text-3xl">Xóa?</div>
+        <div class="mt-2 text-slate-500">
+          Bạn có thật sự muốn xóa hình ảnh nay ?<br />
+        </div>
+      </div>
+      <div class="px-5 pb-8 text-center">
+        <Button
+          variant="danger"
+          type="button"
+          class="w-24 mr-2"
+          ref="deleteButtonRef"
+          @click="($event) => deleteImg()"
+        >
+          Xóa
+        </Button>
+        <Button
+          variant="outline-secondary"
+          type="button"
+          @click="
+            () => {
+              setDeleteConfirmationModal(false);
+            }
+          "
+          class="w-24 mr-1"
+        >
+          Hủy
+        </Button>
+      </div>
+    </Dialog.Panel>
+  </Dialog>
+  <!-- END: Delete Confirmation Modal -->
 </template>

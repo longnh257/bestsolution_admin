@@ -4,8 +4,10 @@ import SimpleMenu from "../layouts/SimpleMenu/SimpleMenu.vue";
 import TopMenu from "../layouts/TopMenu/TopMenu.vue";
 import Page1 from "../pages/Page1.vue";
 import Login from "../pages/Login.vue";
-import ListSalon from "../pages/Salon/List.vue";
-import CreateSalon from "../pages/Salon/Create.vue";
+import SalonList from "../pages/Salon/List.vue";
+import SalonCreate from "../pages/Salon/Create.vue";
+import SalonDetail from "../pages/Salon/Detail.vue";
+import SalonEdit from "../pages/Salon/Edit.vue";
 import auth from '../middleware/auth';
 
 const routes = [
@@ -27,12 +29,22 @@ const routes = [
           {
             path: "",
             name: "salon-list",
-            component: ListSalon,
+            component: SalonList,
           },
           {
             path: "create",
             name: "salon-create",
-            component: CreateSalon,
+            component: SalonCreate,
+          },
+          {
+            path: "detail/:salon_id",
+            name: "salon-detail",
+            component: SalonDetail,
+          },
+          {
+            path: "edit/:salon_id",
+            name: "salon-edit",
+            component: SalonEdit,
           },
          
         ]

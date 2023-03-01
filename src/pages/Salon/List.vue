@@ -9,11 +9,15 @@ import { Dialog, Menu } from "../../base-components/Headless";
 import Table from "../../base-components/Table";
 import Preview from "../../base-components/Preview";
 import axios from "axios";
-import { onMounted, ref ,provide} from "vue";
+import { onMounted, ref, provide } from "vue";
 import router from "../../router";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
+/* import { useRoute } from 'vue-router'
 
+const route = useRoute()
+console.log(1);
+console.log(route.query.phone) */
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 
@@ -33,7 +37,7 @@ let err = ref([]);
 let scc = ref([]);
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
-  provide("bind[errorNotification]", (el: NotificationElement) => {
+provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el;
 });
 provide("bind[successNotification]", (el: NotificationElement) => {
@@ -52,11 +56,11 @@ const setDeleteConfirmationModal = (
 const deleteSalon = (salonIndex: any, salonId: any) => {
   dataArr.value.splice(selectedSalonIndex.value, 1);
   deleteConfirmationModal.value = false;
-  dataArr.value.splice(salonIndex,1)
+  dataArr.value.splice(salonIndex, 1);
   axios
     .post(
       "admin/delete-salon",
-      { 'id': selectedSalonId.value },
+      { id: selectedSalonId.value },
       {
         headers: {
           Authorization: "Bearer " + access_token,
@@ -64,7 +68,7 @@ const deleteSalon = (salonIndex: any, salonId: any) => {
       }
     )
     .then(function (response) {
-      scc.value = response.data.message
+      scc.value = response.data.message;
       successNotification.value?.showToast();
     })
     .catch(function (error) {
@@ -110,7 +114,7 @@ const activeSalon = (id: any, index: any) => {
       }
     )
     .then(function (response) {
-      scc.value = response.data.message
+      scc.value = response.data.message;
       successNotification.value?.showToast();
     })
     .catch(function (error) {
@@ -133,7 +137,7 @@ const approveSalon = (id: any, index: any) => {
       }
     )
     .then(function (response) {
-      scc.value = response.data.message
+      scc.value = response.data.message;
       successNotification.value?.showToast();
     })
     .catch(function (error) {
@@ -143,8 +147,6 @@ const approveSalon = (id: any, index: any) => {
 };
 
 const refreshSearch = () => {
-  console.log(txt_search);
-
   if (txt_search == "") {
     searchSalon();
   }
@@ -164,7 +166,7 @@ const refreshSearch = () => {
       >
         Thêm mới salon
       </Button>
-      <Menu>
+      <!-- <Menu>
         <Menu.Button :as="Button" class="px-2 !box">
           <span class="flex items-center justify-center w-5 h-5">
             <Lucide icon="Plus" class="w-4 h-4" />
@@ -181,7 +183,7 @@ const refreshSearch = () => {
             <Lucide icon="FileText" class="w-4 h-4 mr-2" /> Export to PDF
           </Menu.Item>
         </Menu.Items>
-      </Menu>
+      </Menu> -->
       <div class="hidden mx-auto md:block text-slate-500">
         Showing 1 to 10 of 150 entries
       </div>
@@ -272,7 +274,18 @@ const refreshSearch = () => {
             <Table.Td
               class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
             >
-              <a href="" class="font-medium whitespace-nowrap">
+              <a
+                href="#"
+                class="font-medium whitespace-nowrap"
+                @click="
+                  () => {
+                    router.push({
+                      name: 'salon-detail',
+                      params: { salon_id: item.id },
+                    });
+                  }
+                "
+              >
                 {{ item.name }}
               </a>
               <div
@@ -304,7 +317,7 @@ const refreshSearch = () => {
               style="max-width: 500px"
               v-if="item.partner.is_approve == 0"
             >
-              Đang Chờ Chấp Thuận
+              Đang Chờ Phê Duyệt
             </Table.Td>
             <Table.Td
               class="first:rounded-l-md last:rounded-r-md text-center text-success bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
@@ -330,17 +343,29 @@ const refreshSearch = () => {
                   </Menu.Button>
                   <Menu.Items class="w-40">
                     <Menu.Item
-                      class="text-success"
-                      href="#"
-                      v-if="item.partner.is_approve == 0"
                       @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          approveSalon(item.partner.id, index);
+                        () => {
+                          router.push({
+                            name: 'salon-detail',
+                            params: { salon_id: item.id },
+                          });
                         }
                       "
                     >
-                      <Lucide icon="CheckCircle" class="w-4 h-4 mr-2" /> Chi Tiết
+                      <Lucide icon="File" class="w-4 h-4 mr-2" /> Chi Tiết
+                    </Menu.Item>
+                    <Menu.Item
+                      href="#"
+                      @click="
+                        () => {
+                          router.push({
+                            name: 'salon-edit',
+                            params: { salon_id: item.id },
+                          });
+                        }
+                      "
+                    >
+                      <Lucide icon="Edit" class="w-4 h-4 mr-2" /> Chỉnh Sửa
                     </Menu.Item>
                     <Menu.Item
                       class="text-success"
@@ -353,8 +378,8 @@ const refreshSearch = () => {
                         }
                       "
                     >
-                      <Lucide icon="CheckCircle" class="w-4 h-4 mr-2" /> Chấp
-                      Thuận
+                      <Lucide icon="CheckCircle" class="w-4 h-4 mr-2" /> Phê
+                      Duyệt
                     </Menu.Item>
                     <Menu.Item
                       class="text-success"

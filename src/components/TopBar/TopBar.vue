@@ -248,13 +248,13 @@ const logout = () => {
           class="w-56 mt-px relative bg-primary/80 before:block before:absolute before:bg-black before:inset-0 before:rounded-md before:z-[-1] text-white"
         >
           <Menu.Header class="font-normal">
-            <div class="font-medium">{{ fakerData[0].users[0].name }}</div>
-            <div class="text-xs text-white/70 mt-0.5 dark:text-slate-500">
+            <div class="font-medium">Admin</div>
+            <!-- <div class="text-xs text-white/70 mt-0.5 dark:text-slate-500">
               {{ fakerData[0].jobs[0] }}
-            </div>
+            </div> -->
           </Menu.Header>
-          <Menu.Divider class="bg-white/[0.08]" />
-          <Menu.Item class="hover:bg-white/5">
+         <!--  <Menu.Divider class="bg-white/[0.08]" /> -->
+         <!--  <Menu.Item class="hover:bg-white/5">
             <Lucide icon="User" class="w-4 h-4 mr-2" /> Profile
           </Menu.Item>
           <Menu.Item class="hover:bg-white/5">
@@ -265,7 +265,7 @@ const logout = () => {
           </Menu.Item>
           <Menu.Item class="hover:bg-white/5">
             <Lucide icon="HelpCircle" class="w-4 h-4 mr-2" /> Help
-          </Menu.Item>
+          </Menu.Item> -->
           <Menu.Divider class="bg-white/[0.08]" />
           <Menu.Item class="hover:bg-white/5" @click="logout">
             <Lucide icon="ToggleRight" class="w-4 h-4 mr-2" /> Logout
