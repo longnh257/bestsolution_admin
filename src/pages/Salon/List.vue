@@ -53,11 +53,10 @@ const deleteSalon = (salonIndex: any, salonId: any) => {
   dataArr.value.splice(selectedSalonIndex.value, 1);
   deleteConfirmationModal.value = false;
   dataArr.value.splice(salonIndex,1)
-
   axios
     .post(
-      "https://dev.api.booking.kendemo.com:3008/api/v1/admin/delete-salon",
-      { id: salonId },
+      "admin/delete-salon",
+      { 'id': selectedSalonId.value },
       {
         headers: {
           Authorization: "Bearer " + access_token,
@@ -76,7 +75,7 @@ const deleteSalon = (salonIndex: any, salonId: any) => {
 };
 const searchSalon = () => {
   axios
-    .get("https://dev.api.booking.kendemo.com:3008/api/v1/salon/list-salon", {
+    .get("salon/list-salon", {
       params: {
         page: 1,
         txt_search: txt_search,
@@ -102,7 +101,7 @@ const activeSalon = (id: any, index: any) => {
 
   axios
     .post(
-      "https://dev.api.booking.kendemo.com:3008/api/v1/salon/active",
+      "salon/active",
       { id: id },
       {
         headers: {
@@ -125,7 +124,7 @@ const approveSalon = (id: any, index: any) => {
   dataArr.value[index].partner.is_approve = 1;
   axios
     .post(
-      "https://dev.api.booking.kendemo.com:3008/api/v1/salon/approve",
+      "salon/approve",
       { id: id },
       {
         headers: {
@@ -303,7 +302,7 @@ const refreshSearch = () => {
             <Table.Td
               class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
               style="max-width: 500px"
-              v-if="item.status == 0 && item.partner.is_approve == 0"
+              v-if="item.partner.is_approve == 0"
             >
               Đang Chờ Chấp Thuận
             </Table.Td>
@@ -333,7 +332,20 @@ const refreshSearch = () => {
                     <Menu.Item
                       class="text-success"
                       href="#"
-                      v-if="item.status == 0 && item.partner.is_approve == 0"
+                      v-if="item.partner.is_approve == 0"
+                      @click="
+                        (event:any) => {
+                          event.preventDefault();
+                          approveSalon(item.partner.id, index);
+                        }
+                      "
+                    >
+                      <Lucide icon="CheckCircle" class="w-4 h-4 mr-2" /> Chi Tiết
+                    </Menu.Item>
+                    <Menu.Item
+                      class="text-success"
+                      href="#"
+                      v-if="item.partner.is_approve == 0"
                       @click="
                         (event:any) => {
                           event.preventDefault();

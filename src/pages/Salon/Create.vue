@@ -12,7 +12,6 @@ import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
 import VueGoogleAutocomplete from "../../../node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue";
 
-
 import {
   FormInput,
   FormInline,
@@ -24,6 +23,7 @@ import {
   FormSwitch,
 } from "../../base-components/Form";
 import { helperNameMap } from "@vue/compiler-core";
+import { log } from "console";
 
 const services = ref<any[]>([{ name: "", price: "", avatar: "" }]);
 const staffs = ref<any[]>([{ name: "", phone: "", avatar: "" }]);
@@ -80,7 +80,7 @@ const schedules = ref<any[]>([
 ]);
 
 const maskedValue = ref("");
-const bindedObject = reactive({unmasked:""});
+const bindedObject = reactive({ unmasked: "" });
 
 let data = {
   name: "",
@@ -107,10 +107,8 @@ let data = {
   images: ref(["file"]),
   fileList: ref(["file"]),
 };
-data.images.value.splice(0,1)
-data.fileList.value.splice(0,1)
-
-
+data.images.value.splice(0, 1);
+data.fileList.value.splice(0, 1);
 
 let listImgs: any = ref([]);
 let listStaffImgs: any = ref([]);
@@ -150,27 +148,22 @@ const submit = () => {
   fd.append("staffs", JSON.stringify(data.staffs));
   fd.append("schedules", JSON.stringify(data.schedules));
 
-  for(let index in data.images.value){
-      fd.append('images',data.images.value[index]);
+  for (let index in data.images.value) {
+    fd.append("images", data.images.value[index]);
   }
 
-  for(let index in data.fileList.value){
-      fd.append('fileList',data.fileList.value[index])
+  for (let index in data.fileList.value) {
+    fd.append("fileList", data.fileList.value[index]);
   }
-
-
-  console.log(data);
-  
 
   axios
-    .post(`https://dev.api.booking.kendemo.com:3008/api/v1/salon/sign-up`, fd, {
+    .post(`salon/sign-up`, fd, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     })
     .then(function (response) {
       // handle success
-      console.log(response.data.data);
       scc.value = response.data.message;
       successNotification.value?.showToast();
     })
@@ -241,7 +234,7 @@ const deleteStaff = (index: any) => {
   }
 };
 
-const maskphone = (key:any, isStaff: boolean = false, index: any = null) => {
+const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
     staffs.value[index][key] = bindedObject.unmasked;
   } else {
@@ -250,7 +243,6 @@ const maskphone = (key:any, isStaff: boolean = false, index: any = null) => {
 };
 
 const getAddressData = (addressData: any, placeResultData: any, id: any) => {
-  console.log(placeResultData.utc_offset_minutes);
   /* console.log( placeResultData.address_components);
   console.log( placeResultData);
   console.log( addressData );
@@ -276,7 +268,6 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
     "UTC " +
     (placeResultData.utc_offset_minutes < 0 ? "-" : "+") +
     placeResultData.utc_offset_minutes / 60;
-  console.log(data);
 };
 </script>
 
@@ -385,13 +376,23 @@ const getAddressData = (addressData: any, placeResultData: any, id: any) => {
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Địa chỉ salon</FormLabel>
               <br />
-              <vue-google-autocomplete
+              <GMapAutocomplete
                 id="map"
-                classname="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 w-full"
+                class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 w-full"
+                style="
+                  padding: 8px 12px;
+                  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+                  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+                  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+                    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+                  border-radius: 0.375rem;
+                  --tw-border-opacity: 1;
+                  border: solid 1px rgb(226 232 240 / var(--tw-border-opacity));
+                "
                 placeholder="Nhập địa chỉ"
                 v-on:placechanged="getAddressData"
               >
-              </vue-google-autocomplete>
+              </GMapAutocomplete>
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Số điện thoại liên hệ</FormLabel>

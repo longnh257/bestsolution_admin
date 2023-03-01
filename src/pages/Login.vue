@@ -18,7 +18,7 @@ var data = {
 
 const onSubmit = () => {
   axios
-    .post("https://dev.api.booking.kendemo.com:3008/api/v1/admin/login", {
+    .post("admin/login", {
       email: data.email,
       password: data.password,
     })
