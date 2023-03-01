@@ -16,6 +16,7 @@ import axios from "axios";
 import { useRoute } from "vue-router";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
+import router from "../../router";
 
 const route = useRoute();
 var salon_id = route.params.salon_id;
@@ -35,8 +36,6 @@ let access_token = localStorage.getItem("access_token");
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
 
-
-
 provide("bind[announcementRef]", (el: TinySliderElement) => {
   announcementRef.value = el;
 });
@@ -55,7 +54,6 @@ const prevNewProjects = () => {
 const nextNewProjects = () => {
   newProjectsRef.value?.tns.goTo("next");
 };
-
 
 provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el;
@@ -105,7 +103,6 @@ const approveSalon = (id: any) => {
 };
 const setDeleteConfirmationModal = (
   value: boolean,
-  salonIndex: any = null,
   salonId: any = null
 ) => {
   deleteConfirmationModal.value = value;
@@ -126,6 +123,7 @@ const deleteSalon = (salonId: any) => {
     .then(function (response) {
       scc.value = response.data.message;
       successNotification.value?.showToast();
+      router.push("/salon/")
     })
     .catch(function (error) {
       err.value = error.response.data.message;
@@ -135,6 +133,7 @@ const deleteSalon = (salonId: any) => {
 };
 
 const activeSalon = (id: any) => {
+  salon.value.status = !salon.value.status;
   axios
     .post(
       "salon/active",
@@ -231,7 +230,8 @@ const activeSalon = (id: any) => {
           <div
             class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
           >
-            Giờ làm việc : &nbsp; <span class="italic text-success">(Múi Giờ : {{ salon.tz }})</span>
+            Giờ làm việc : &nbsp;
+            <span class="italic text-success">(Múi Giờ : {{ salon.tz }})</span>
           </div>
           <div class="overflow-x-auto">
             <Table class="mt-5">
@@ -243,8 +243,13 @@ const activeSalon = (id: any) => {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                <Table.Tr v-for="schedule in salon.schedules" :key="schedule.id">
-                  <Table.Td>{{ schedule.day == 0 ? 'Chủ Nhật' : `Thứ ${schedule.day}` }}</Table.Td>
+                <Table.Tr
+                  v-for="schedule in salon.schedules"
+                  :key="schedule.id"
+                >
+                  <Table.Td>{{
+                    schedule.day == 0 ? "Chủ Nhật" : `Thứ ${schedule.day}`
+                  }}</Table.Td>
                   <Table.Td>{{ schedule.start_time }}</Table.Td>
                   <Table.Td>{{ schedule.end_time }}</Table.Td>
                 </Table.Tr>
@@ -279,9 +284,10 @@ const activeSalon = (id: any) => {
           </div>
         </div>
         <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
-          <a class="flex items-center" href="#">
-            <Lucide icon="Edit" class="w-4 h-4 mr-2" /> Sửa thông tin salon
-          </a>
+          <router-link :to="{name:'salon-edit' , params:{salon_id:salon.id}}" class="flex">
+            <Lucide icon="Edit" class="w-4 h-4 mr-2" />
+            Sửa thông tin salon
+          </router-link>
         </div>
         <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
           <a
