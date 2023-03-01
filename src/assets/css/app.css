@@ -71,3 +71,12 @@
 @import "./components/_litepicker.css";
 @import "./components/_full-calendar.css";
 @import "./components/_tabulator.css";
+
+.label-require::after {
+   content: " *";
+   color: red;
+  
+}
+.label-require{
+   text-transform: capitalize;
+}

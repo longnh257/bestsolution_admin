@@ -12,6 +12,7 @@ import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
 import { useRoute } from "vue-router";
 
+
 import Progress from "../../base-components/Progress";
 import TinySlider, {
   TinySliderElement,
@@ -29,8 +30,6 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
-import { helperNameMap } from "@vue/compiler-core";
-import { log } from "console";
 
 const route = useRoute();
 var salon_id = route.params.salon_id;
@@ -51,6 +50,8 @@ const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
 var salon_id = route.params.salon_id;
 
+
+const password = ref("");
 let listImgs: any = ref([]);
 let listStaffImgs: any = ref([]);
 let showPassword = ref(true);
@@ -65,34 +66,30 @@ const saveNew = () => {};
 
 const fd = new FormData();
 const submit = () => {
-  console.log(1);
-  console.log(localStorage.getItem('access_token'));
+
+
   fd.append("id", salon.value.id);
   fd.append("name", salon.value.name);
   fd.append("phone", salon.value.phone);
-  fd.append("salon_email", salon.value.salon_email);
-  fd.append("password", salon.value.password);
-  fd.append("salon_name", salon.value.salon_name);
-  fd.append("salon_phone", salon.value.salon_phone);
-  fd.append("salon_address", salon.value.salon_address);
-  fd.append("salon_description", salon.value.salon_description);
-  fd.append("salon_country", salon.value.salon_country);
-  fd.append("salon_city", salon.value.salon_city);
-  fd.append("salon_state", salon.value.salon_state);
-  fd.append("salon_zipcode", salon.value.salon_zipcode);
-  fd.append("salon_number_employees", salon.value.salon_number_employees);
-  fd.append("salon_timezone", salon.value.salon_timezone);
-  fd.append("salon_tz", salon.value.salon_tz);
-  fd.append("salon_lat", salon.value.salon_lat);
-  fd.append("salon_lng", salon.value.salon_lng);
-  fd.append("lang", salon.value.lang);
+  fd.append("address", salon.value.address);
+  fd.append("description", salon.value.description);
+  fd.append("country", salon.value.country);
+  fd.append("city", salon.value.city);
+  fd.append("state", salon.value.state);
+  fd.append("zipcode", salon.value.zipcode);
+  fd.append("number_employees", salon.value.number_employees);
+  fd.append("timezone", salon.value.timezone);
+  fd.append("tz", salon.value.tz);
+  fd.append("lat", salon.value.lat);
+  fd.append("lng", salon.value.lng);
   fd.append("schedules", JSON.stringify(salon.value.schedules));
+  fd.append("delete_images", JSON.stringify(deleteImgArr.value));
   for (let index in images.value) {
     fd.append("images", images.value[index]);
   }
 
   axios
-    .post(`salon/update-salon`, fd, {
+    .post(`admin/update-salon-info`, fd, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -114,8 +111,8 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
 });
 
-const images = ref([""])
-images.value.splice(0,1)
+const images = ref([""]);
+images.value.splice(0, 1);
 
 const previewImages = (e: any) => {
   for (var i = 0; i < e.target.files.length; i++) {
@@ -146,45 +143,41 @@ const maskphone = (key: any) => {
     salon.value.phone = bindedObject.unmasked;
   }
   if (key === "salon_phone") {
-    salon.value.salon_phone = bindedObject.unmasked;
+    salon.value.partner.phone = bindedObject.unmasked;
   }
 };
 
-const getAddressData = (addressData: any, placeResultData: any, id: any) => {
-  /* console.log( placeResultData.address_components);
-  console.log( placeResultData);
-  console.log( addressData );
-  console.log( placeResultData.address_components[0].types); */
+const getAddressData = (placeResultData: any) => {
   for (const item of placeResultData.address_components) {
     if (item.types.includes("country")) {
-      salon.value.salon_country = item.short_name;
+      salon.value.country = item.short_name;
     }
     if (item.types.includes("administrative_area_level_1")) {
-      salon.value.salon_state = item.short_name;
+      salon.value.state = item.short_name;
     }
     if (item.types.includes("administrative_area_level_2")) {
-      salon.value.salon_city = item.short_name;
+      salon.value.city = item.short_name;
     }
     if (item.types.includes("postal_code")) {
-      salon.value.salon_zipcode = item.short_name;
+      salon.value.zipcode = item.short_name;
     }
   }
-  salon.value.salon_lng = placeResultData.geometry.location.lng();
-  salon.value.salon_lat = placeResultData.geometry.location.lat();
-  salon.value.salon_address = placeResultData.name;
-  salon.value.salon_tz =
+  salon.value.lng = placeResultData.geometry.location.lng();
+  salon.value.lat = placeResultData.geometry.location.lat();
+  salon.value.address = placeResultData.name;
+  salon.value.tz =
     "UTC " +
-    (placeResultData.utc_offset_minutes < 0 ? "-" : "+") +
+    (placeResultData.utc_offset_minutes < 0 ? "" : "+") +
     placeResultData.utc_offset_minutes / 60;
+  console.log(salon.value);
 };
-let deleteImgArr: any = [];
+let deleteImgArr = ref<any[]>([]);
 const deleteImg = () => {
-  console.log(1);
-  console.log(selectedImgID.value, selectedImgIndex.value);
-  deleteImgArr.push(selectedImgID.value);
+ 
+  deleteImgArr.value.push(selectedImgID.value);
   salon.value.images.splice(selectedImgIndex.value, 1);
   deleteConfirmationModal.value = false;
-  console.log(deleteImgArr);
+  console.log(deleteImgArr.value);
 };
 
 const getSalon = async () => {
@@ -192,7 +185,6 @@ const getSalon = async () => {
     params: {
       page: 1,
     },
-   
   });
   salon.value = response.data.data;
   console.log(salon.value);
@@ -205,12 +197,12 @@ onMounted(() => {
 
 <template>
   <div class="flex items-center mt-8 intro-y">
-    <h2 class="mr-auto text-lg font-medium">Thêm Mới Salon</h2>
+    <h2 class="mr-auto text-lg font-medium">Chỉnh sửa Salon</h2>
   </div>
   <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6" v-if="salon">
     <div class="col-span-11 intro-y 2xl:col-span-9">
       <!-- BEGIN: Account Info -->
-      <div class="p-5 mt-5 intro-y box">
+     <!--  <div class="p-5 mt-5 intro-y box">
         <div
           class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
         >
@@ -250,7 +242,7 @@ onMounted(() => {
                 <FormInput
                   id="crud-form-3"
                   type="text"
-                  v-model="salon.password"
+                  v-model="password"
                   class="w-full"
                   placeholder="Mật Khẩu"
                 />
@@ -267,7 +259,7 @@ onMounted(() => {
                 <FormInput
                   id="crud-form-3"
                   type="password"
-                  v-model="salon.password"
+                  v-model="password"
                   class="w-full"
                   placeholder="Mật Khẩu"
                 />
@@ -282,7 +274,7 @@ onMounted(() => {
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <!-- END: Account Info -->
       <!-- BEGIN: Salon Info -->
       <div class="p-5 mt-5 intro-y box">
@@ -322,7 +314,7 @@ onMounted(() => {
                   border: solid 1px rgb(226 232 240 / var(--tw-border-opacity));
                 "
                 :placeholder="salon.full_address"
-                v-on:placechanged="getAddressData"
+                @place_changed="getAddressData"
               >
               </GMapAutocomplete>
             </div>
@@ -336,7 +328,7 @@ onMounted(() => {
                 v-maska="bindedObject"
                 v-model="maskedValue"
                 data-maska="(###) ###-####"
-                @change="maskphone(`salon_phone`)"
+                @change="maskphone(`phone`)"
               />
             </div>
             <div class="mt-3">
@@ -519,26 +511,26 @@ onMounted(() => {
       <!-- END: Salon Info -->
 
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
-        <Button
+       <!--  <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
         >
           Cancel
-        </Button>
-        <Button
+        </Button> -->
+       <!--  <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
           @click="saveNew"
         >
           Save & Add New Product
-        </Button>
+        </Button> -->
         <Button
           variant="primary"
           type="button"
           class="w-full py-3 md:w-52"
           @click="saveSalon"
         >
-          Save
+          Lưu
         </Button>
       </div>
     </div>

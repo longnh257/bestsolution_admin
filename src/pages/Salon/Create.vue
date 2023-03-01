@@ -29,53 +29,47 @@ const services = ref<any[]>([{ name: "", price: "", avatar: "" }]);
 const staffs = ref<any[]>([{ name: "", phone: "", avatar: "" }]);
 const schedules = ref<any[]>([
   {
-    id: 1,
     day: 0,
     day_name: "Thứ 2",
-    start: "08:00",
-    end: "18:30",
+    start_time: "08:00",
+    end_time: "18:30",
   },
   {
-    id: 2,
     day: 1,
     day_name: "Thứ 3",
-    start: "08:00",
-    end: "18:30",
+    start_time: "08:00",
+    end_time: "18:30",
   },
   {
-    id: 3,
     day: 2,
     day_name: "Thứ 4",
-    start: "08:00",
-    end: "18:30",
+    start_time: "08:00",
+    end_time: "18:30",
   },
   {
-    id: 4,
     day: 3,
     day_name: "Thứ 5",
-    start: "08:00",
-    end: "18:30",
+    start_time: "08:00",
+    end_time: "18:30",
   },
   {
-    id: 5,
     day: 4,
     day_name: "Thứ 6",
-    start: "08:00",
-    end: "18:30",
+    start_time: "08:00",
+    end_time: "18:30",
   },
   {
-    id: 6,
     day: 5,
     day_name: "Thứ 7",
-    start: "08:00",
-    end: "18:30",
+    start_time: "08:00",
+    end_time: "18:30",
   },
   {
     id: 7,
     day: 6,
     day_name: "Chủ nhật",
-    start: "08:00",
-    end: "18:30",
+    start_time: "08:00",
+    end_time: "18:30",
   },
 ]);
 
@@ -124,9 +118,20 @@ const saveNew = () => {};
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
 
-const fd = new FormData();
 const submit = () => {
-
+  const fd = new FormData();
+  let sArray = <any[]>[];
+  for (let index in data.services) {
+    if (data.services[index].name !== "" && data.services[index].price !== "") {
+      sArray.push(data.services[index])
+    }
+  }
+  let stArray = <any[]>[];
+  for (let index in data.staffs) {
+    if (data.staffs[index].name !== "" && data.staffs[index].phone !== "") {
+      stArray.push(data.staffs[index])
+    }
+  }
   fd.append("name", data.name);
   fd.append("phone", data.phone);
   fd.append("salon_email", data.salon_email);
@@ -145,10 +150,9 @@ const submit = () => {
   fd.append("salon_lat", data.salon_lat);
   fd.append("salon_lng", data.salon_lng);
   fd.append("lang", data.lang);
-  fd.append("services", JSON.stringify(data.services));
-  fd.append("staffs", JSON.stringify(data.staffs));
+  fd.append("services", JSON.stringify(sArray));
+  fd.append("staffs", JSON.stringify(stArray));
   fd.append("schedules", JSON.stringify(data.schedules));
-  
 
   for (let index in data.images.value) {
     fd.append("images", data.images.value[index]);
@@ -273,11 +277,10 @@ const getAddressData = ($e: any) => {
   data.salon_address = $e.name;
   data.salon_tz =
     "UTC " +
-    ($e.utc_offset_minutes < 0 ? "-" : "+") +
+    ($e.utc_offset_minutes < 0 ? "" : "+") +
     $e.utc_offset_minutes / 60;
 
-    console.log(data);
-    
+  console.log(data);
 };
 </script>
 
@@ -299,7 +302,9 @@ const getAddressData = ($e: any) => {
           </div>
           <div class="mt-5">
             <div>
-              <FormLabel htmlFor="crud-form-1">Tên chủ salon</FormLabel>
+              <FormLabel htmlFor="crud-form-1" class="label-require"
+                >Tên chủ salon</FormLabel
+              >
               <FormInput
                 id="crud-form-1"
                 type="text"
@@ -309,7 +314,9 @@ const getAddressData = ($e: any) => {
               />
             </div>
             <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Số điện thoại</FormLabel>
+              <FormLabel htmlFor="crud-form-2" class="label-require"
+                >Số điện thoại</FormLabel
+              >
               <FormInput
                 id="crud-form-2"
                 type="text"
@@ -322,7 +329,9 @@ const getAddressData = ($e: any) => {
               />
             </div>
             <div class="mt-3">
-              <FormLabel htmlFor="crud-form-3">Mật Khẩu</FormLabel>
+              <FormLabel htmlFor="crud-form-3" class="label-require"
+                >Mật Khẩu</FormLabel
+              >
 
               <InputGroup v-if="!showPassword">
                 <FormInput
@@ -374,7 +383,9 @@ const getAddressData = ($e: any) => {
           </div>
           <div class="mt-5">
             <div>
-              <FormLabel htmlFor="crud-form-1">Tên Salon</FormLabel>
+              <FormLabel htmlFor="crud-form-1" class="label-require"
+                >Tên Salon</FormLabel
+              >
               <FormInput
                 id="crud-form-1"
                 type="text"
@@ -384,7 +395,9 @@ const getAddressData = ($e: any) => {
               />
             </div>
             <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Địa chỉ salon</FormLabel>
+              <FormLabel htmlFor="crud-form-2" class="label-require"
+                >Địa chỉ salon</FormLabel
+              >
               <br />
               <GMapAutocomplete
                 id="map"
@@ -405,7 +418,9 @@ const getAddressData = ($e: any) => {
               </GMapAutocomplete>
             </div>
             <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Số điện thoại liên hệ</FormLabel>
+              <FormLabel htmlFor="crud-form-2" class="label-require"
+                >Số điện thoại liên hệ</FormLabel
+              >
               <FormInput
                 id="crud-form-2"
                 type="text"
@@ -418,7 +433,9 @@ const getAddressData = ($e: any) => {
               />
             </div>
             <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Email</FormLabel>
+              <FormLabel htmlFor="crud-form-2" class="label-require"
+                >Email</FormLabel
+              >
               <FormInput
                 id="crud-form-2"
                 type="text"
@@ -502,7 +519,7 @@ const getAddressData = ($e: any) => {
                       class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
                       id="form4"
                       style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.start"
+                      v-model="schedule.start_time"
                     />
                     <button
                       tabindex="0"
@@ -546,7 +563,7 @@ const getAddressData = ($e: any) => {
                       class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
                       id="form4"
                       style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.end"
+                      v-model="schedule.end_time"
                     />
                     <button
                       tabindex="0"
@@ -726,12 +743,12 @@ const getAddressData = ($e: any) => {
                     <Table.Thead>
                       <Table.Tr>
                         <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap "
                         >
                           Tên Thợ
                         </Table.Th>
                         <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap "
                         >
                           Số Điện Thoại
                         </Table.Th>

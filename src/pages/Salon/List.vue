@@ -13,6 +13,8 @@ import { onMounted, ref, provide } from "vue";
 import router from "../../router";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
+import Paginate from "../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
+import { log } from "console";
 /* import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -81,8 +83,9 @@ const searchSalon = () => {
   axios
     .get("salon/list-salon", {
       params: {
-        page: 1,
+        page: page.value,
         txt_search: txt_search,
+        num_per_page: recPerPage.value,
       },
       headers: {
         Authorization: "Bearer " + access_token,
@@ -92,6 +95,7 @@ const searchSalon = () => {
       // handle success
 
       dataArr.value = response.data.data;
+      pageCount.value = response.data.total_page;
       console.log(dataArr.value);
     })
     .catch(function (error) {
@@ -150,6 +154,20 @@ const refreshSearch = () => {
   if (txt_search == "") {
     searchSalon();
   }
+};
+
+const page = ref(1);
+const pageCount = ref(10);
+const recPerPage = ref(10);
+console.log(page);
+
+const clickCallback = () => {
+  searchSalon();
+  window.scrollTo(0, 0);
+};
+
+const changeRecPerPage = () => {
+  searchSalon();
 };
 </script>
 
@@ -432,30 +450,33 @@ const refreshSearch = () => {
     <!-- BEGIN: Pagination -->
     <div
       class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
+      style="margin-bottom: 50px"
     >
-      <Pagination class="w-full sm:w-auto sm:mr-auto">
-        <Pagination.Link>
-          <Lucide icon="ChevronsLeft" class="w-4 h-4" />
-        </Pagination.Link>
-        <Pagination.Link>
-          <Lucide icon="ChevronLeft" class="w-4 h-4" />
-        </Pagination.Link>
-        <Pagination.Link>...</Pagination.Link>
-        <Pagination.Link>1</Pagination.Link>
-        <Pagination.Link active>2</Pagination.Link>
-        <Pagination.Link>3</Pagination.Link>
-        <Pagination.Link>...</Pagination.Link>
-        <Pagination.Link>
-          <Lucide icon="ChevronRight" class="w-4 h-4" />
-        </Pagination.Link>
-        <Pagination.Link>
-          <Lucide icon="ChevronsRight" class="w-4 h-4" />
-        </Pagination.Link>
-      </Pagination>
-      <FormSelect class="w-20 mt-3 !box sm:mt-0">
+      <paginate
+        v-model="page"
+        :page-count="pageCount"
+        :page-range="5"
+        :margin-pages="1"
+        :click-handler="clickCallback"
+        :prev-text="`<`"
+        :next-text="'>'"
+        :container-class="'flex w-full mr-0 sm:w-auto sm:mr-auto'"
+        :page-class="'flex-1 sm:flex-initial'"
+        :page-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :prev-class="'flex-1 sm:flex-initial'"
+        :prev-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :next-class="'flex-1 sm:flex-initial'"
+        :next-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :active-class="'!box font-medium dark:bg-darkmode-400 !mr-0'"
+      >
+      </paginate>
+      <FormSelect
+        class="w-30 mt-3 !box sm:mt-0"
+        v-model="recPerPage"
+        @change="changeRecPerPage"
+      >
         <option>10</option>
         <option>25</option>
-        <option>35</option>
         <option>50</option>
       </FormSelect>
     </div>
