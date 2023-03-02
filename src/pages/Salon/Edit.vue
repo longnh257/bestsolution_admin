@@ -64,10 +64,8 @@ const saveSalon = () => {
 };
 const saveNew = () => {};
 
-const fd = new FormData();
 const submit = () => {
-
-
+    const fd = new FormData();
   fd.append("id", salon.value.id);
   fd.append("name", salon.value.name);
   fd.append("phone", salon.value.phone);
@@ -88,6 +86,7 @@ const submit = () => {
     fd.append("images", images.value[index]);
   }
 
+
   axios
     .post(`admin/update-salon-info`, fd, {
       headers: {
@@ -95,7 +94,7 @@ const submit = () => {
       },
     })
     .then(function (response) {
-      // handle success
+      // handle success     
       scc.value = response.data.message;
       successNotification.value?.showToast();
     })
