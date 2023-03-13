@@ -4,7 +4,7 @@ import SimpleMenu from "../layouts/SimpleMenu/SimpleMenu.vue";
 import TopMenu from "../layouts/TopMenu/TopMenu.vue";
 import Page1 from "../pages/Page1.vue";
 import Login from "../pages/Login.vue";
-import SalonList from "../pages/Salon/List.vue";
+import SalonList from "../pages/Salon/List/List.vue";
 import SalonCreate from "../pages/Salon/Create.vue";
 import SalonDetail from "../pages/Salon/Detail.vue";
 import SalonEdit from "../pages/Salon/Edit.vue";

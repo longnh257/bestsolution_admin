@@ -15,11 +15,16 @@ import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Paginate from "../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
 import { log } from "console";
-/* import { useRoute } from 'vue-router'
+import { useSalonListStore } from "../../stores/salon-list";
+import { storeToRefs } from "pinia";
 
-const route = useRoute()
-console.log(1);
-console.log(route.query.phone) */
+
+const SalonListStore = useSalonListStore()
+
+SalonListStore.getSalonList()
+
+
+
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 
@@ -28,6 +33,9 @@ const selectedSalonIndex = ref();
 const selectedSalonId = ref();
 let txt_search = "";
 let access_token = localStorage.getItem("access_token");
+
+
+
 onMounted(() => {
   searchSalon();
 });
@@ -76,7 +84,6 @@ const deleteSalon = (salonIndex: any, salonId: any) => {
     .catch(function (error) {
       err.value = error.response.data.message;
       errorNotification.value?.showToast();
-      console.log(error);
     });
 };
 const searchSalon = () => {
@@ -96,7 +103,6 @@ const searchSalon = () => {
 
       dataArr.value = response.data.data;
       pageCount.value = response.data.total_page;
-      console.log(dataArr.value);
     })
     .catch(function (error) {
       // handle error
@@ -159,7 +165,6 @@ const refreshSearch = () => {
 const page = ref(1);
 const pageCount = ref(10);
 const recPerPage = ref(10);
-console.log(page);
 
 const clickCallback = () => {
   searchSalon();
@@ -246,7 +251,7 @@ const changeRecPerPage = () => {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr
-            v-for="(item, index) in dataArr"
+            v-for="(item) in SalonListStore.salons"
             :key="item.id"
             class="intro-x"
           >
