@@ -10,21 +10,42 @@ import Lucide from "../../../base-components/Lucide";
 import Tippy from "../../../base-components/Tippy";
 import Notification from "../../../base-components/Notification";
 import { NotificationElement } from "../../../base-components/Notification";
-import axios from "axios";
+import { useSalonListStore } from "../../../stores/salon-list";
 
 const props = defineProps({
   salons: Object as PropType<Salon>,
 });
 
+const SalonListStore = useSalonListStore();
+
+const setDeleteConfirmationModal = (
+  value: boolean,
+  salonIndex: any = null,
+  salonId: any = null
+) => {
+  deleteConfirmationModal.value = value;
+};
+
+const approveSalon = (id: number, index: number) => {
+  SalonListStore.approveSalon(id, index)
+    .then((res) => {
+      successNotification.value?.showToast();
+    })
+    .catch((res) => {});
+};
+
+const activeSalon = (id: number, index: number) => {
+  SalonListStore.activeSalon(id, index)
+    .then(() => {
+      successNotification.value?.showToast();
+    })
+    .catch(() => {
+      errorNotification.value?.showToast();
+    });
+};
+
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
-const selectedSalonIndex = ref();
-const selectedSalonId = ref();
-const salonIndex: any = ref("");
-const salonId: any = ref("");
-
-let err = ref([]);
-let scc = ref([]);
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
 provide("bind[errorNotification]", (el: NotificationElement) => {
@@ -33,26 +54,6 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
 provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
 });
-
-const setDeleteConfirmationModal = (
-  value: boolean,
-  salonIndex: any = null,
-  salonId: any = null
-) => {
-  deleteConfirmationModal.value = value;
-  selectedSalonIndex.value = salonIndex;
-  selectedSalonId.value = salonId;
-};
-const deleteSalon = (salonIndex: any, salonId: any) => {
-  deleteConfirmationModal.value = false;
-};
-
-const activeSalon = (id: any, index: any) => {
- 
-};
-const approveSalon = (id: any, index: any) => {
- 
-};
 </script>
 
 <template>
@@ -77,7 +78,11 @@ const approveSalon = (id: any, index: any) => {
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
-        <Table.Tr v-for="item in props.salons" :key="item.id" class="intro-x">
+        <Table.Tr
+          v-for="(item, index) in props.salons"
+          :key="item.id"
+          class="intro-x"
+        >
           <Table.Td
             class="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
           >
@@ -215,40 +220,25 @@ const approveSalon = (id: any, index: any) => {
                   </Menu.Item>
                   <Menu.Item
                     class="text-success"
-                    href="#"
+                    style="cursor: pointer"
                     v-if="item.partner.is_approve == 0"
-                    @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          approveSalon(item.partner.id, index);
-                        }
-                      "
+                    @click="approveSalon(item.partner.id, index)"
                   >
                     <Lucide icon="CheckCircle" class="w-4 h-4 mr-2" /> Phê Duyệt
                   </Menu.Item>
                   <Menu.Item
                     class="text-success"
-                    href="#"
+                    style="cursor: pointer"
                     v-if="item.status == 0 && item.partner.is_approve == 1"
-                    @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          activeSalon(item.partner.id, index);
-                        }
-                      "
+                    @click="activeSalon(item.partner.id, index)"
                   >
                     <Lucide icon="Unlock" class="w-4 h-4 mr-2" /> Mở Khóa Salon
                   </Menu.Item>
                   <Menu.Item
                     class="text-danger"
-                    href="#"
+                    style="cursor: pointer"
                     v-if="item.status == 1 && item.partner.is_approve == 1"
-                    @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          activeSalon(item.partner.id, index);
-                        }
-                      "
+                    @click="activeSalon(item.partner.id, index)"
                   >
                     <Lucide icon="Lock" class="w-4 h-4 mr-2" />Khóa Salon
                   </Menu.Item>
@@ -320,21 +310,33 @@ const approveSalon = (id: any, index: any) => {
   <!-- END: Delete Confirmation Modal -->
   <!-- BEGIN: Success Notification -->
   <div class="p-5">
-    <Notification refKey="errorNotification" class="flex">
+    <Notification
+      refKey="errorNotification"
+      :options="{
+        duration: 3000,
+      }"
+      class="flex"
+    >
       <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Có lỗi xảy ra!</div>
         <div class="mt-1 text-slate-500">
-          {{ err }}
+          {{ SalonListStore.msg }}
         </div>
       </div>
     </Notification>
-    <Notification refKey="successNotification" class="flex">
+    <Notification
+      refKey="successNotification"
+      :options="{
+        duration: 3000,
+      }"
+      class="flex"
+    >
       <Lucide icon="CheckCircle" class="text-success" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Thành Công</div>
         <div class="mt-1 text-slate-500">
-          {{ scc }}
+          {{ SalonListStore.msg }}
         </div>
       </div>
     </Notification>

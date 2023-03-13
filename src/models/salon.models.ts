@@ -3,7 +3,7 @@ export interface Salon {
     name:string;
     address:string;
     phone:string;
-    status:number;
+    status:any;
     partner:any;
     images:any
 }

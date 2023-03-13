@@ -80,3 +80,7 @@
 .label-require{
    text-transform: capitalize;
 }
+
+.pagination li {
+   margin: 0 4px !important
+}

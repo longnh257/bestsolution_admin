@@ -3,51 +3,21 @@ import _ from "lodash";
 import Button from "../../../base-components/Button";
 import Pagination from "../../../base-components/Pagination";
 import { FormInput, FormSelect } from "../../../base-components/Form";
-import Lucide from "../../../base-components/Lucide";
-import Tippy from "../../../base-components/Tippy";
-import { Dialog, Menu } from "../../../base-components/Headless";
 import Table from "../../../base-components/Table";
-import Preview from "../../../base-components/Preview";
-import axios from "axios";
-import { onMounted, ref, provide } from "vue";
 import router from "../../../router";
-import Notification from "../../../base-components/Notification";
-import { NotificationElement } from "../../../base-components/Notification";
 import Paginate from "../../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
-import { log } from "console";
 import { useSalonListStore } from "../../../stores/salon-list";
-import { storeToRefs } from "pinia";
 import ListDetail from "./ListDetail.vue";
-import { setTimeout } from "timers";
+import LoadingIcon from "../../../base-components/LoadingIcon";
 
 const SalonListStore = useSalonListStore();
 
 SalonListStore.getSalonList();
 
-
-let txt_search = "";
-
-const searchSalon = () => {
- 
-};
-
-const refreshSearch = () => {
-  if (txt_search == "") {
-    searchSalon();
-  }
-};
-
-const page = ref(1);
-const recPerPage = ref(10);
 const clickCallback = () => {
-  searchSalon();
+  SalonListStore.getSalonList();
   window.scrollTo(0, 0);
 };
-
-const changeRecPerPage = () => {
-  searchSalon();
-};
-
 </script>
 
 <template>
@@ -68,39 +38,48 @@ const changeRecPerPage = () => {
       </div>
       <div class="w-full mt-3 sm:w-auto sm:mt-0 sm:ml-auto md:ml-0">
         <div class="relative w-56 text-slate-500">
-          <form @submit.prevent="searchSalon">
+          <form @submit.prevent="">
             <FormInput
               type="text"
               class="w-56 pr-10 !box"
               placeholder="Tên, SĐT Salon"
-              v-model="txt_search"
-              @blur="refreshSearch"
+              v-model="SalonListStore.txtSearch"
+              @change="SalonListStore.getSalonList()"
             />
             <Lucide
               icon="Search"
+              style="cursor: pointer"
               class="absolute inset-y-0 right-0 w-4 h-4 my-auto mr-3"
             />
           </form>
         </div>
       </div>
     </div>
+
     <!-- BEGIN: Data List -->
-    <ListDetail :salons="SalonListStore.salons" />
+    <ListDetail
+      :salons="SalonListStore.salons"
+      v-if="!SalonListStore.loading"
+    />
+    <div v-else class="col-span-12">
+      <div class="w-8 mx-auto mt-5"><LoadingIcon icon="spinning-circles" /></div>
+    </div>
     <!-- END: Data List -->
     <!-- BEGIN: Pagination -->
     <div
       class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
       style="margin-bottom: 50px"
+      v-if="!SalonListStore.loading && SalonListStore.totalPage !== 1"
     >
       <paginate
-        v-model="page"
+        v-model="SalonListStore.page"
         :page-count="SalonListStore.totalPage"
         :page-range="5"
         :margin-pages="1"
         :click-handler="clickCallback"
         :prev-text="`<`"
         :next-text="'>'"
-        :container-class="'flex w-full mr-0 sm:w-auto sm:mr-auto'"
+        :container-class="'pagination flex w-full mr-0 sm:w-auto sm:mr-auto'"
         :page-class="'flex-1 sm:flex-initial'"
         :page-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
         :prev-class="'flex-1 sm:flex-initial'"
@@ -112,8 +91,8 @@ const changeRecPerPage = () => {
       </paginate>
       <FormSelect
         class="w-30 mt-3 !box sm:mt-0"
-        v-model="recPerPage"
-        @change="changeRecPerPage"
+        v-model="SalonListStore.recPerPage"
+        @change="SalonListStore.getSalonList"
       >
         <option>10</option>
         <option>25</option>
@@ -122,5 +101,4 @@ const changeRecPerPage = () => {
     </div>
     <!-- END: Pagination -->
   </div>
- 
 </template>

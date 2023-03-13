@@ -31,14 +31,7 @@ const deleteButtonRef = ref(null);
 const dataArr = ref<any[]>([]);
 const selectedSalonIndex = ref();
 const selectedSalonId = ref();
-let txt_search = "";
-let access_token = localStorage.getItem("access_token");
 
-
-
-onMounted(() => {
-  searchSalon();
-});
 
 const salonIndex: any = ref("");
 const salonId: any = ref("");
@@ -156,11 +149,6 @@ const approveSalon = (id: any, index: any) => {
     });
 };
 
-const refreshSearch = () => {
-  if (txt_search == "") {
-    searchSalon();
-  }
-};
 
 const page = ref(1);
 const pageCount = ref(10);
