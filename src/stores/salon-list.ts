@@ -56,11 +56,6 @@ export const useSalonListStore = defineStore("SalonList", {
         .post(
           "salon/approve",
           { id: selectedId },
-          {
-            headers: {
-              Authorization: "Bearer " + access_token,
-            },
-          }
         ).then((res) => {
           this.salons[index].status = 1
           this.salons[index].partner.is_approve = 1
@@ -74,16 +69,25 @@ export const useSalonListStore = defineStore("SalonList", {
         .post(
           "salon/active",
           { id: selectedId },
-          {
-            headers: {
-              Authorization: "Bearer " + access_token,
-            },
-          }
         ).then((res) => {
           console.log(res.data.message);
           
           this.msg = res.data.message
           this.salons[index].status =  !this.salons[index].status 
+        }).catch((res) => { 
+          this.msg = res.data.message
+        })
+    },
+    async deleteSalon(selectedId:number): Promise<void> {
+     return await axios
+        .post(
+          "admin/delete-salon",
+          { id: selectedId },
+        ).then((res) => {
+          this.msg = res.data.message
+          this.salons = this.salons.filter(item => {
+            return item.id !== selectedId
+          })
         }).catch((res) => { 
           this.msg = res.data.message
         })

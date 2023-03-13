@@ -17,14 +17,7 @@ const props = defineProps({
 });
 
 const SalonListStore = useSalonListStore();
-
-const setDeleteConfirmationModal = (
-  value: boolean,
-  salonIndex: any = null,
-  salonId: any = null
-) => {
-  deleteConfirmationModal.value = value;
-};
+const selectedSalonId = ref(0);
 
 const approveSalon = (id: number, index: number) => {
   SalonListStore.approveSalon(id, index)
@@ -44,6 +37,19 @@ const activeSalon = (id: number, index: number) => {
     });
 };
 
+const deleteSalon = (id: number) => {
+  deleteConfirmationModal.value = false;
+  SalonListStore.deleteSalon(id)
+    .then(() => {
+      successNotification.value?.showToast();
+    })
+    .catch(() => {});
+};
+
+
+const setDeleteConfirmationModal = (value: boolean) => {
+  deleteConfirmationModal.value = value;
+};
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 const errorNotification = ref<NotificationElement>();
@@ -54,6 +60,7 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
 provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
 });
+
 </script>
 
 <template>
@@ -244,13 +251,13 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                   </Menu.Item>
                   <Menu.Item
                     class="text-danger"
-                    href="#"
+                    style="cursor: pointer"
                     @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          setDeleteConfirmationModal(true, index, item.id);
-                        }
-                      "
+                      () => {
+                        setDeleteConfirmationModal(true);
+                        selectedSalonId = item.id;
+                      }
+                    "
                   >
                     <Lucide icon="XCircle" class="w-4 h-4 mr-2" /> Xóa
                   </Menu.Item>
@@ -300,7 +307,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
           type="button"
           class="w-24"
           ref="deleteButtonRef"
-          @click="($event) => deleteSalon(salonIndex.value, salonId.value)"
+          @click="($event) => deleteSalon(selectedSalonId)"
         >
           Xóa
         </Button>
@@ -309,37 +316,35 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   </Dialog>
   <!-- END: Delete Confirmation Modal -->
   <!-- BEGIN: Success Notification -->
-  <div class="p-5">
-    <Notification
-      refKey="errorNotification"
-      :options="{
-        duration: 3000,
-      }"
-      class="flex"
-    >
-      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
-      <div class="ml-4 mr-4">
-        <div class="font-medium">Có lỗi xảy ra!</div>
-        <div class="mt-1 text-slate-500">
-          {{ SalonListStore.msg }}
-        </div>
+  <Notification
+    refKey="errorNotification"
+    :options="{
+      duration: 3000,
+    }"
+    class="flex"
+  >
+    <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
+    <div class="ml-4 mr-4">
+      <div class="font-medium">Có lỗi xảy ra!</div>
+      <div class="mt-1 text-slate-500">
+        {{ SalonListStore.msg }}
       </div>
-    </Notification>
-    <Notification
-      refKey="successNotification"
-      :options="{
-        duration: 3000,
-      }"
-      class="flex"
-    >
-      <Lucide icon="CheckCircle" class="text-success" />
-      <div class="ml-4 mr-4">
-        <div class="font-medium">Thành Công</div>
-        <div class="mt-1 text-slate-500">
-          {{ SalonListStore.msg }}
-        </div>
+    </div>
+  </Notification>
+  <Notification
+    refKey="successNotification"
+    :options="{
+      duration: 3000,
+    }"
+    class="flex"
+  >
+    <Lucide icon="CheckCircle" class="text-success" />
+    <div class="ml-4 mr-4">
+      <div class="font-medium">Thành Công</div>
+      <div class="mt-1 text-slate-500">
+        {{ SalonListStore.msg }}
       </div>
-    </Notification>
-  </div>
+    </div>
+  </Notification>
   <!-- END: Success Notification -->
 </template>
