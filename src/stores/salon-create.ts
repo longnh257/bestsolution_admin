@@ -95,6 +95,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             } else {
                 this.data.services[index].name = ""
                 this.data.services[index].price = ""
+                
             }
             
         },
