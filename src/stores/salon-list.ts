@@ -1,6 +1,5 @@
 import axios from "axios";
 import { defineStore } from "pinia";
-import { setTimeout } from "timers/promises";
 import { Salon } from "../models/salon.models";
 
 interface SalonListState {
@@ -49,10 +48,10 @@ export const useSalonListStore = defineStore("SalonList", {
 
       this.loading = false
       console.log(this.salons);
-      
+
     },
-    async approveSalon(selectedId:number,index:number): Promise<void> {
-     return await axios
+    async approveSalon(selectedId: number, index: number): Promise<void> {
+      return await axios
         .post(
           "salon/approve",
           { id: selectedId },
@@ -60,26 +59,26 @@ export const useSalonListStore = defineStore("SalonList", {
           this.salons[index].status = 1
           this.salons[index].partner.is_approve = 1
           this.msg = res.data.message
-        }).catch((res) => { 
+        }).catch((res) => {
 
         })
     },
-    async activeSalon(selectedId:number,index:number): Promise<void> {
-     return await axios
+    async activeSalon(selectedId: number, index: number): Promise<void> {
+      return await axios
         .post(
           "salon/active",
           { id: selectedId },
         ).then((res) => {
           console.log(res.data.message);
-          
+
           this.msg = res.data.message
-          this.salons[index].status =  !this.salons[index].status 
-        }).catch((res) => { 
+          this.salons[index].status = !this.salons[index].status
+        }).catch((res) => {
           this.msg = res.data.message
         })
     },
-    async deleteSalon(selectedId:number): Promise<void> {
-     return await axios
+    async deleteSalon(selectedId: number): Promise<void> {
+      return await axios
         .post(
           "admin/delete-salon",
           { id: selectedId },
@@ -88,7 +87,7 @@ export const useSalonListStore = defineStore("SalonList", {
           this.salons = this.salons.filter(item => {
             return item.id !== selectedId
           })
-        }).catch((res) => { 
+        }).catch((res) => {
           this.msg = res.data.message
         })
     },

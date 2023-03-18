@@ -10,7 +10,6 @@ import Table from "../../base-components/Table";
 import { normalizeInput } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
-/* import VueGoogleAutocomplete from "../../../node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue"; */
 
 import {
   FormInput,
@@ -22,8 +21,11 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
-import { helperNameMap } from "@vue/compiler-core";
+import { useSalonCreateStore } from "../../stores/salon-create";
 import { log } from "console";
+
+const SalonCreateStore = useSalonCreateStore();
+const dt = SalonCreateStore.data;
 
 const services = ref<any[]>([{ name: "", price: "", avatar: "" }]);
 const staffs = ref<any[]>([{ name: "", phone: "", avatar: "" }]);
@@ -113,7 +115,6 @@ let showPassword = ref(true);
 const saveSalon = () => {
   submit();
 };
-const saveNew = () => {};
 
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
@@ -123,13 +124,13 @@ const submit = () => {
   let sArray = <any[]>[];
   for (let index in data.services) {
     if (data.services[index].name !== "" && data.services[index].price !== "") {
-      sArray.push(data.services[index])
+      sArray.push(data.services[index]);
     }
   }
   let stArray = <any[]>[];
   for (let index in data.staffs) {
     if (data.staffs[index].name !== "" && data.staffs[index].phone !== "") {
-      stArray.push(data.staffs[index])
+      stArray.push(data.staffs[index]);
     }
   }
   fd.append("name", data.name);
@@ -213,33 +214,6 @@ const revokeStaffPreview = (index: any) => {
   data.fileList.value.splice(index, 1);
 };
 
-const addService = () => {
-  services.value.push({ name: "", price: "", avatar: "" });
-};
-
-const addStaff = () => {
-  maskedValue.value = "";
-  staffs.value.push({ name: "", phone: "", avatar: "" });
-};
-
-const deleteService = (index: any) => {
-  if (services.value.length > 1) {
-    services.value.splice(index, 1);
-  } else {
-    services.value[index].name = "";
-    services.value[index].price = "";
-  }
-};
-
-const deleteStaff = (index: any) => {
-  if (staffs.value.length > 1) {
-    staffs.value.splice(index, 1);
-  } else {
-    staffs.value[index].name = "";
-    staffs.value[index].phone = "";
-  }
-};
-
 const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
     staffs.value[index][key] = bindedObject.unmasked;
@@ -279,8 +253,6 @@ const getAddressData = ($e: any) => {
     "UTC " +
     ($e.utc_offset_minutes < 0 ? "" : "+") +
     $e.utc_offset_minutes / 60;
-
-  console.log(data);
 };
 </script>
 
@@ -680,44 +652,71 @@ const getAddressData = ($e: any) => {
                         ></Table.Th>
                       </Table.Tr>
                     </Table.Thead>
+
                     <Table.Tbody>
-                      <Table.Tr
-                        v-for="(service, index) in services"
+                      <tr
+                        class=""
+                        v-for="(service, index) in dt.services"
                         :key="index"
                       >
-                        <Table.Td class="!px-2">
-                          <FormInput
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !px-2"
+                        >
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
-                            class="min-w-[6rem]"
                             v-model="service.name"
                           />
-                        </Table.Td>
-                        <Table.Td class="!px-2">
-                          <FormInput
+                        </td>
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !px-2"
+                        >
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
-                            class="min-w-[6rem]"
                             v-model="service.price"
                           />
-                        </Table.Td>
-
-                        <Table.Td class="!pl-4 text-slate-500">
-                          <a style="cursor: pointer">
-                            <Lucide
-                              icon="Trash2"
-                              class="w-4 h-4"
-                              style="margin: 0 auto"
-                              @click="deleteService(index)"
-                            />
+                        </td>
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500"
+                        >
+                          <a
+                            style="cursor: pointer"
+                            @click="SalonCreateStore.deleteService(index)"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="stroke-1.5 w-4 h-4"
+                              style="margin: 0px auto"
+                            >
+                              <path d="M3 6h18"></path>
+                              <path
+                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                              ></path>
+                              <path
+                                d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                              ></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
                           </a>
-                        </Table.Td>
-                      </Table.Tr>
+                        </td>
+                      </tr>
                     </Table.Tbody>
                   </Table>
                 </div>
                 <Button
                   variant="outline-primary"
                   class="w-full mt-4 border-dashed"
-                  @click="addService"
+                  @click="SalonCreateStore.addService()"
                 >
                   <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm dịch vụ
                 </Button>
@@ -743,12 +742,12 @@ const getAddressData = ($e: any) => {
                     <Table.Thead>
                       <Table.Tr>
                         <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap "
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
                         >
                           Tên Thợ
                         </Table.Th>
                         <Table.Th
-                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap "
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap"
                         >
                           Số Điện Thoại
                         </Table.Th>
@@ -758,43 +757,70 @@ const getAddressData = ($e: any) => {
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                      <Table.Tr v-for="(staff, index) in staffs" :key="index">
-                        <Table.Td class="!px-2">
-                          <FormInput
+                      <tr
+                        class=""
+                        v-for="(staff, index) in dt.staffs"
+                        :key="index"
+                      >
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !px-2"
+                        >
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
-                            class="min-w-[6rem]"
                             v-model="staff.name"
                           />
-                        </Table.Td>
-                        <Table.Td class="!px-2">
-                          <FormInput
+                        </td>
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !px-2"
+                        >
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
-                            class="min-w-[6rem]"
-                            v-maska="bindedObject"
-                            v-model="maskedValue"
-                            data-maska="(###) ###-####"
-                            @change="maskphone(`phone`, true, index)"
+                            v-model="staff.phone"
                           />
-                        </Table.Td>
-
-                        <Table.Td class="!pl-4 text-slate-500">
-                          <a style="cursor: pointer">
-                            <Lucide
-                              icon="Trash2"
-                              class="w-4 h-4"
-                              style="margin: 0 auto"
-                              @click="deleteStaff(index)"
-                            />
+                        </td>
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500"
+                        >
+                          <a
+                            style="cursor: pointer"
+                            @click="SalonCreateStore.deleteStaff(index)"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="stroke-1.5 w-4 h-4"
+                              style="margin: 0px auto"
+                            >
+                              <path d="M3 6h18"></path>
+                              <path
+                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                              ></path>
+                              <path
+                                d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                              ></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
                           </a>
-                        </Table.Td>
-                      </Table.Tr>
+                        </td>
+                      </tr>
                     </Table.Tbody>
+                   
                   </Table>
                 </div>
                 <Button
                   variant="outline-primary"
                   class="w-full mt-4 border-dashed"
-                  @click="addStaff"
+                  @click="SalonCreateStore.addStaff()"
                 >
                   <Lucide icon="Plus" class="w-4 h-4 mr-2" /> Thêm Thợ
                 </Button>
