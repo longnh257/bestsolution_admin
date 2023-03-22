@@ -23,12 +23,12 @@ const hideSearchDropdown = () => {
   searchDropdown.value = false;
 };
 const logout = () => {
+  router.push(`/login`);
   axios
     .post(`http://dev.api.booking.kendemo.com:3008/api/v1/admin/logout`)
     .then(function (response) {
       // handle success
       localStorage.removeItem("access_token");
-      router.push(`/`);
       console.log(response);
     })
     .catch(function (error) {

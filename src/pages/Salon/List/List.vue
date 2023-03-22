@@ -34,7 +34,7 @@ const clickCallback = () => {
         Thêm mới salon
       </Button>
       <div class="hidden mx-auto md:block text-slate-500">
-        Showing 1 to 10 of 150 entries
+        <!-- Showing 1 to 10 of 150 entries -->
       </div>
       <div class="w-full mt-3 sm:w-auto sm:mt-0 sm:ml-auto md:ml-0">
         <div class="relative w-56 text-slate-500">
