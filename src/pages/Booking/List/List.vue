@@ -3,25 +3,26 @@ import _ from "lodash";
 import Button from "../../../base-components/Button";
 import Pagination from "../../../base-components/Pagination";
 import { FormInput, FormSelect } from "../../../base-components/Form";
-import Table from "../../../base-components/Table";
 import router from "../../../router";
 import Paginate from "../../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
-import { useSalonListStore } from "../../../stores/salon-list";
+import { useBookingListStore } from "../../../stores/booking/booking-list";
 import ListDetail from "./ListDetail.vue";
 import LoadingIcon from "../../../base-components/LoadingIcon";
 
-const SalonListStore = useSalonListStore();
+const BookingListStore = useBookingListStore();
 
-SalonListStore.getSalonList();
+BookingListStore.getBookingList();
+
+console.log(BookingListStore.bookings);
 
 const clickCallback = () => {
-  SalonListStore.getSalonList();
+  BookingListStore.getBookingList();
   window.scrollTo(0, 0);
 };
 </script>
 
 <template>
-  <h2 class="mt-10 text-lg font-medium intro-y">Danh Sách Salon</h2>
+  <h2 class="mt-10 text-lg font-medium intro-y">Danh Sách Booking</h2>
   <div class="grid grid-cols-12 gap-6 mt-5">
     <div
       class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
@@ -29,9 +30,9 @@ const clickCallback = () => {
       <Button
         variant="primary"
         class="mr-2 shadow-md"
-        @click="router.push({ name: 'salon-create' })"
+        @click="router.push({ name: 'booking-create' })"
       >
-        Thêm mới salon
+        Thêm mới booking
       </Button>
       <div class="hidden mx-auto md:block text-slate-500">
         <!-- Showing 1 to 10 of 150 entries -->
@@ -42,9 +43,9 @@ const clickCallback = () => {
             <FormInput
               type="text"
               class="w-56 pr-10 !box"
-              placeholder="Tên, SĐT Salon"
-              v-model="SalonListStore.txtSearch"
-              @change="SalonListStore.getSalonList()"
+              placeholder="Tên, SĐT Booking"
+              v-model="BookingListStore.txtSearch"
+              @change="BookingListStore.getBookingList()"
             />
             <Lucide
               icon="Search"
@@ -58,8 +59,8 @@ const clickCallback = () => {
 
     <!-- BEGIN: Data List -->
     <ListDetail
-      :salons="SalonListStore.salons"
-      v-if="!SalonListStore.loading"
+      :bookings="BookingListStore.bookings"
+      v-if="!BookingListStore.loading"
     />
     <div v-else class="col-span-12">
       <div class="w-8 mx-auto mt-5"><LoadingIcon icon="puff" /></div>
@@ -69,11 +70,11 @@ const clickCallback = () => {
     <div
       class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
       style="margin-bottom: 50px"
-      v-if="!SalonListStore.loading && SalonListStore.totalPage !== 1"
+      v-if="!BookingListStore.loading && BookingListStore.totalPage !== 1"
     >
       <paginate
-        v-model="SalonListStore.page"
-        :page-count="SalonListStore.totalPage"
+        v-model="BookingListStore.page"
+        :page-count="BookingListStore.totalPage"
         :page-range="5"
         :margin-pages="1"
         :click-handler="clickCallback"
@@ -91,8 +92,8 @@ const clickCallback = () => {
       </paginate>
       <FormSelect
         class="w-30 mt-3 !box sm:mt-0"
-        v-model="SalonListStore.recPerPage"
-        @change="SalonListStore.getSalonList"
+        v-model="BookingListStore.recPerPage"
+        @change="BookingListStore.getBookingList"
       >
         <option>10</option>
         <option>25</option>

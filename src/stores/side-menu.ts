@@ -21,6 +21,11 @@ export const useSideMenuStore = defineStore("sideMenu", {
         pageName: "salon-list",
         title: "Salon",
       },
+      {
+        icon: "Calendar",
+        pageName: "booking-list",
+        title: "Booking",
+      },
     ],
   }),
 });

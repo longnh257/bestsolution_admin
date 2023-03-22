@@ -8,6 +8,8 @@ import SalonList from "../pages/Salon/List/List.vue";
 import SalonCreate from "../pages/Salon/Create.vue";
 import SalonDetail from "../pages/Salon/Detail.vue";
 import SalonEdit from "../pages/Salon/Edit.vue";
+import BookingList from "../pages/Booking/List/List.vue";
+import BookingDetail from "../pages/Booking/Detail.vue";
 import auth from '../middleware/auth';
 
 const routes = [
@@ -46,6 +48,24 @@ const routes = [
             name: "salon-edit",
             component: SalonEdit,
           },
+         
+        ]
+      },
+      {
+        path: "booking",
+        children : [
+          {
+            path: "",
+            name: "booking-list",
+            component: BookingList,
+          },
+          
+          {
+            path: "detail/:booking_id",
+            name: "booking-detail",
+            component: BookingDetail,
+          },
+         
          
         ]
       },

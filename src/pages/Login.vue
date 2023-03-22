@@ -12,12 +12,13 @@ import { onMounted, ref, provide } from "vue";
 import { method } from "lodash";
 import Lucide from "../base-components/Lucide";
 import router from "../router";
+import LoadingIcon from "../base-components/LoadingIcon";
 
 var data = {
   email: "",
   password: "",
 };
-
+let loading = ref(false)
 
 let err = ref([]);
 let scc = ref([]);
@@ -31,7 +32,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 });
 
 const onSubmit = () => {
-  console.log(1);
+  loading.value = true
   axios
     .post("admin/login", {
       email: data.email,
@@ -42,12 +43,13 @@ const onSubmit = () => {
       scc.value = response.data.message;
       successNotification.value?.showToast();
       localStorage.setItem("access_token", response.data.data.access_token);
-      router.push(`/`);
+      router.push(`/salon`);
     })
     .catch(function (error) {
       // handle error
       err.value = error.response.data.message;
       errorNotification.value?.showToast();
+      loading.value = false
     });
 };
 </script>
@@ -116,6 +118,14 @@ const onSubmit = () => {
                 v-model="data.password"
                 v-on:keyup.enter="onSubmit"
               />
+            </div>
+            <div
+              v-if="loading"
+              class="col-span-12"
+            >
+              <div class="w-8 mx-auto mt-5">
+                <LoadingIcon icon="oval" />
+              </div>
             </div>
             <div class="flex mt-4 text-xs intro-x text-slate-600 dark:text-slate-500 sm:text-sm">
               <div class="flex items-center mr-auto">
