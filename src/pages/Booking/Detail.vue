@@ -12,161 +12,158 @@ import TinySlider, {
 import Lucide from "../../base-components/Lucide";
 import { Dialog, Menu, Tab } from "../../base-components/Headless";
 import { Tab as HeadlessTab } from "@headlessui/vue";
-import axios from "axios";
 import { useRoute } from "vue-router";
-import Notification from "../../base-components/Notification";
-import { NotificationElement } from "../../base-components/Notification";
-import router from "../../router";
 
-const route = useRoute();
-var booking_id = route.params.booking_id;
 
-const announcementRef = ref<TinySliderElement>();
-const newProjectsRef = ref<TinySliderElement>();
-const todaySchedulesRef = ref<TinySliderElement>();
-const deleteConfirmationModal = ref(false);
-const deleteButtonRef = ref(null);
-const selectedBookingId = ref();
-let err = ref([]);
-let scc = ref([]);
-const bookingId: any = ref("");
-const booking = ref();
-let access_token = localStorage.getItem("access_token");
-const errorNotification = ref<NotificationElement>();
-const successNotification = ref<NotificationElement>();
+import { useBookingDetailStore } from "../../stores/booking/booking-detail";
 
-provide("bind[announcementRef]", (el: TinySliderElement) => {
-  announcementRef.value = el;
+const BookingDetailStore = useBookingDetailStore()
+BookingDetailStore.getBookingDetail()
+
+const imgSliderRef = ref<TinySliderElement>();
+
+provide("bind[imgSliderRef]", (el: TinySliderElement) => {
+  imgSliderRef.value = el;
 });
 
-provide("bind[newProjectsRef]", (el: TinySliderElement) => {
-  newProjectsRef.value = el;
-});
-
-provide("bind[todaySchedulesRef]", (el: TinySliderElement) => {
-  todaySchedulesRef.value = el;
-});
-
-
-provide("bind[errorNotification]", (el: NotificationElement) => {
-  errorNotification.value = el;
-});
-provide("bind[successNotification]", (el: NotificationElement) => {
-  successNotification.value = el;
-});
-
-onMounted(() => {
-  getBooking();
-});
-
-const getBooking = async () => {
-  const response = await axios.get(`booking/${booking_id}`, {
-    params: {
-      page: 1,
-    },
-    headers: {
-      Authorization: "Bearer " + access_token,
-    },
-  });
-  booking.value = response.data.data;
-  console.log(booking);
+const prevNewProjects = () => {
+  imgSliderRef.value?.tns.goTo("prev");
 };
-
-const setDeleteConfirmationModal = (
-  value: boolean,
-  bookingId: any = null
-) => {
-  deleteConfirmationModal.value = value;
-  selectedBookingId.value = bookingId;
+const nextNewProjects = () => {
+  imgSliderRef.value?.tns.goTo("next");
 };
-
 </script>
 
 <template>
   <div class="flex items-center mt-8 intro-y">
     <h2 class="mr-auto text-lg font-medium">Thông Tin Booking</h2>
   </div>
-  <div class="grid grid-cols-12 gap-6 mt-5" v-if="booking">
+  <div
+    class="grid grid-cols-12 gap-6 mt-5"
+    v-if="!BookingDetailStore.loading"
+  >
     <div class="col-span-12 lg:col-span-8 2xl:col-span-9">
       <!-- BEGIN: Projects -->
-     
+      <div class="col-span-12 intro-y box 2xl:col-span-6">
+        <div class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+          <h2 class="mr-auto text-base font-medium">Hình Ảnh Booking</h2>
+        </div>
+        <TinySlider
+          refKey="imgSliderRef"
+          class="py-5"
+        >
+          <div
+            class="px-5"
+            v-for="item in BookingDetailStore.booking.images"
+            :key="item.id"
+          >
+            <img
+              class="rounded-md"
+              :alt="item.created_at"
+              :src="item.image"
+            />
+          </div>
+        </TinySlider>
+      </div>
       <!-- END: Projects -->
       <!-- BEGIN: Product Information -->
       <div class="p-5 mt-5 intro-y box">
-        <div
-          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
+        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             Chi Tiết
           </div>
-          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
+          <div class="text-left">
+              <div class="flex items-center">
+                <div
+                  class="font-semibold mr-auto"
+                  style="min-width: fit-content"
+                >
+                  Khách hàng:
+                </div>
+                <strong class=" mr-3">
+                  {{ BookingDetailStore.booking.customer.name }}
+                </strong>
+              </div>
+            </div>
             <div class="text-left">
               <div class="flex items-center">
-                <div class="font-semibold mr-2" style="min-width: fit-content">
-                  Tên Booking :
+                <div
+                  class="font-semibold mr-auto"
+                  style="min-width: fit-content"
+                >
+                  Tên Salon :
                 </div>
-                <span>
-                  {{ booking.name }}
+                <span class=" mr-3">
+                  {{ BookingDetailStore.booking.salon.name }}
                 </span>
               </div>
             </div>
-          </div>
-          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
-            <div class="text-left">
-              <div class="flex">
-                <div class="font-semibold mr-2" style="min-width: fit-content">
-                  Mô Tả :
-                </div>
-                <span>
-                  {{ booking.description }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
+          
             <div class="text-left">
               <div class="flex items-center">
-                <div class="font-semibold mr-2" style="min-width: fit-content">
-                  Số Điện Thoại liên hệ :
+                <div
+                  class="font-semibold mr-auto"
+                  style="min-width: fit-content"
+                >
+                  Thợ được đặt :
                 </div>
-                <span>
-                  {{ booking.phone }}
+                <span class=" mr-3">
+                  {{ BookingDetailStore.booking.staff.name }}
+                </span>
+              </div>
+            </div>
+            <div class="text-left">
+              <div class="flex items-center">
+                <div
+                  class="font-semibold mr-auto"
+                  style="min-width: fit-content"
+                >
+                  Thời gian đặt :
+                </div>
+                <span class=" mr-3">
+                  {{ BookingDetailStore.booking.date_appointment_format }}
                 </span>
               </div>
             </div>
           </div>
+
         </div>
         <!--    ////////////////////////  -->
-        <div
-          class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
-            Giờ làm việc : &nbsp;
-            <span class="italic text-success">(Múi Giờ : {{ booking.tz }})</span>
+        <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+            Dịch Vụ Đã Đặt : &nbsp;
           </div>
           <div class="overflow-x-auto">
             <Table class="mt-5">
               <Table.Thead variant="light">
                 <Table.Tr>
                   <Table.Th class="whitespace-nowrap"></Table.Th>
-                  <Table.Th class="whitespace-nowrap"> Mở Cửa </Table.Th>
-                  <Table.Th class="whitespace-nowrap"> Đóng Cửa</Table.Th>
+                  <Table.Th class="whitespace-nowrap"> Dịch Vụ</Table.Th>
+                  <Table.Th class="whitespace-nowrap"> Giá</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 <Table.Tr
-                  v-for="schedule in booking.schedules"
-                  :key="schedule.id"
+                  v-for="(service,index) in BookingDetailStore.booking.services"
+                  :key="service.id"
                 >
-                  <Table.Td>{{
-                    schedule.day == 0 ? "Chủ Nhật" : `Thứ ${schedule.day}`
-                  }}</Table.Td>
-                  <Table.Td>{{ schedule.start_time }}</Table.Td>
-                  <Table.Td>{{ schedule.end_time }}</Table.Td>
+                  <Table.Td>{{ index + 1 }}</Table.Td>
+                  <Table.Td>{{ service.name }}</Table.Td>
+                  <Table.Td>{{ service.price_format }} $</Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td> <strong>GIÁ GỐC</strong> </Table.Td>
+                  <Table.Td></Table.Td>
+                  <Table.Td class="text-danger">{{ BookingDetailStore.booking.total_price_service_format }} $</Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td> <strong>THÀNH TIỀN<Nav></Nav></strong> </Table.Td>
+                  <Table.Td></Table.Td>
+                  <Table.Td class="text-success">{{ BookingDetailStore.booking.price_format }} $</Table.Td>
                 </Table.Tr>
               </Table.Tbody>
             </Table>
@@ -176,162 +173,45 @@ const setDeleteConfirmationModal = (
       <!-- END: Product Information -->
     </div>
     <!-- BEGIN: Profile Menu -->
-    <div
-      class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block"
-    >
-      <div class="mt-5 intro-y box lg:mt-0">
-        <div class="relative flex items-center p-5">
-          <div class="w-12 h-12 image-fit">
-            <img
-              v-if="booking.images[0]"
-              :alt="booking.images[0].created_at"
-              class="rounded-full"
-              :src="booking.images[0].image"
-            />
+    <div class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block">
+      <div class="p-5 rounded-md box">
+        <div class="pb-4 mb-5 border-b border-slate-200/60 dark:border-darkmode-400">
+          <div class="text-base font-medium truncate text-center">Voucher</div>
+        </div>
+        <div class="flex items-center leading-8">
+          <div class="mr-auto 700">
+            <strong>Mã Voucher:</strong>
           </div>
-          <div class="ml-4 mr-auto">
-            <div class="text-base font-semibold">
-              {{ booking.name }}
-            </div>
-            <div class="text-slate-500 flex">
-              <Lucide icon="Phone" class="w-4 h-4 mr-2" />{{ booking.phone }}
-            </div>
+          <div class="">
+            {{  BookingDetailStore.booking.voucher.code }}
           </div>
         </div>
-        <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
-          <router-link :to="{name:'booking-edit' , params:{booking_id:booking.id}}" class="flex">
-            <Lucide icon="Edit" class="w-4 h-4 mr-2" />
-            Sửa thông tin booking
-          </router-link>
+        <div class="flex items-center leading-8">
+          <div class="mr-auto 700">
+            <strong>Giá Trị:</strong>
+          </div>
+          <div class="text-success">
+            -{{BookingDetailStore.booking.voucher.value}}{{BookingDetailStore.booking.voucher.type === 1 ? "%" : "$" }}
+          </div>
         </div>
-        <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
-          <a
-            class="flex items-center"
-            href="#"
-            v-if="booking.partner.is_approve == 0"
-            @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          approveBooking(booking.partner.id);
-                        }
-                      "
-          >
-            <Lucide icon="Activity" class="w-4 h-4 mr-2" /> Phê duyệt
-          </a>
-          <a
-            class="flex items-center text-success"
-            href="#"
-            v-if="booking.status == 0 && booking.partner.is_approve == 1"
-            @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          activeBooking(booking.partner.id);
-                        }
-                      "
-          >
-            <Lucide icon="Unlock" class="w-4 h-4 mr-2" /> Mở Khóa
-          </a>
-          <a
-            class="flex items-center text-danger"
-            href="#"
-            v-if="booking.status == 1 && booking.partner.is_approve == 1"
-            @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          activeBooking(booking.partner.id);
-                        }
-                      "
-          >
-            <Lucide icon="Lock" class="w-4 h-4 mr-2" /> Khóa
-          </a>
+        <div class="flex items-center leading-8">
+          <div class="mr-auto 700">
+            <strong>Giảm:</strong>
+          </div>
+          <div class="text-success">
+            {{ BookingDetailStore.booking.price_format - BookingDetailStore.booking.total_price_service_format}} $
+          </div>
         </div>
-        <div
-          class="flex p-5 border-t border-slate-200/60 dark:border-darkmode-400 justify-center"
-        >
-          <Button
-            variant="danger"
-            type="button"
-            class="px-2 py-1"
-            @click="
-                        (event:any) => {
-                          event.preventDefault();
-                          setDeleteConfirmationModal(true, booking.id);
-                        }
-                      "
-          >
-            Xóa Booking
-          </Button>
+        <div class="items-center leading-8">
+          <div class=" w-full">
+            <strong>Nội Dung:</strong>
+          </div>
+          <div class="w-full">
+            {{BookingDetailStore.booking.voucher.description}}
+          </div>
         </div>
       </div>
     </div>
     <!-- END: Profile Menu -->
   </div>
-  <!-- END: Delete Confirmation Modal -->
-  <div class="p-5">
-    <!-- BEGIN: Success Notification -->
-    <Notification refKey="errorNotification" class="flex">
-      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
-      <div class="ml-4 mr-4">
-        <div class="font-medium">Có lỗi xảy ra!</div>
-        <div class="mt-1 text-slate-500">
-          {{ err }}
-        </div>
-      </div>
-    </Notification>
-    <Notification refKey="successNotification" class="flex">
-      <Lucide icon="CheckCircle" class="text-success" />
-      <div class="ml-4 mr-4">
-        <div class="font-medium">Thành Công</div>
-        <div class="mt-1 text-slate-500">
-          {{ scc }}
-        </div>
-      </div>
-    </Notification>
-  </div>
-  <!-- END: Success Notification -->
-  <!-- BEGIN: Delete Confirmation Modal -->
-  <Dialog
-    :open="deleteConfirmationModal"
-    @close="
-      () => {
-        setDeleteConfirmationModal(false);
-      }
-    "
-    :initialFocus="deleteButtonRef"
-  >
-    <Dialog.Panel>
-      <div class="p-5 text-center">
-        <Lucide icon="XCircle" class="w-16 h-16 mx-auto mt-3 text-danger" />
-        <div class="mt-5 text-3xl">Xóa Booking?</div>
-        <div class="mt-2 text-slate-500">
-          Bạn có thật sự muốn xóa booking nay ?<br />
-          Tất cả dự liệu về booking, nhân viên ... sẽ không thể khôi phục.
-        </div>
-      </div>
-      <div class="px-5 pb-8 text-center">
-        <Button
-          variant="danger"
-          type="button"
-          class="w-24 mr-2"
-          ref="deleteButtonRef"
-          @click="($event) => deleteBooking(bookingId.value)"
-        >
-          Xóa
-        </Button>
-        <Button
-          variant="outline-secondary"
-          type="button"
-          @click="
-            () => {
-              setDeleteConfirmationModal(false);
-            }
-          "
-          class="w-24 mr-1"
-        >
-          Hủy
-        </Button>
-      </div>
-    </Dialog.Panel>
-  </Dialog>
-  <!-- END: Delete Confirmation Modal -->
 </template>

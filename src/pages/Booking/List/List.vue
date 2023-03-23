@@ -43,7 +43,7 @@ const clickCallback = () => {
             <FormInput
               type="text"
               class="w-56 pr-10 !box"
-              placeholder="Tên, SĐT Booking"
+              placeholder="Tên Salon, SĐT Khách, Mã Voucher"
               v-model="BookingListStore.txtSearch"
               @change="BookingListStore.getBookingList()"
             />

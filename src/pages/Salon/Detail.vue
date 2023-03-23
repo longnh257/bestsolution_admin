@@ -13,17 +13,26 @@ import Lucide from "../../base-components/Lucide";
 import { Dialog, Menu, Tab } from "../../base-components/Headless";
 import { Tab as HeadlessTab } from "@headlessui/vue";
 import axios from "axios";
-import { useRoute } from "vue-router";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import router from "../../router";
-
+import { useRoute } from "vue-router";
 const route = useRoute();
 var salon_id = route.params.salon_id;
 
-const announcementRef = ref<TinySliderElement>();
-const newProjectsRef = ref<TinySliderElement>();
-const todaySchedulesRef = ref<TinySliderElement>();
+const imgSliderRef = ref<TinySliderElement>();
+
+provide("bind[imgSliderRef]", (el: TinySliderElement) => {
+  imgSliderRef.value = el;
+});
+
+const prevNewProjects = () => {
+  imgSliderRef.value?.tns.goTo("prev");
+};
+const nextNewProjects = () => {
+  imgSliderRef.value?.tns.goTo("next");
+};
+
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 const selectedSalonId = ref();
@@ -36,24 +45,8 @@ let access_token = localStorage.getItem("access_token");
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
 
-provide("bind[announcementRef]", (el: TinySliderElement) => {
-  announcementRef.value = el;
-});
 
-provide("bind[newProjectsRef]", (el: TinySliderElement) => {
-  newProjectsRef.value = el;
-});
 
-provide("bind[todaySchedulesRef]", (el: TinySliderElement) => {
-  todaySchedulesRef.value = el;
-});
-
-const prevNewProjects = () => {
-  newProjectsRef.value?.tns.goTo("prev");
-};
-const nextNewProjects = () => {
-  newProjectsRef.value?.tns.goTo("next");
-};
 
 provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el;
@@ -169,7 +162,7 @@ const activeSalon = (id: any) => {
         >
           <h2 class="mr-auto text-base font-medium">Hình Ảnh Salon</h2>
         </div>
-        <TinySlider refKey="newProjectsRef" class="py-5">
+        <TinySlider refKey="imgSliderRef" class="py-5">
           <div class="px-5" v-for="item in salon.images" :key="item.id">
             <img class="rounded-md" :alt="item.created_at" :src="item.image" />
           </div>

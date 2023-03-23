@@ -52,7 +52,7 @@ onMounted(() => {
             !menu.active &&
               '[&:hover>a]:before:content-[\'\'] [&:hover>a]:before:block [&:hover>a]:before:inset-0 [&:hover>a]:before:rounded-full [&:hover>a]:xl:before:rounded-xl [&:hover>a]:before:absolute [&:hover>a]:before:z-[-1] [&:hover>a]:before:border-b-[3px] [&:hover>a]:before:border-solid [&:hover>a]:before:border-black/[0.08] [&:hover>a]:before:dark:bg-darkmode-700',
           ]"
-          :key="menuKey"
+          :key="menuKey"router-link-active
         >
           <MenuLink
             :class="{
