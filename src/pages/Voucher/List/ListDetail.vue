@@ -3,7 +3,6 @@
 import { Dialog, Menu } from "../../../base-components/Headless";
 import Table from "../../../base-components/Table";
 import { PropType, ref, provide } from "vue";
-import { Voucher } from "../../../models/voucher.model";
 import router from "../../../router";
 import Button from "../../../base-components/Button";
 import Lucide from "../../../base-components/Lucide";
@@ -13,7 +12,7 @@ import constant from "../../../constant/index";
 
 
 const props = defineProps({
-  vouchers: Object as PropType<Voucher>,
+  vouchers: Object as PropType<any>,
 });
 
 
@@ -72,7 +71,6 @@ const props = defineProps({
             {{ item.code }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-
             {{ item.value  }}{{ item.type == 1 ? '%' : ' $'  }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">

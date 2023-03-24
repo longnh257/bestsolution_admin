@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import _ from "lodash";
 import { ref, provide, onMounted } from "vue";
-import fakerData from "../../utils/faker";
 import Button from "../../base-components/Button";
 import { FormSwitch, FormInput, FormSelect } from "../../base-components/Form";
 import Table from "../../base-components/Table";
@@ -76,7 +75,7 @@ const nextNewProjects = () => {
             class="mt-2"
             style="font-size: 15px; line-height: 2rem"
           >
-          <div class="text-left">
+            <div class="text-left">
               <div class="flex items-center">
                 <div
                   class="font-semibold mr-auto"
@@ -102,7 +101,7 @@ const nextNewProjects = () => {
                 </span>
               </div>
             </div>
-          
+
             <div class="text-left">
               <div class="flex items-center">
                 <div

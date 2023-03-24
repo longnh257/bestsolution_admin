@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import _ from "lodash";
 import { ref, provide, onMounted } from "vue";
-import fakerData from "../../utils/faker";
 import Button from "../../base-components/Button";
 import { FormSwitch, FormInput, FormSelect } from "../../base-components/Form";
 import Table from "../../base-components/Table";

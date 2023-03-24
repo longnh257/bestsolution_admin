@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import SideMenu from "../layouts/SideMenu/SideMenu.vue";
 import SimpleMenu from "../layouts/SimpleMenu/SimpleMenu.vue";
 import TopMenu from "../layouts/TopMenu/TopMenu.vue";
-import Page1 from "../pages/Page1.vue";
+import DashBoard from "../pages/DashBoard.vue";
 import Login from "../pages/Login.vue";
 import SalonList from "../pages/Salon/List/List.vue";
 import SalonCreate from "../pages/Salon/Create.vue";
@@ -12,6 +12,7 @@ import BookingList from "../pages/Booking/List/List.vue";
 import BookingDetail from "../pages/Booking/Detail.vue";
 import VoucherList from "../pages/Voucher/List/List.vue";
 import VoucherDetail from "../pages/Voucher/Detail.vue";
+import PageNotFound from "../pages/Error/404.vue";
 import auth from '../middleware/auth';
 
 const routes = [
@@ -25,11 +26,11 @@ const routes = [
       {
         path: "/dashboard",
         name: "side-menu-page-1",
-        component: Page1,
+        component: DashBoard,
       },
       {
         path: "salon",
-        children : [
+        children: [
           {
             path: "",
             name: "salon-list",
@@ -50,54 +51,53 @@ const routes = [
             name: "salon-edit",
             component: SalonEdit,
           },
-         
         ]
       },
       {
         path: "booking",
-        children : [
+        children: [
           {
             path: "",
             name: "booking-list",
             component: BookingList,
           },
-          
           {
             path: "detail/:booking_id",
             name: "booking-detail",
             component: BookingDetail,
           },
-         
-         
         ]
       },
       {
         path: "voucher",
-        children : [
+        children: [
           {
             path: "",
             name: "voucher-list",
             component: VoucherList,
           },
-          
           {
             path: "detail/:voucher_id",
             name: "voucher-detail",
             component: VoucherDetail,
           },
-         
-         
+
+
         ]
       },
-     
-      
+
+
+
+      {
+        path: "/:PageNotFound(.*)*",
+        component: PageNotFound,
+      },
     ],
   },
   {
     path: "/login",
     component: Login,
   },
- 
 ];
 
 const router = createRouter({
@@ -107,21 +107,21 @@ const router = createRouter({
     return savedPosition || { left: 0, top: 0 };
   },
 });
-function nextFactory(context : any, middleware : any, index :any) {
-    const subsequentMiddleware = middleware[index];
-    // If no subsequent Middleware exists,
-    // the default `next()` callback is returned.
-    if (!subsequentMiddleware) return context.next;
-  
-    return (...parameters : any) => {
-      // Run the default Vue Router `next()` callback first.
-      context.next(...parameters);
-      // Then run the subsequent Middleware with a new
-      // `nextMiddleware()` callback.
-      const nextMiddleware = nextFactory(context, middleware, index  + 1);
-      subsequentMiddleware({ ...context, next: nextMiddleware });
-    };
-  }
+function nextFactory(context: any, middleware: any, index: any) {
+  const subsequentMiddleware = middleware[index];
+  // If no subsequent Middleware exists,
+  // the default `next()` callback is returned.
+  if (!subsequentMiddleware) return context.next;
+
+  return (...parameters: any) => {
+    // Run the default Vue Router `next()` callback first.
+    context.next(...parameters);
+    // Then run the subsequent Middleware with a new
+    // `nextMiddleware()` callback.
+    const nextMiddleware = nextFactory(context, middleware, index + 1);
+    subsequentMiddleware({ ...context, next: nextMiddleware });
+  };
+}
 
 router.beforeEach((to, from, next) => {
   if (to.meta.middleware) {
