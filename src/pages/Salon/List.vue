@@ -15,9 +15,8 @@ import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Paginate from "../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
 import { log } from "console";
-import { useSalonListStore } from "../../stores/salon-list";
 import { storeToRefs } from "pinia";
-
+import { useSalonListStore } from "../../stores/salon/salon-list";
 
 const SalonListStore = useSalonListStore()
 

@@ -10,7 +10,7 @@ import Lucide from "../../../base-components/Lucide";
 import Tippy from "../../../base-components/Tippy";
 import Notification from "../../../base-components/Notification";
 import { NotificationElement } from "../../../base-components/Notification";
-import { useSalonListStore } from "../../../stores/salon-list";
+import { useSalonListStore } from "../../../stores/salon/salon-list";
 
 const props = defineProps( {
   salons: Object as PropType<Salon>,

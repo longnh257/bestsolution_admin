@@ -26,6 +26,28 @@ export const useSideMenuStore = defineStore("sideMenu", {
         pageName: "booking-list",
         title: "Booking",
       },
+      {
+        icon: "Tag",
+        pageName: "voucher-list",
+        title: "Voucher",
+      },
+      {
+        icon: "Image",
+        pageName: "banner",
+        title: "Banner",
+        subMenu: [
+          {
+            icon: "Image",
+            pageName: "banner-list",
+            title: "Banner",
+          },
+          {
+            icon: "Film",
+            pageName: "guide-list",
+            title: "Guide",
+          },
+        ]
+      },
     ],
   }),
 });

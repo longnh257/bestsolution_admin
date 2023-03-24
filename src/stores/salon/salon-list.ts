@@ -1,6 +1,6 @@
 import axios from "axios";
 import { defineStore } from "pinia";
-import { Salon } from "../models/salon.models";
+import { Salon } from "../../models/salon.models";
 
 interface SalonListState {
   salons: Salon[],

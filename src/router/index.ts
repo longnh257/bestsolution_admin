@@ -10,6 +10,8 @@ import SalonDetail from "../pages/Salon/Detail.vue";
 import SalonEdit from "../pages/Salon/Edit.vue";
 import BookingList from "../pages/Booking/List/List.vue";
 import BookingDetail from "../pages/Booking/Detail.vue";
+import VoucherList from "../pages/Voucher/List/List.vue";
+import VoucherDetail from "../pages/Voucher/Detail.vue";
 import auth from '../middleware/auth';
 
 const routes = [
@@ -64,6 +66,24 @@ const routes = [
             path: "detail/:booking_id",
             name: "booking-detail",
             component: BookingDetail,
+          },
+         
+         
+        ]
+      },
+      {
+        path: "voucher",
+        children : [
+          {
+            path: "",
+            name: "voucher-list",
+            component: VoucherList,
+          },
+          
+          {
+            path: "detail/:voucher_id",
+            name: "voucher-detail",
+            component: VoucherDetail,
           },
          
          

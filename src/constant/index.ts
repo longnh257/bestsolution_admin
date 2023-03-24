@@ -7,9 +7,20 @@ const APM_STATUS = {
       6: "Deleted",
       7: "Accepted",
 }
-const a = "a"
+const VOUCHER_STATUS = {
+      1: "Pending",
+      2: "Waitting",
+      3: "Expired",
+      4: "Finish",
+}
+const VOUCHER_CUSTOMER_TYPE = {
+      1: "Tất Cả",
+      2: "Thường",
+      3: "VIP",
+}
 
 export default {
       APM_STATUS: APM_STATUS,
-      a: a
+      VOUCHER_STATUS: VOUCHER_STATUS,
+      VOUCHER_CUSTOMER_TYPE: VOUCHER_CUSTOMER_TYPE,
 }

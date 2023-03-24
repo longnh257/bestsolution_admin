@@ -6,7 +6,7 @@ import { FormInput, FormSelect } from "../../../base-components/Form";
 import Table from "../../../base-components/Table";
 import router from "../../../router";
 import Paginate from "../../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
-import { useSalonListStore } from "../../../stores/salon-list";
+import { useSalonListStore } from "../../../stores/salon/salon-list";
 import ListDetail from "./ListDetail.vue";
 import LoadingIcon from "../../../base-components/LoadingIcon";
 

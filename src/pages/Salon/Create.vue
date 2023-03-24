@@ -19,7 +19,7 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
-import { useSalonCreateStore } from "../../stores/salon-create";
+import { useSalonCreateStore } from "../../stores/salon/salon-create";
 import router from "../../router";
 
 const SalonCreateStore = useSalonCreateStore();

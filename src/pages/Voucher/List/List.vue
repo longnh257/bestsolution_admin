@@ -5,35 +5,35 @@ import Pagination from "../../../base-components/Pagination";
 import { FormInput, FormSelect } from "../../../base-components/Form";
 import router from "../../../router";
 import Paginate from "../../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
-import { useBookingListStore } from "../../../stores/booking/booking-list";
+import { useVoucherListStore } from "../../../stores/voucher/voucher-list";
 import ListDetail from "./ListDetail.vue";
 import LoadingIcon from "../../../base-components/LoadingIcon";
 
-const BookingListStore = useBookingListStore();
+const VoucherListStore = useVoucherListStore();
 
-BookingListStore.getBookingList();
+VoucherListStore.getVoucherList();
 
-console.log(BookingListStore.bookings);
+console.log(VoucherListStore.vouchers);
 
 const clickCallback = () => {
-  BookingListStore.getBookingList();
+  VoucherListStore.getVoucherList();
   window.scrollTo(0, 0);
 };
 </script>
 
 <template>
-  <h2 class="mt-10 text-lg font-medium intro-y">Danh Sách Booking</h2>
+  <h2 class="mt-10 text-lg font-medium intro-y">Danh Sách Voucher</h2>
   <div class="grid grid-cols-12 gap-6 mt-5">
     <div
       class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
     >
-     <!--  <Button
+      <Button
         variant="primary"
         class="mr-2 shadow-md"
-        @click="router.push({ name: 'booking-create' })"
+        @click="router.push({ name: 'voucher-create' })"
       >
-        Thêm mới booking
-      </Button> -->
+        Thêm mới voucher
+      </Button>
       <div class="hidden mx-auto md:block text-slate-500">
         <!-- Showing 1 to 10 of 150 entries -->
       </div>
@@ -44,8 +44,8 @@ const clickCallback = () => {
               type="text"
               class="w-56 pr-10 !box"
               placeholder="Tên Salon, SĐT Khách, Mã Voucher"
-              v-model="BookingListStore.txtSearch"
-              @change="BookingListStore.getBookingList()"
+              v-model="VoucherListStore.txtSearch"
+              @change="VoucherListStore.getVoucherList()"
             />
             <Lucide
               icon="Search"
@@ -59,8 +59,8 @@ const clickCallback = () => {
 
     <!-- BEGIN: Data List -->
     <ListDetail
-      :bookings="BookingListStore.bookings"
-      v-if="!BookingListStore.loading"
+      :vouchers="VoucherListStore.vouchers"
+      v-if="!VoucherListStore.loading"
     />
     <div v-else class="col-span-12">
       <div class="w-8 mx-auto mt-5"><LoadingIcon icon="puff" /></div>
@@ -70,11 +70,11 @@ const clickCallback = () => {
     <div
       class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
       style="margin-bottom: 50px"
-      v-if="!BookingListStore.loading && BookingListStore.totalPage !== 1"
+      v-if="!VoucherListStore.loading && VoucherListStore.totalPage !== 1"
     >
       <paginate
-        v-model="BookingListStore.page"
-        :page-count="BookingListStore.totalPage"
+        v-model="VoucherListStore.page"
+        :page-count="VoucherListStore.totalPage"
         :page-range="5"
         :margin-pages="1"
         :click-handler="clickCallback"
@@ -92,8 +92,8 @@ const clickCallback = () => {
       </paginate>
       <FormSelect
         class="w-30 mt-3 !box sm:mt-0"
-        v-model="BookingListStore.recPerPage"
-        @change="BookingListStore.getBookingList"
+        v-model="VoucherListStore.recPerPage"
+        @change="VoucherListStore.getVoucherList"
       >
         <option>10</option>
         <option>25</option>
