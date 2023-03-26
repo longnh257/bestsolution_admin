@@ -33,20 +33,13 @@ export const useSideMenuStore = defineStore("sideMenu", {
       },
       {
         icon: "Image",
-        pageName: "banner",
+        pageName: "banner-list",
         title: "Banner",
-        subMenu: [
-          {
-            icon: "Image",
-            pageName: "banner-list",
-            title: "Banner",
-          },
-          {
-            icon: "Film",
-            pageName: "guide-list",
-            title: "Guide",
-          },
-        ]
+      },
+      {
+        icon: "Film",
+        pageName: "guide-list",
+        title: "Guide",
       },
     ],
   }),

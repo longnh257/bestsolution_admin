@@ -41,136 +41,6 @@ const nextNewProjects = () => {
     class="grid grid-cols-12 gap-6 mt-5"
     v-if="!VoucherDetailStore.loading"
   >
-    <div class="col-span-12 lg:col-span-8 2xl:col-span-9">
-      <!-- BEGIN: Projects -->
-      <div class="col-span-12 intro-y box 2xl:col-span-6">
-        <div class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
-          <h2 class="mr-auto text-base font-medium">Hình Ảnh Voucher</h2>
-        </div>
-        <TinySlider
-          refKey="imgSliderRef"
-          class="py-5"
-        >
-          <div
-            class="px-5"
-            v-for="item in VoucherDetailStore.voucher.images"
-            :key="item.id"
-          >
-            <img
-              class="rounded-md"
-              :alt="item.created_at"
-              :src="item.image"
-            />
-          </div>
-        </TinySlider>
-      </div>
-      <!-- END: Projects -->
-      <!-- BEGIN: Product Information -->
-      <div class="p-5 mt-5 intro-y box">
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            Chi Tiết
-          </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
-            <div class="text-left">
-              <div class="flex items-center">
-                <div
-                  class="font-semibold mr-auto"
-                  style="min-width: fit-content"
-                >
-                  Khách hàng:
-                </div>
-                <strong class=" mr-3">
-                  {{ VoucherDetailStore.voucher.customer.name }}
-                </strong>
-              </div>
-            </div>
-            <div class="text-left">
-              <div class="flex items-center">
-                <div
-                  class="font-semibold mr-auto"
-                  style="min-width: fit-content"
-                >
-                  Tên Salon :
-                </div>
-                <span class=" mr-3">
-                  {{ VoucherDetailStore.voucher.salon.name }}
-                </span>
-              </div>
-            </div>
-
-            <div class="text-left">
-              <div class="flex items-center">
-                <div
-                  class="font-semibold mr-auto"
-                  style="min-width: fit-content"
-                >
-                  Thợ được đặt :
-                </div>
-                <span class=" mr-3">
-                  {{ VoucherDetailStore.voucher.staff.name }}
-                </span>
-              </div>
-            </div>
-            <div class="text-left">
-              <div class="flex items-center">
-                <div
-                  class="font-semibold mr-auto"
-                  style="min-width: fit-content"
-                >
-                  Thời gian đặt :
-                </div>
-                <span class=" mr-3">
-                  {{ VoucherDetailStore.voucher.date_appointment_format }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <!--    ////////////////////////  -->
-        <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            Dịch Vụ Đã Đặt : &nbsp;
-          </div>
-          <div class="overflow-x-auto">
-            <Table class="mt-5">
-              <Table.Thead variant="light">
-                <Table.Tr>
-                  <Table.Th class="whitespace-nowrap"></Table.Th>
-                  <Table.Th class="whitespace-nowrap"> Dịch Vụ</Table.Th>
-                  <Table.Th class="whitespace-nowrap"> Giá</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                <Table.Tr
-                  v-for="(service,index) in VoucherDetailStore.voucher.services"
-                  :key="service.id"
-                >
-                  <Table.Td>{{ index + 1 }}</Table.Td>
-                  <Table.Td>{{ service.name }}</Table.Td>
-                  <Table.Td>{{ service.price_format }} $</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Td> <strong>GIÁ GỐC</strong> </Table.Td>
-                  <Table.Td></Table.Td>
-                  <Table.Td class="text-danger">{{ VoucherDetailStore.voucher.total_price_service_format }} $</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Td> <strong>THÀNH TIỀN<Nav></Nav></strong> </Table.Td>
-                  <Table.Td></Table.Td>
-                  <Table.Td class="text-success">{{ VoucherDetailStore.voucher.price_format }} $</Table.Td>
-                </Table.Tr>
-              </Table.Tbody>
-            </Table>
-          </div>
-        </div>
-      </div>
-      <!-- END: Product Information -->
-    </div>
     <!-- BEGIN: Profile Menu -->
     <div class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block">
       <div class="p-5 rounded-md box">
@@ -182,7 +52,7 @@ const nextNewProjects = () => {
             <strong>Mã Voucher:</strong>
           </div>
           <div class="">
-            {{  VoucherDetailStore.voucher.voucher.code }}
+            {{  VoucherDetailStore.voucher.code }}
           </div>
         </div>
         <div class="flex items-center leading-8">
@@ -190,23 +60,16 @@ const nextNewProjects = () => {
             <strong>Giá Trị:</strong>
           </div>
           <div class="text-success">
-            -{{VoucherDetailStore.voucher.voucher.value}}{{VoucherDetailStore.voucher.voucher.type === 1 ? "%" : "$" }}
+            -{{VoucherDetailStore.voucher.value}}{{VoucherDetailStore.voucher.type === 1 ? "%" : "$" }}
           </div>
         </div>
-        <div class="flex items-center leading-8">
-          <div class="mr-auto 700">
-            <strong>Giảm:</strong>
-          </div>
-          <div class="text-success">
-            {{ VoucherDetailStore.voucher.price_format - VoucherDetailStore.voucher.total_price_service_format}} $
-          </div>
-        </div>
+       
         <div class="items-center leading-8">
           <div class=" w-full">
             <strong>Nội Dung:</strong>
           </div>
           <div class="w-full">
-            {{VoucherDetailStore.voucher.voucher.description}}
+            {{VoucherDetailStore.voucher.description}}
           </div>
         </div>
       </div>

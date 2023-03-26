@@ -172,7 +172,7 @@ const nextNewProjects = () => {
       <!-- END: Product Information -->
     </div>
     <!-- BEGIN: Profile Menu -->
-    <div class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block">
+    <div class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block" v-if="BookingDetailStore.booking.voucher">
       <div class="p-5 rounded-md box">
         <div class="pb-4 mb-5 border-b border-slate-200/60 dark:border-darkmode-400">
           <div class="text-base font-medium truncate text-center">Voucher</div>

@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import SideMenu from "../layouts/SideMenu/SideMenu.vue";
-import SimpleMenu from "../layouts/SimpleMenu/SimpleMenu.vue";
-import TopMenu from "../layouts/TopMenu/TopMenu.vue";
 import DashBoard from "../pages/DashBoard.vue";
 import Login from "../pages/Login.vue";
 import SalonList from "../pages/Salon/List/List.vue";
@@ -12,8 +10,13 @@ import BookingList from "../pages/Booking/List/List.vue";
 import BookingDetail from "../pages/Booking/Detail.vue";
 import VoucherList from "../pages/Voucher/List/List.vue";
 import VoucherDetail from "../pages/Voucher/Detail.vue";
+import BannerList from "../pages/Banner/List/List.vue";
+import GuideList from "../pages/Banner/List/GuideList.vue";
+import BannerCreate from "../pages/Banner/Create.vue";
+import GuideCreate from "../pages/Banner/Create.vue";
 import PageNotFound from "../pages/Error/404.vue";
 import auth from '../middleware/auth';
+import { BANNER_TYPE_BANNER, BANNER_TYPE_GUIDE } from "../constant";
 
 const routes = [
   {
@@ -86,6 +89,33 @@ const routes = [
         ]
       },
 
+      /* ---------------------------------- BANNER ------------------ */
+      {
+        path: "banner",
+        children: [
+          {
+            path: ``,
+            name: "banner-list",
+            component: BannerList,
+          },
+          {
+            path: `guide`,
+            name: "guide-list",
+            component: GuideList,
+          },
+          {
+            path: "create",
+            name: "banner-create",
+            component: BannerCreate,
+          },
+          {
+            path: "create-guide",
+            name: "Guide-create",
+            component: GuideCreate,
+          },
+        ]
+      },
+      /* ------------------------------- END BANNER ------------------ */
 
 
       {

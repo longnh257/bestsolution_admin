@@ -8,7 +8,7 @@ import Button from "../../../base-components/Button";
 import Lucide from "../../../base-components/Lucide";
 import Tippy from "../../../base-components/Tippy";
 import Notification from "../../../base-components/Notification";
-import constant from "../../../constant/index";
+import {VOUCHER_CUSTOMER_TYPE} from "../../../constant/index";
 
 
 const props = defineProps({
@@ -82,7 +82,7 @@ const props = defineProps({
             {{ item.expiration_date  }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md  bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{ constant.VOUCHER_CUSTOMER_TYPE[item.type_customer] }}
+            {{ VOUCHER_CUSTOMER_TYPE[item.type_customer] }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md  bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ item.created_at }}
