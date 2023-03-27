@@ -13,7 +13,7 @@ import VoucherDetail from "../pages/Voucher/Detail.vue";
 import BannerList from "../pages/Banner/List/List.vue";
 import GuideList from "../pages/Banner/List/GuideList.vue";
 import BannerCreate from "../pages/Banner/Create.vue";
-import GuideCreate from "../pages/Banner/Create.vue";
+import GuideCreate from "../pages/Banner/GuideCreate.vue";
 import PageNotFound from "../pages/Error/404.vue";
 import auth from '../middleware/auth';
 import { BANNER_TYPE_BANNER, BANNER_TYPE_GUIDE } from "../constant";
@@ -109,8 +109,8 @@ const routes = [
             component: BannerCreate,
           },
           {
-            path: "create-guide",
-            name: "Guide-create",
+            path: "guide-create",
+            name: "guide-create",
             component: GuideCreate,
           },
         ]

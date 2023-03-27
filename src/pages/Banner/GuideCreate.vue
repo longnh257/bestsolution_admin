@@ -38,7 +38,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 });
 
 const submit = () => {
-  BannerCreateStore.createBanner().then(function (response) {
+  BannerCreateStore.createGuide().then(function (response) {
     console.log(response.data);
     scc.value = response.data.message;
     successNotification.value?.showToast();
@@ -55,14 +55,14 @@ const submit = () => {
 
 const previewImages = (e: any) => {
   let file = e.target.files[0];
-  BannerCreateStore.image = file;
+  BannerCreateStore.thumbnail = file;
   PreviewIMG.value = URL.createObjectURL(file);
 };
 
 const revokePreview = () => {
   URL.revokeObjectURL(PreviewIMG.value);
   PreviewIMG.value = ""
-  BannerCreateStore.image = "";
+  BannerCreateStore.thumbnail = "";
 };
 const saveBanner = () => {
   submit();
@@ -72,21 +72,23 @@ const saveBanner = () => {
 
 <template>
   <div class="flex items-center mt-8 intro-y">
-    <h2 class="mr-auto text-lg font-medium">Thêm Mới Banner</h2>
+    <h2 class="mr-auto text-lg font-medium">Thêm Mới Guide</h2>
   </div>
   <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6">
     <div class="col-span-11 intro-y 2xl:col-span-9">
       <div class="p-5  intro-y box">
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="">
-            <div class="mt-3">
+            <div class="">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
                 <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
-                  <div class="grid grid-cols-10 gap-5 pl-4 pr-5"  v-if="PreviewIMG">
+                  <div
+                    class="grid grid-cols-10 gap-5 pl-4 pr-5"
+                    v-if="PreviewIMG"
+                  >
                     <div class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in">
                       <img
-                       
                         class="rounded-md"
                         alt=""
                         :src="PreviewIMG"
@@ -118,6 +120,27 @@ const saveBanner = () => {
                   </div>
                 </div>
               </FormInline>
+            </div>
+            <div>
+              <FormLabel
+                htmlFor="crud-form-1"
+                class="label-require"
+              >Video</FormLabel>
+              <FormInput
+                id="crud-form-1"
+                type="text"
+                class="w-full"
+                placeholder="VD: https://www.youtube.com/embed/GIG38MD_l3k"
+                v-model="BannerCreateStore.video"
+              />
+            </div>
+            <div class="mt-5">
+              <FormLabel htmlFor="crud-form-2"> Nộ dung</FormLabel>
+              <ClassicEditor
+                v-model="BannerCreateStore.content"
+                class="mt-4"
+                aria-placeholder="Thông Tin Giới Thiệu Về Salon"
+              />
             </div>
           </div>
         </div>

@@ -3,14 +3,20 @@ import { defineStore } from "pinia";
 
 interface BannerCreateState {
     image: any,
+    thumbnail: any,
     type : any
+    content : any
+    video : any
 }
 
 export const useBannerCreateStore = defineStore("BannerCreate", {
     state: (): BannerCreateState => (
         {
             image: "",
-            type: ""
+            thumbnail: "",
+            type: "",
+            content : "",
+            video : "",
         }),
     getters: {
 
@@ -22,6 +28,22 @@ export const useBannerCreateStore = defineStore("BannerCreate", {
             const fd = new FormData();
 
             fd.append("image", this.image);
+
+            return await axios
+                .post(`banner/add-banner`, fd, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                })
+        },
+
+        async createGuide() {
+
+            const fd = new FormData();
+
+            fd.append("thumbnail", this.thumbnail);
+            fd.append("type", "video");
+            fd.append("video", this.video);
 
             return await axios
                 .post(`banner/add-banner`, fd, {
