@@ -9,6 +9,7 @@ interface BannerListState {
   type: string | number,
   selectedId: any,
   txtSearch: string,
+  file_type: string,
   msg: string,
   loading: boolean
 }
@@ -23,6 +24,7 @@ export const useBannerListStore = defineStore("BannerList", {
       recPerPage: 10,
       page: 1,
       type: 4,
+      file_type: "",
       msg: "",
       selectedId: "",
       txtSearch: "",
