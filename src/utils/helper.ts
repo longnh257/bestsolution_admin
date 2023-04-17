@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { parseColor } from "tailwindcss/lib/util/color";
+import moment from 'moment';
 
 dayjs.extend(duration);
 
@@ -223,7 +224,24 @@ const normalizeInput  = (value:any, previousValue:any) => {
   }
 }
 
+const convertToTZ = (date:any, tz:string) => {
+  if(!date) return null
+  const input = moment(date).format('YYYY-MM-DD HH:mm:ss')
+  const fmt  = "YYYY-MM-DD HH:mm:ss";  // must match the input
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const s = m.tz(tz)
+  return  {
+        time : s.format(),
+        format: s.format('LLL'),
+        timestamp : new Date(s.format()).getTime(),
+        day: s.day(),
+        hour: s.format('HH:mm:ss'),
+        hour_format: s.format('hh:mm a')
+  }
+}
+
 export {
+  convertToTZ,
   normalizeInput,
   cutText,
   formatDate,

@@ -1,5 +1,7 @@
 import axios from "axios";
 import { defineStore } from "pinia";
+import moment from 'moment';
+import { convertToTZ } from "../../utils/helper";
 
 interface Service {
     name: string,
@@ -265,6 +267,30 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             for (let index in this.data.fileList) {
                 fd.append("fileList", this.data.fileList[index]);
             }
+
+            let scheduleData:any = [] 
+            const dateNow = moment().utc().format('YYYY-MM-DD')
+            this.data.schedules.map(item => {
+                  if(!item.start_time || !item.end_time){
+                        scheduleData.push({
+                              day : item.day,
+                              start_time: null,
+                              end_time: null
+                        })
+                  } else{
+                        const convertStartTimeToUtc = convertToTZ(new Date(`${dateNow} ${item.start_time}`), 'UTC')
+                        const convertEndTimeToUtc = convertToTZ(new Date(`${dateNow} ${item.end_time}`), 'UTC')
+                        scheduleData.push({
+                              day : item.day,
+                              start_time: convertStartTimeToUtc? convertStartTimeToUtc.hour : null,
+                              end_time: convertEndTimeToUtc ? convertEndTimeToUtc.hour : null
+                        })
+                  }
+            })
+
+            console.log(JSON.stringify(scheduleData));
+            
+            return ;
             fd.append("name", this.data.name);
             fd.append("phone", this.data.phone);
             fd.append("salon_email", this.data.salon_email);

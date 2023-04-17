@@ -8,7 +8,6 @@ import Table from "../../base-components/Table";
 import { normalizeInput } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
-
 import {
   FormInput,
   FormInline,
@@ -22,6 +21,10 @@ import {
 import { useSalonListStore } from "../../stores/salon/salon-list";
 import { useSalonCreateStore } from "../../stores/salon/salon-create";
 import router from "../../router";
+import moment from 'moment';
+
+console.log(moment().utc().format('YYYY-MM-DD'));
+
 
 const SalonListStore = useSalonListStore();
 const SalonCreateStore = useSalonCreateStore();
