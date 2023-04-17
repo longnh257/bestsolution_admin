@@ -36,11 +36,11 @@ export const useSideMenuStore = defineStore("sideMenu", {
         pageName: "banner-list",
         title: "Banner",
       },
-      {
+      /* {
         icon: "Film",
         pageName: "guide-list",
         title: "Guide",
-      },
+      }, */
     ],
   }),
 });

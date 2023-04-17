@@ -36,7 +36,7 @@ const clickCallback = () => {
       <div class="hidden mx-auto md:block text-slate-500">
         <!-- Showing 1 to 10 of 150 entries -->
       </div>
-      <div>
+      <!-- <div>
         <Menu>
           <Menu.Button
             :as="Button"
@@ -64,7 +64,7 @@ const clickCallback = () => {
             </Menu.Item>
           </Menu.Items>
         </Menu>
-      </div>
+      </div> -->
 
     </div>
 

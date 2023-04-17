@@ -17,7 +17,6 @@ interface Schedule {
     start_time: string,
     end_time: string,
 }
-
 interface SalonCreateState {
     data: {
         name: string,
@@ -44,6 +43,87 @@ interface SalonCreateState {
         services: Service[],
         schedules: Schedule[],
     }
+}
+
+const defaultData = {
+    name: "",
+    phone: "",
+    password: "",
+    salon_name: "",
+    salon_email: "",
+    salon_phone: "",
+    salon_address: "",
+    salon_description: "",
+    salon_number_employees: "",
+    salon_country: "",
+    salon_state: "",
+    salon_city: "",
+    salon_zipcode: "",
+    salon_timezone: "UTC",
+    salon_tz: "",
+    salon_lat: "",
+    salon_lng: "",
+    lang: "en",
+    images: [],
+    fileList: [],
+    staffs: [
+        {
+            name: "",
+            phone: "",
+            avatar: "",
+        }
+    ],
+    services: [
+        {
+            name: "",
+            price: "",
+            avatar: "",
+        }
+    ],
+    schedules: [
+        {
+            day: 0,
+            day_name: "Thứ 2",
+            start_time: "08:00",
+            end_time: "18:30",
+        },
+        {
+            day: 1,
+            day_name: "Thứ 3",
+            start_time: "08:00",
+            end_time: "18:30",
+        },
+        {
+            day: 2,
+            day_name: "Thứ 4",
+            start_time: "08:00",
+            end_time: "18:30",
+        },
+        {
+            day: 3,
+            day_name: "Thứ 5",
+            start_time: "08:00",
+            end_time: "18:30",
+        },
+        {
+            day: 4,
+            day_name: "Thứ 6",
+            start_time: "08:00",
+            end_time: "18:30",
+        },
+        {
+            day: 5,
+            day_name: "Thứ 7",
+            start_time: "08:00",
+            end_time: "18:30",
+        },
+        {
+            day: 6,
+            day_name: "Chủ nhật",
+            start_time: "08:00",
+            end_time: "18:30",
+        },
+    ],
 }
 
 export const useSalonCreateStore = defineStore("SalonCreate", {
@@ -128,12 +208,18 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
                         end_time: "18:30",
                     },
                 ],
-            },
+            }
         }),
     getters: {
 
     },
     actions: {
+
+        resetData() {
+            for(const item in this.data){
+                this.data[item] = defaultData[item]
+            }
+        },
         addService() {
             this.data.services.push({ name: "", price: "", avatar: "" });
 
@@ -163,7 +249,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
         },
 
         async createSalon() {
-
+            
             const fd = new FormData();
 
             this.data.staffs = this.data.staffs.filter(item => {
@@ -200,7 +286,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             fd.append("services", JSON.stringify(this.data.services));
             fd.append("staffs", JSON.stringify(this.data.staffs));
             fd.append("schedules", JSON.stringify(this.data.schedules));
-           
+
 
             return await axios
                 .post(`salon/sign-up`, fd, {

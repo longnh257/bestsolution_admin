@@ -40,23 +40,27 @@ const saveSalon = () => {
   submit();
 };
 
-let err = ref("");
-let scc = ref("");
+let err = ref("")
+let scc = ref("")
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
   provide("bind[errorNotification]", (el: NotificationElement) => {
-  errorNotification.value = el;
+  errorNotification.value = el
 });
 provide("bind[successNotification]", (el: NotificationElement) => {
-  successNotification.value = el;
+  successNotification.value = el
 });
 
 const submit = () => {
   SalonCreateStore.createSalon().then(function (response) {
-    console.log(response.data);
+    console.log(response.data)
+
     SalonListStore.approveSalon(response.data.data.admin.id)
-    scc.value = "Tạo Salon Thành Công !";
-    successNotification.value?.showToast();
+    SalonCreateStore.resetData()
+
+    scc.value = "Tạo Salon Thành Công !"
+    successNotification.value?.showToast()
+
     router.push({
       name: 'salon-list',
     });
@@ -114,20 +118,28 @@ const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
 
 const getAddressData = ($e: any) => {
   console.log($e.formatted_address);
+  console.log($e.address_components);
   for (const item of $e.address_components) {
     if (item.types.includes("country")) {
-      dt.salon_country = item.short_name;
+      dt.salon_country = item.short_name
     }
     if (item.types.includes("administrative_area_level_1")) {
-      dt.salon_state = item.short_name;
+      dt.salon_state = item.short_name
     }
     if (item.types.includes("administrative_area_level_2")) {
-      dt.salon_city = item.short_name;
+      dt.salon_city = item.short_name
+    } else {
+      dt.salon_city = ""
     }
     if (item.types.includes("postal_code")) {
-      dt.salon_zipcode = item.short_name;
+      dt.salon_zipcode = item.short_name
     }
   }
+  if(!dt.salon_city){
+    dt.salon_city =  dt.salon_state
+  }
+  console.log("state,city",dt.salon_state,dt.salon_city);
+
   dt.salon_lng = $e.geometry.location.lng();
   dt.salon_lat = $e.geometry.location.lat();
   dt.salon_address = $e.formatted_address;
@@ -173,7 +185,7 @@ const getAddressData = ($e: any) => {
                 class="label-require"
               >Số điện thoại</FormLabel>
               <FormInput
-                id="crud-form-2"
+                id="crud-form-2"  
                 type="text"
                 class="w-full"
                 placeholder="Số điện thoại dùng để đăng nhập"
@@ -258,6 +270,7 @@ const getAddressData = ($e: any) => {
               <GMapAutocomplete
                 id="map"
                 class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 w-full"
+                language="en"
                 style="
                   padding: 8px 12px;
                   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);

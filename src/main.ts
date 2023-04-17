@@ -14,7 +14,8 @@ axios.defaults.headers.common['lang'] = 'vi'
 createApp(App).directive("maska", vMaska).use(VueGoogleMaps, {
     load: {
         key: import.meta.env.VITE_GOOGLE_SECRET_KEY,
-        libraries: "places"
+        libraries: "places",
+        language:'en'
     },
 })
 .use(router).use(createPinia()).mount('#app')
