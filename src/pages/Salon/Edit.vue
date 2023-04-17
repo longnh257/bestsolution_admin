@@ -30,6 +30,8 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
+import moment from 'moment';
+import { convertToTZ } from "../../utils/helper";
 
 const route = useRoute();
 var salon_id = route.params.salon_id;
@@ -62,12 +64,31 @@ const bindedObject = reactive({ unmasked: "" });
 const saveSalon = () => {
   submit();
 };
-const saveNew = () => {};
+const saveNew = () => { };
 
 const submit = () => {
-    const fd = new FormData();
+  const fd = new FormData();
+
+  let scheduleData: any = []
+  salon.value.schedules.map(item => {
+    if (!item.start_time || !item.end_time) {
+      scheduleData.push({
+        day: item.day,
+        start_time: null,
+        end_time: null
+      })
+    } else {
+      scheduleData.push({
+        day: item.day,
+        start_time: item.start_time ? item.start_time : null,
+        end_time: item.end_time ? item.end_time : null
+      })
+    }
+  })
+
   fd.append("id", salon.value.id);
   fd.append("name", salon.value.name);
+  fd.append("email", salon.value.email);
   fd.append("phone", salon.value.phone);
   fd.append("address", salon.value.address);
   fd.append("description", salon.value.description);
@@ -80,7 +101,7 @@ const submit = () => {
   fd.append("tz", salon.value.tz);
   fd.append("lat", salon.value.lat);
   fd.append("lng", salon.value.lng);
-  fd.append("schedules", JSON.stringify(salon.value.schedules));
+  fd.append("schedules", JSON.stringify(scheduleData));
   fd.append("delete_images", JSON.stringify(deleteImgArr.value));
   for (let index in images.value) {
     fd.append("images", images.value[index]);
@@ -172,7 +193,7 @@ const getAddressData = (placeResultData: any) => {
 };
 let deleteImgArr = ref<any[]>([]);
 const deleteImg = () => {
- 
+
   deleteImgArr.value.push(selectedImgID.value);
   salon.value.images.splice(selectedImgIndex.value, 1);
   deleteConfirmationModal.value = false;
@@ -198,92 +219,20 @@ onMounted(() => {
   <div class="flex items-center mt-8 intro-y">
     <h2 class="mr-auto text-lg font-medium">Chỉnh sửa Salon</h2>
   </div>
-  <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6" v-if="salon">
+  <div
+    class="grid grid-cols-11 pb-20 mt-5 gap-x-6"
+    v-if="salon"
+  >
     <div class="col-span-11 intro-y 2xl:col-span-9">
-      <!-- BEGIN: Account Info -->
-     <!--  <div class="p-5 mt-5 intro-y box">
-        <div
-          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
-            <Lucide icon="User" class="w-4 h-4 mr-2" /> Thông tin tài khoản
-          </div>
-          <div class="mt-5">
-            <div>
-              <FormLabel htmlFor="crud-form-1">Tên chủ salon</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ salon"
-                v-model="salon.name"
-              />
-            </div>
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Số điện thoại</FormLabel>
-              <FormInput
-                id="crud-form-2"
-                type="text"
-                class="w-full"
-                :placeholder="salon.partner.phone"
-                v-maska="bindedObject"
-                v-model="maskedValue"
-                data-maska="##########"
-                @change="maskphone(`phone`)"
-              />
-            </div>
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-3">Mật Khẩu</FormLabel>
 
-              <InputGroup v-if="!showPassword">
-                <FormInput
-                  id="crud-form-3"
-                  type="text"
-                  v-model="password"
-                  class="w-full"
-                  placeholder="Mật Khẩu"
-                />
-
-                <InputGroup.Text
-                  id="input-group-1"
-                  style="cursor: pointer"
-                  @click="showPassword = !showPassword"
-                >
-                  <Lucide icon="Eye" />
-                </InputGroup.Text>
-              </InputGroup>
-              <InputGroup v-else>
-                <FormInput
-                  id="crud-form-3"
-                  type="password"
-                  v-model="password"
-                  class="w-full"
-                  placeholder="Mật Khẩu"
-                />
-                <InputGroup.Text
-                  id="input-group-1"
-                  style="cursor: pointer"
-                  @click="showPassword = !showPassword"
-                >
-                  <Lucide icon="EyeOff" />
-                </InputGroup.Text>
-              </InputGroup>
-            </div>
-          </div>
-        </div>
-      </div> -->
-      <!-- END: Account Info -->
       <!-- BEGIN: Salon Info -->
       <div class="p-5 mt-5 intro-y box">
-        <div
-          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
-            <Lucide icon="Home" class="w-4 h-4 mr-2" /> Thông tin Salon
+        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+            <Lucide
+              icon="Home"
+              class="w-4 h-4 mr-2"
+            /> Thông tin Salon
           </div>
           <div class="mt-5">
             <div>
@@ -293,7 +242,7 @@ onMounted(() => {
                 type="text"
                 class="w-full"
                 placeholder="Tên chủ salon"
-                v-model="salon.partner.name"
+                v-model="salon.name"
               />
             </div>
             <div class="mt-3">
@@ -343,16 +292,18 @@ onMounted(() => {
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
-                <div
-                  class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400"
-                >
+                <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
                   <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
                     <div
                       v-for="(image, index) in salon.images"
                       :key="image"
                       class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
                     >
-                      <img class="rounded-md" alt="" :src="image.image" />
+                      <img
+                        class="rounded-md"
+                        alt=""
+                        :src="image.image"
+                      />
                       <Tippy
                         content="Remove this image?"
                         class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
@@ -371,20 +322,28 @@ onMounted(() => {
                       :key="image"
                       class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
                     >
-                      <img class="rounded-md" alt="" :src="image" />
+                      <img
+                        class="rounded-md"
+                        alt=""
+                        :src="image"
+                      />
                       <Tippy
                         content="Remove this image?"
                         class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
                         @click="revokePreview(index)"
                       >
-                        <Lucide icon="X" class="w-4 h-4" />
+                        <Lucide
+                          icon="X"
+                          class="w-4 h-4"
+                        />
                       </Tippy>
                     </div>
                   </div>
-                  <div
-                    class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer"
-                  >
-                    <Lucide icon="Image" class="w-4 h-4 mr-2" />
+                  <div class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer">
+                    <Lucide
+                      icon="Image"
+                      class="w-4 h-4 mr-2"
+                    />
                     <span class="mr-1 text-primary"> Tải lên file</span>
                     <FormInput
                       id="horizontal-form-1"
@@ -397,17 +356,21 @@ onMounted(() => {
                 </div>
               </FormInline>
             </div>
-            <FormLabel htmlFor="crud-form-2" class="mt-3">Giờ mở cửa</FormLabel>
-            <div
-              class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-            >
+            <FormLabel
+              htmlFor="crud-form-2"
+              class="mt-3"
+            >Giờ mở cửa</FormLabel>
+            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
               <div
                 class="flex"
                 v-for="schedule in salon.schedules"
                 :key="schedule.id"
               >
                 <FormInline class="flex-row flex w-1/2">
-                  <FormLabel htmlFor="" class="text-left w-20 mt-3">
+                  <FormLabel
+                    htmlFor=""
+                    class="text-left w-20 mt-3"
+                  >
                     {{ schedule.day_name }}
                   </FormLabel>
                   <div
@@ -451,7 +414,10 @@ onMounted(() => {
                   </div>
                 </FormInline>
                 <FormInline class="flex-row flex w-1/2">
-                  <FormLabel htmlFor="" class="text-left w-20 mt-3">
+                  <FormLabel
+                    htmlFor=""
+                    class="text-left w-20 mt-3"
+                  >
                     đến
                   </FormLabel>
                   <div
@@ -510,13 +476,13 @@ onMounted(() => {
       <!-- END: Salon Info -->
 
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
-       <!--  <Button
+        <!--  <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
         >
           Cancel
         </Button> -->
-       <!--  <Button
+        <!--  <Button
           type="button"
           class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
           @click="saveNew"
@@ -536,8 +502,15 @@ onMounted(() => {
   </div>
   <div class="p-5">
     <!-- BEGIN: Success Notification -->
-    <Notification refKey="errorNotification" class="flex">
-      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
+    <Notification
+      refKey="errorNotification"
+      class="flex"
+    >
+      <Lucide
+        icon="AlertTriangle"
+        class="text-success"
+        style="color: red"
+      />
       <div class="ml-4 mr-4">
         <div class="font-medium">Có lỗi xảy ra!</div>
         <div class="mt-1 text-slate-500">
@@ -545,8 +518,14 @@ onMounted(() => {
         </div>
       </div>
     </Notification>
-    <Notification refKey="successNotification" class="flex">
-      <Lucide icon="CheckCircle" class="text-success" />
+    <Notification
+      refKey="successNotification"
+      class="flex"
+    >
+      <Lucide
+        icon="CheckCircle"
+        class="text-success"
+      />
       <div class="ml-4 mr-4">
         <div class="font-medium">Thành Công</div>
         <div class="mt-1 text-slate-500">
@@ -568,7 +547,10 @@ onMounted(() => {
   >
     <Dialog.Panel>
       <div class="p-5 text-center">
-        <Lucide icon="XCircle" class="w-16 h-16 mx-auto mt-3 text-danger" />
+        <Lucide
+          icon="XCircle"
+          class="w-16 h-16 mx-auto mt-3 text-danger"
+        />
         <div class="mt-5 text-3xl">Xóa?</div>
         <div class="mt-2 text-slate-500">
           Bạn có thật sự muốn xóa hình ảnh nay ?<br />
