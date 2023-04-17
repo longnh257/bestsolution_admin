@@ -50,17 +50,18 @@ export const useSalonListStore = defineStore("SalonList", {
       console.log(this.salons);
 
     },
-    async approveSalon(selectedId: number, index: number): Promise<void> {
+    async approveSalon(selectedId: number, index: number = NaN): Promise<void> {
       return await axios
         .post(
           "salon/approve",
           { id: selectedId },
         ).then((res) => {
-          this.salons[index].status = 1
-          this.salons[index].partner.is_approve = 1
+          if(index) {
+            this.salons[index].status = 1
+            this.salons[index].partner.is_approve = 1
+          }
           this.msg = res.data.message
         }).catch((res) => {
-
         })
     },
     async activeSalon(selectedId: number, index: number): Promise<void> {

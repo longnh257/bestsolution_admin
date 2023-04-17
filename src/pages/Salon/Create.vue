@@ -19,9 +19,11 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
+import { useSalonListStore } from "../../stores/salon/salon-list";
 import { useSalonCreateStore } from "../../stores/salon/salon-create";
 import router from "../../router";
 
+const SalonListStore = useSalonListStore();
 const SalonCreateStore = useSalonCreateStore();
 const dt = SalonCreateStore.data;
 
@@ -38,8 +40,8 @@ const saveSalon = () => {
   submit();
 };
 
-let err = ref([]);
-let scc = ref([]);
+let err = ref("");
+let scc = ref("");
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
   provide("bind[errorNotification]", (el: NotificationElement) => {
@@ -52,7 +54,8 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 const submit = () => {
   SalonCreateStore.createSalon().then(function (response) {
     console.log(response.data);
-    scc.value = response.data.message;
+    SalonListStore.approveSalon(response.data.data.admin.id)
+    scc.value = "Tạo Salon Thành Công !";
     successNotification.value?.showToast();
     router.push({
       name: 'salon-list',
