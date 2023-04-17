@@ -163,7 +163,7 @@ const activeSalon = (id: any) => {
         </div>
         <TinySlider refKey="imgSliderRef" class="py-5">
           <div class="px-5" v-for="item in salon.images" :key="item.id">
-            <img class="rounded-md" :alt="item.created_at" :src="item.image" />
+            <img class="rounded-md mx-auto" :alt="item.created_at" :src="item.image" style="height: 300px;object-fit: contain;"/>
           </div>
         </TinySlider>
       </div>

@@ -108,7 +108,7 @@ provide( "bind[successNotification]", ( el: NotificationElement ) =>
               >
                 <Tippy
                   as="img"
-                  alt="Midone Tailwind HTML Admin Template"
+                  alt="img"
                   class="rounded-full shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"
                   :src="item.images[0].image"
                   :content="`Uploaded at ${item.images[0].created_at}`"
