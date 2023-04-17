@@ -23,7 +23,6 @@ import { useSalonCreateStore } from "../../stores/salon/salon-create";
 import router from "../../router";
 import moment from 'moment';
 
-console.log(moment().utc().format('YYYY-MM-DD'));
 
 
 const SalonListStore = useSalonListStore();
@@ -120,7 +119,7 @@ const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
 };
 
 const getAddressData = ($e: any) => {
-  console.log($e.formatted_address);
+  console.log($e);
   console.log($e.address_components);
   for (const item of $e.address_components) {
     if (item.types.includes("country")) {
@@ -145,6 +144,8 @@ const getAddressData = ($e: any) => {
 
   dt.salon_lng = $e.geometry.location.lng();
   dt.salon_lat = $e.geometry.location.lat();
+  console.log(dt.salon_lng,dt.salon_lat);
+  
   dt.salon_address = $e.formatted_address;
   dt.salon_tz =
     "UTC " +
