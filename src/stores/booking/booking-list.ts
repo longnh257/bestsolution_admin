@@ -47,7 +47,9 @@ export const useBookingListStore = defineStore("BookingList", {
         this.loading = false
         console.log(this.bookings);
       }).catch((res) => {
-        this.msg = res.data.message
+        console.log(res);
+        
+      /*   this.msg = res.data.message */
         this.loading = false
       })
      

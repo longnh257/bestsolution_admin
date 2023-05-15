@@ -50,6 +50,22 @@ export const useSalonListStore = defineStore("SalonList", {
       console.log(this.salons);
 
     },
+    async getSalonListApproved(): Promise<void> {
+      this.loading = true
+
+      const res = await axios.get("salon/list-salon", {
+        params: {
+        },
+        headers: {
+          Authorization: "",
+        },
+      })
+      this.salons = res.data.data
+      this.totalPage = res.data.total_page
+      this.loading = false
+      console.log(this.salons);
+
+    },
     async approveSalon(selectedId: number, index: number = NaN): Promise<void> {
       return await axios
         .post(

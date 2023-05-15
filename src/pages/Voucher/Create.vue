@@ -22,23 +22,25 @@ import TomSelect from "../../base-components/TomSelect";
 
 import { useVoucherListStore } from "../../stores/voucher/voucher-list";
 import { useVoucherCreateStore } from "../../stores/voucher/voucher-create";
+import { useSalonListStore } from "../../stores/salon/salon-list";
 import router from "../../router";
 import moment from 'moment';
 
 const tags = ref(["1", "2"]);
 
+const SalonListStore = useSalonListStore();
 const VoucherListStore = useVoucherListStore();
 const VoucherCreateStore = useVoucherCreateStore();
 const dt = VoucherCreateStore.data;
+
+SalonListStore.getSalonListApproved()
+
 
 const bindedObject = reactive({ unmasked: "" });
 
 
 
-let listImgs: any = ref([]);
-let listStaffImgs: any = ref([]);
-
-let showPassword = ref(true);
+let PreviewIMG: any = ref("");
 
 const saveVoucher = () => {
   submit();
@@ -75,18 +77,17 @@ const submit = () => {
     });
 };
 
+
 const previewImages = (e: any) => {
-  for (var i = 0; i < e.target.files.length; i++) {
-    let file = e.target.files[i];
-    dt.images.push(file);
-    listImgs.value.push(URL.createObjectURL(file));
-  }
+  let file = e.target.files[0];
+  dt.image = file;
+  PreviewIMG.value = URL.createObjectURL(file);
 };
 
-const revokePreview = (index: any) => {
-  URL.revokeObjectURL(listImgs.value[index]);
-  listImgs.value.splice(index, 1);
-  dt.images.splice(index, 1);
+const revokePreview = () => {
+  URL.revokeObjectURL(PreviewIMG.value);
+  PreviewIMG.value = ""
+  dt.image = "";
 };
 
 </script>
@@ -97,7 +98,8 @@ const revokePreview = (index: any) => {
   </div>
   <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6">
     <div class="col-span-11 intro-y 2xl:col-span-9">
-      <!-- BEGIN: Account Info -->
+
+      <!-- BEGIN: Voucher Info -->
       <div class="p-5 mt-5 intro-y box">
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
@@ -106,194 +108,149 @@ const revokePreview = (index: any) => {
               class="w-4 h-4 mr-2"
             /> Thông tin tài khoản
           </div>
-          <div class="mt-5">
-            <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Tên voucher</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ voucher"
-                v-model="dt.title"
-              />
-            </div>
+          <div class="">
+            <div class="grid-cols-2 gap-3 sm:grid">
 
-            <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Mã voucher</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ voucher"
-                v-model="dt.code"
-              />
-            </div>
-
-            <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Ngày Bắt Đầu</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ voucher"
-                v-model="dt.start_date"
-              />
-            </div>
-
-            <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Ngày Kết Thúc</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ voucher"
-                v-model="dt.expiration_date"
-              />
-            </div>
-
-            <div class="mt-3">
-              <InputGroup>
+              <div class="mt-3">
+                <FormLabel
+                  htmlFor="crud-form-1"
+                  class="label-require"
+                >Tên voucher</FormLabel>
                 <FormInput
-                  id="crud-form-4"
+                  id="crud-form-1"
                   type="text"
-                  placeholder="Weight"
-                  aria-describedby="input-group-2"
+                  class="w-full"
+                  v-model="dt.title"
                 />
-                <InputGroup.Text id="input-group-2">
-                  <select
-                    v-model="dt.type"
-                    style="line-height: 14px;border:none !important;"
+              </div>
+
+              <div class="mt-3">
+                <FormLabel
+                  htmlFor="crud-form-1"
+                  class="label-require"
+                >Mã voucher</FormLabel>
+                <FormInput
+                  id="crud-form-1"
+                  type="text"
+                  class="w-full"
+                  v-model="dt.code"
+                />
+              </div>
+            </div>
+
+            <div class="grid-cols-2 gap-3 sm:grid">
+
+              <div class="mt-3">
+                <FormLabel
+                  htmlFor="crud-form-1"
+                  class="label-require"
+                >
+                  Giá trị
+                </FormLabel>
+                <InputGroup>
+                  <FormInput
+                    id="crud-form-4"
+                    type="text"
+                    v-model="dt.value"
+                    aria-describedby="input-group-2"
+                  />
+                  <InputGroup.Text
+                    id="input-group-2"
+                    class=" p-0"
                   >
-                    <option
-                      value="en"
-                      selected
-                    > % </option>
-                    <option value="vi"> $ </option>
-                  </select>
-                </InputGroup.Text>
-              </InputGroup>
+                    <select
+                      v-model="dt.type"
+                      style="line-height: 20px;border:none !important;"
+                    >
+                      <option
+                        value="1"
+                        selected
+                      > % </option>
+                      <option value="2"> $ </option>
+                    </select>
+                  </InputGroup.Text>
+                </InputGroup>
+              </div>
+
+              <div class="mt-3">
+                <FormLabel
+                  htmlFor="crud-form-1"
+                  class="label-require"
+                >Loại khách hàng</FormLabel>
+                <FormSelect
+                  id="crud-form-2"
+                  type="text"
+                  v-model="dt.type_customer"
+                  class="w-full"
+                >
+                  <option value="1">Tất cả</option>
+                  <option value="2">Thường</option>
+                  <option value="3">VIP</option>
+                </FormSelect>
+              </div>
             </div>
 
-            <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Mã voucher</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ voucher"
-                v-model="dt.code"
-              />
+            <div class="grid-cols-2 gap-3 sm:grid">
+              <div class="mt-3">
+                <FormLabel
+                  htmlFor="crud-form-1"
+                  class="label-require"
+                >Ngày Bắt Đầu</FormLabel>
+                <FormInput
+                  id="crud-form-1"
+                  type="date"
+                  class="w-full"
+                  v-model="dt.start_date"
+                />
+              </div>
+
+              <div class="mt-3">
+                <FormLabel
+                  htmlFor="crud-form-1"
+                  class="label-require"
+                >Ngày Kết Thúc</FormLabel>
+                <FormInput
+                  id="crud-form-1"
+                  type="date"
+                  class="w-full"
+                  v-model="dt.expiration_date"
+                />
+              </div>
             </div>
 
             <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Loại voucher</FormLabel>
-
-            </div>
-
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Loại khách hàng</FormLabel>
-              <FormSelect
-                id="crud-form-2"
-                type="text"
-                v-model="dt.type_customer"
-                class="w-full"
-              >
-                <option value="1">Tất cả</option>
-                <option value="2">Thường</option>
-                <option value="3">VIP</option>
-              </FormSelect>
-            </div>
-
-            <div class="mt-3">
-              <FormLabel htmlFor="post-form-4">Tags</FormLabel>
+              <FormLabel htmlFor="post-form-4">Salon được áp dụng</FormLabel>
               <TomSelect
                 id="post-form-4"
-                v-model="tags"
+                v-model="dt.salon_ids"
                 class="w-full"
                 multiple
               >
-                <option value="1">Leonardo DiCaprio</option>
-                <option value="2">Johnny Deep</option>
-                <option value="3">Robert Downey, Jr</option>
-                <option value="4">Samuel L. Jackson</option>
-                <option value="5">Morgan Freeman</option>
+                <option
+                  v-for="item in SalonListStore.salons"
+                  :key="item.id"
+                  :value="item.id"
+                > {{"ID: "+item.id + " " + item.name}}</option>
               </TomSelect>
             </div>
-
-          </div>
-        </div>
-      </div>
-      <!-- END: Account Info -->
-      <!-- BEGIN: Voucher Info -->
-      <div class="p-5 mt-5 intro-y box">
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            <Lucide
-              icon="Home"
-              class="w-4 h-4 mr-2"
-            /> Thông tin Voucher
-          </div>
-          <div class="mt-5">
-            <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Tên Voucher</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ voucher"
-                v-model="dt.voucher_name"
-              />
-            </div>
-
-            <!-- <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Ngôn Ngữ</FormLabel>
-              <FormSelect
-                id="crud-form-2"
-                type="text"
-                v-model="dt.lang"
-                class="w-full"
-              >
-                <option value="en">Tiếng Anh</option>
-                <option value="vi">Tiếng Việt</option>
-              </FormSelect>
-            </div> -->
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
                 <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
                   <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
                     <div
-                      v-for="(image, index) in listImgs"
-                      :key="image"
+                      v-if="PreviewIMG"
                       class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
                     >
                       <img
                         class="rounded-md"
                         alt=""
-                        :src="image"
+                        :src="PreviewIMG"
                       />
                       <Tippy
                         content="Remove this image?"
                         class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
-                        @click="revokePreview(index)"
+                        @click="revokePreview()"
                       >
                         <Lucide
                           icon="X"
@@ -312,14 +269,12 @@ const revokePreview = (index: any) => {
                       id="horizontal-form-1"
                       type="file"
                       class="absolute top-0 left-0 w-full h-full opacity-0"
-                      multiple
                       @change="previewImages"
                     />
                   </div>
                 </div>
               </FormInline>
             </div>
-
           </div>
         </div>
       </div>

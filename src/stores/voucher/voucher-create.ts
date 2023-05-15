@@ -10,7 +10,7 @@ interface VoucherCreateState {
         expiration_date: string,
         value: string,
         type: string,
-        salon_id: string,
+        salon_ids: any
         type_customer: string,
         description: string,
 
@@ -25,8 +25,8 @@ const defaultData = {
     expiration_date: "",
     value: "",
     type: "1",
-    salon_id: "",
-    type_customer: "",
+    salon_ids: [],
+    type_customer: "1",
     description: "",
 }
 
@@ -41,8 +41,8 @@ export const useVoucherCreateStore = defineStore("VoucherCreate", {
                 expiration_date: "",
                 value: "",
                 type: "1",
-                salon_id: "",
-                type_customer: "",
+                salon_ids: [],
+                type_customer: "1",
                 description: "",
             }
         }),
@@ -59,7 +59,10 @@ export const useVoucherCreateStore = defineStore("VoucherCreate", {
 
         async createVoucher() {
 
-            const fd = new FormData();
+            console.log(this.data);
+            
+
+           /*  const fd = new FormData();
 
 
             fd.append("name", this.data.title);
@@ -70,7 +73,7 @@ export const useVoucherCreateStore = defineStore("VoucherCreate", {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
-                })
+                }) */
         }
     }
 }) 
