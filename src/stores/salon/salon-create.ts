@@ -36,7 +36,7 @@ interface SalonCreateState {
         salon_tz: string,
         salon_lat: string,
         salon_lng: string,
-        lang: string,
+      /*   lang: string, */
         images: Blob[],
         fileList: Blob[],
         staffs: Staff[],
@@ -63,7 +63,7 @@ const defaultData = {
     salon_tz: "",
     salon_lat: "",
     salon_lng: "",
-    lang: "en",
+  /*   lang: "en", */
     images: [],
     fileList: [],
     staffs: [
@@ -147,7 +147,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
                 salon_tz: "",
                 salon_lat: "",
                 salon_lng: "",
-                lang: "en",
+               /*  lang: "en", */
                 images: [],
                 fileList: [],
                 staffs: [
@@ -282,7 +282,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             fd.append("salon_tz", this.data.salon_tz);
             fd.append("salon_lat", this.data.salon_lat);
             fd.append("salon_lng", this.data.salon_lng);
-            fd.append("lang", this.data.lang);
+     /*        fd.append("lang", this.data.lang); */
             fd.append("services", JSON.stringify(this.data.services));
             fd.append("staffs", JSON.stringify(this.data.staffs));
             fd.append("schedules", JSON.stringify(this.data.schedules));

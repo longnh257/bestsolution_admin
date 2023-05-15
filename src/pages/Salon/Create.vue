@@ -317,7 +317,7 @@ const getAddressData = ($e: any) => {
                 placeholder="Email"
               />
             </div>
-            <div class="mt-3">
+            <!-- <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Ngôn Ngữ</FormLabel>
               <FormSelect
                 id="crud-form-2"
@@ -328,7 +328,7 @@ const getAddressData = ($e: any) => {
                 <option value="en">Tiếng Anh</option>
                 <option value="vi">Tiếng Việt</option>
               </FormSelect>
-            </div>
+            </div> -->
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">

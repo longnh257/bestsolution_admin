@@ -56,22 +56,32 @@ provide("bind[successNotification]", (el: NotificationElement) => {
         <div class="box">
           <div class="p-2">
             <div class="h-40 overflow-hidden  2xl:h-56 image-fit ">
-              <iframe
-                v-if="BannerListStore.file_type && BannerListStore.file_type=='video'"
-                width="100%"
-                height="100%"
-                :src="item.file"
-                title="YouTube video player"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-              ></iframe>
+              <div v-if="item.type === 3">
+                <a
+                  :href="item.file"
+                  target="_blank"
+                  v-if="item.file_type && item.file_type=='video'"
+                >
+                  <img
+                    alt="Banner"
+                    class="rounded-md"
+                    :src="item.thumbnail"
+                  />
+                </a>
+                <img
+                  alt="Banner"
+                  class="rounded-md"
+                  :src="item.file"
+                  v-else
+                />
+              </div>
               <img
+                v-if="item.type === 4"
                 alt="Banner"
                 class="rounded-md"
                 :src="item.image"
-                v-else
               />
+
             </div>
             <div class="mt-5 text-slate-600 dark:text-slate-500">
               <div
@@ -83,7 +93,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
             </div>
           </div>
           <div class="flex items-center justify-center p-5 border-t lg:justify-end border-slate-200/60 dark:border-darkmode-400">
-          
+
             <a
               class="flex items-center text-danger"
               href="#"

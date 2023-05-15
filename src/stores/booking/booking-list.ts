@@ -39,15 +39,18 @@ export const useBookingListStore = defineStore("BookingList", {
           txt_search: this.txtSearch,
           num_per_page: this.recPerPage,
         },
-        headers: {
-          Authorization: "Bearer " + access_token,
-        },
+        
+      }).then((res) => {
+        this.bookings = res.data.data
+        this.totalPage = res.data.total_page
+  
+        this.loading = false
+        console.log(this.bookings);
+      }).catch((res) => {
+        this.msg = res.data.message
+        this.loading = false
       })
-      this.bookings = res.data.data
-      this.totalPage = res.data.total_page
-
-      this.loading = false
-      console.log(this.bookings);
+     
 
     },
   }

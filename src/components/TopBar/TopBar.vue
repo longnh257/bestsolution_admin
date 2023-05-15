@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import Lucide from "../../base-components/Lucide";
-import logoUrl from "../../assets/images/logo.svg";
+import logoUrl from "../../assets/images/logo.jpg";
 import Breadcrumb from "../../base-components/Breadcrumb";
 import { FormInput } from "../../base-components/Form";
 import { Menu, Popover } from "../../base-components/Headless";
@@ -57,7 +57,7 @@ const logout = () => {
         ]"
       >
         <img
-          alt="123 Best Solution"
+          alt="Việt Nails"
           class="w-6"
           :src="logoUrl"
         />
@@ -67,7 +67,7 @@ const logout = () => {
             props.layout == 'side-menu' && 'hidden xl:block',
             props.layout == 'simple-menu' && 'hidden',
           ]">
-          123 Best Solution
+          Việt Nails
         </span>
       </RouterLink>
       <!-- END: Logo -->

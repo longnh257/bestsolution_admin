@@ -48,7 +48,7 @@ const submit = () => {
   })
     .catch(function (error) {
       console.log(error.response);
-      err.value = error.response.data.message;
+      err.value = error.response.message;
       errorNotification.value?.showToast();
     });
 };
@@ -83,10 +83,12 @@ const saveBanner = () => {
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
                 <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
-                  <div class="grid grid-cols-10 gap-5 pl-4 pr-5"  v-if="PreviewIMG">
+                  <div
+                    class="grid grid-cols-10 gap-5 pl-4 pr-5"
+                    v-if="PreviewIMG"
+                  >
                     <div class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in">
                       <img
-                       
                         class="rounded-md"
                         alt=""
                         :src="PreviewIMG"
