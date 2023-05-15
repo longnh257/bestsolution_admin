@@ -240,7 +240,7 @@ const activeSalon = (id: any) => {
                   :key="schedule.id"
                 >
                   <Table.Td>{{
-                    schedule.day == 0 ? "Chủ Nhật" : `Thứ ${schedule.day}`
+                    schedule.day == 0 ? "Chủ Nhật" : `Thứ ${schedule.day + 1}`
                   }}</Table.Td>
                   <Table.Td>{{ schedule.start_time }}</Table.Td>
                   <Table.Td>{{ schedule.end_time }}</Table.Td>

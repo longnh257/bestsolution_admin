@@ -10,6 +10,7 @@ import BookingList from "../pages/Booking/List/List.vue";
 import BookingDetail from "../pages/Booking/Detail.vue";
 import VoucherList from "../pages/Voucher/List/List.vue";
 import VoucherDetail from "../pages/Voucher/Detail.vue";
+import VoucherCreate from "../pages/Voucher/Create.vue";
 import BannerList from "../pages/Banner/List/List.vue";
 import GuideList from "../pages/Banner/List/GuideList.vue";
 import BannerCreate from "../pages/Banner/Create.vue";
@@ -83,6 +84,11 @@ const routes = [
             path: "detail/:voucher_id",
             name: "voucher-detail",
             component: VoucherDetail,
+          },
+          {
+            path: "create",
+            name: "voucher-create",
+            component: VoucherCreate,
           },
 
 
