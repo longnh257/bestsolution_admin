@@ -146,42 +146,91 @@ const activeSalon = (id: any) => {
       console.log(error);
     });
 };
+
 </script>
 
 <template>
   <div class="flex items-center mt-8 intro-y">
     <h2 class="mr-auto text-lg font-medium">Thông Tin Salon</h2>
   </div>
-  <div class="grid grid-cols-12 gap-6 mt-5" v-if="salon">
+  <div
+    class="grid grid-cols-12 gap-6 mt-5"
+    v-if="salon"
+  >
     <div class="col-span-12 lg:col-span-8 2xl:col-span-9">
       <!-- BEGIN: Projects -->
       <div class="col-span-12 intro-y box 2xl:col-span-6">
-        <div
-          class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400"
-        >
+        <div class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
           <h2 class="mr-auto text-base font-medium">Hình Ảnh Salon</h2>
+          <a
+            href="#"
+            variant="outline-secondary"
+            class="p-2 slider-btn prev-btn"
+            @click="prevNewProjects"
+            style="
+            position:absolute;
+            z-index: 1000;
+            top: 50%;
+            "
+          >
+            <Lucide
+              icon="ChevronLeft"
+              class="w-4 h-4"
+            />
+          </a>
+          <a
+            href="##"
+            variant="outline-secondary"
+            class="p-2 slider-btn next-btn"
+            @click="nextNewProjects"
+            style="
+            position:absolute;
+            top: 50%;
+            z-index: 1000;
+            right: 20px;
+            "
+          >
+            <Lucide
+              icon="ChevronRight"
+              class="w-4 h-4"
+            />
+          </a>
         </div>
-        <TinySlider refKey="imgSliderRef" class="py-5">
-          <div class="px-5" v-for="item in salon.images" :key="item.id">
-            <img class="rounded-md mx-auto" :alt="item.created_at" :src="item.image" style="height: 300px;object-fit: contain;"/>
+        <TinySlider
+          refKey="imgSliderRef"
+          class="py-5"
+        >
+          <div
+            class="px-5"
+            v-for="item in salon.images"
+            :key="item.id"
+          >
+            <img
+              class="rounded-md mx-auto"
+              :alt="item.created_at"
+              :src="item.image"
+              style="height: 300px;object-fit: contain;"
+            />
           </div>
         </TinySlider>
       </div>
       <!-- END: Projects -->
       <!-- BEGIN: Product Information -->
       <div class="p-5 mt-5 intro-y box">
-        <div
-          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
+        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             Chi Tiết
           </div>
-          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
             <div class="text-left">
               <div class="flex items-center">
-                <div class="font-semibold mr-2" style="min-width: fit-content">
+                <div
+                  class="font-semibold mr-2"
+                  style="min-width: fit-content"
+                >
                   Tên Salon :
                 </div>
                 <span>
@@ -190,10 +239,16 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
             <div class="text-left">
               <div class="flex">
-                <div class="font-semibold mr-2" style="min-width: fit-content">
+                <div
+                  class="font-semibold mr-2"
+                  style="min-width: fit-content"
+                >
                   Mô Tả :
                 </div>
                 <span>
@@ -202,10 +257,16 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
             <div class="text-left">
               <div class="flex items-center">
-                <div class="font-semibold mr-2" style="min-width: fit-content">
+                <div
+                  class="font-semibold mr-2"
+                  style="min-width: fit-content"
+                >
                   Số Điện Thoại liên hệ :
                 </div>
                 <span>
@@ -216,12 +277,8 @@ const activeSalon = (id: any) => {
           </div>
         </div>
         <!--    ////////////////////////  -->
-        <div
-          class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-        >
-          <div
-            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
-          >
+        <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             Giờ làm việc : &nbsp;
             <span class="italic text-success">(Múi Giờ : {{ salon.tz }})</span>
           </div>
@@ -253,11 +310,10 @@ const activeSalon = (id: any) => {
       <!-- END: Product Information -->
     </div>
     <!-- BEGIN: Profile Menu -->
-    <div
-      class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block"
-    >
+    <div class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block">
       <div class="mt-5 intro-y box lg:mt-0">
         <div class="relative flex items-center p-5">
+
           <div class="w-12 h-12 image-fit">
             <img
               v-if="salon.images[0]"
@@ -271,13 +327,22 @@ const activeSalon = (id: any) => {
               {{ salon.name }}
             </div>
             <div class="text-slate-500 flex">
-              <Lucide icon="Phone" class="w-4 h-4 mr-2" />{{ salon.phone }}
+              <Lucide
+                icon="Phone"
+                class="w-4 h-4 mr-2"
+              />{{ salon.partner.phone }}
             </div>
           </div>
         </div>
         <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
-          <router-link :to="{name:'salon-edit' , params:{salon_id:salon.id}}" class="flex">
-            <Lucide icon="Edit" class="w-4 h-4 mr-2" />
+          <router-link
+            :to="{name:'salon-edit' , params:{salon_id:salon.id}}"
+            class="flex"
+          >
+            <Lucide
+              icon="Edit"
+              class="w-4 h-4 mr-2"
+            />
             Sửa thông tin salon
           </router-link>
         </div>
@@ -293,7 +358,10 @@ const activeSalon = (id: any) => {
                         }
                       "
           >
-            <Lucide icon="Activity" class="w-4 h-4 mr-2" /> Phê duyệt
+            <Lucide
+              icon="Activity"
+              class="w-4 h-4 mr-2"
+            /> Phê duyệt
           </a>
           <a
             class="flex items-center text-success"
@@ -306,7 +374,10 @@ const activeSalon = (id: any) => {
                         }
                       "
           >
-            <Lucide icon="Unlock" class="w-4 h-4 mr-2" /> Mở Khóa
+            <Lucide
+              icon="Unlock"
+              class="w-4 h-4 mr-2"
+            /> Mở Khóa
           </a>
           <a
             class="flex items-center text-danger"
@@ -319,12 +390,13 @@ const activeSalon = (id: any) => {
                         }
                       "
           >
-            <Lucide icon="Lock" class="w-4 h-4 mr-2" /> Khóa
+            <Lucide
+              icon="Lock"
+              class="w-4 h-4 mr-2"
+            /> Khóa
           </a>
         </div>
-        <div
-          class="flex p-5 border-t border-slate-200/60 dark:border-darkmode-400 justify-center"
-        >
+        <div class="flex p-5 border-t border-slate-200/60 dark:border-darkmode-400 justify-center">
           <Button
             variant="danger"
             type="button"
@@ -346,8 +418,15 @@ const activeSalon = (id: any) => {
   <!-- END: Delete Confirmation Modal -->
   <div class="p-5">
     <!-- BEGIN: Success Notification -->
-    <Notification refKey="errorNotification" class="flex">
-      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
+    <Notification
+      refKey="errorNotification"
+      class="flex"
+    >
+      <Lucide
+        icon="AlertTriangle"
+        class="text-success"
+        style="color: red"
+      />
       <div class="ml-4 mr-4">
         <div class="font-medium">Có lỗi xảy ra!</div>
         <div class="mt-1 text-slate-500">
@@ -355,8 +434,14 @@ const activeSalon = (id: any) => {
         </div>
       </div>
     </Notification>
-    <Notification refKey="successNotification" class="flex">
-      <Lucide icon="CheckCircle" class="text-success" />
+    <Notification
+      refKey="successNotification"
+      class="flex"
+    >
+      <Lucide
+        icon="CheckCircle"
+        class="text-success"
+      />
       <div class="ml-4 mr-4">
         <div class="font-medium">Thành Công</div>
         <div class="mt-1 text-slate-500">
@@ -378,7 +463,10 @@ const activeSalon = (id: any) => {
   >
     <Dialog.Panel>
       <div class="p-5 text-center">
-        <Lucide icon="XCircle" class="w-16 h-16 mx-auto mt-3 text-danger" />
+        <Lucide
+          icon="XCircle"
+          class="w-16 h-16 mx-auto mt-3 text-danger"
+        />
         <div class="mt-5 text-3xl">Xóa Salon?</div>
         <div class="mt-2 text-slate-500">
           Bạn có thật sự muốn xóa salon nay ?<br />

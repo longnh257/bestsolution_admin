@@ -84,3 +84,19 @@
 .pagination li {
    margin: 0 4px !important
 }
+
+.slider-btn{
+   position:absolute;
+   z-index: 1000;
+   top: 50%;
+   transform: translateY(-50%);
+   background-color: #f8f8f888
+}
+
+.slider-btn.btn-next{
+   right: 20px;
+}
+
+.slider-btn:hover{
+   background-color: #dadada !important;
+}
