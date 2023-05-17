@@ -9,7 +9,8 @@ import axios from "axios"
 
 
 let API_URL = localStorage.getItem("API_URL")
-axios.defaults.baseURL = API_URL==import.meta.env.VITE_APP_API_LIVE ? API_URL : import.meta.env.VITE_APP_API_DEV
+/* axios.defaults.baseURL = API_URL==import.meta.env.VITE_APP_API_LIVE ? API_URL : import.meta.env.VITE_APP_API_DEV */
+axios.defaults.baseURL = import.meta.env.VITE_APP_API_DEV
 axios.defaults.headers.common['Authorization'] = "Bearer " + localStorage.getItem("access_token")
 axios.defaults.headers.common['lang'] = 'vi'
 
