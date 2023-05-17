@@ -31,14 +31,13 @@ onMounted(() => {
 
 <template>
   <div class="py-5 md:py-0">
-    <DarkModeSwitcher />
+    <!--   <DarkModeSwitcher /> -->
+    <!--  <MainColorSwitcher /> -->
     <MobileMenu />
     <TopBar layout="side-menu" />
     <div class="flex overflow-hidden">
       <!-- BEGIN: Side Menu -->
-      <nav
-        class="w-[105px] xl:w-[260px] px-5 pb-16 overflow-x-hidden z-50 pt-32 -mt-4 hidden md:block"
-      >
+      <nav class="w-[105px] xl:w-[260px] px-5 pb-16 overflow-x-hidden z-50 pt-32 -mt-4 hidden md:block">
         <ul>
           <!-- BEGIN: First Child -->
           <template v-for="(menu, menuKey) in formattedMenu">
@@ -55,7 +54,10 @@ onMounted(() => {
               ]"
               :key="'divider-' + menuKey"
             ></Divider>
-            <li v-else :key="menuKey">
+            <li
+              v-else
+              :key="menuKey"
+            >
               <Menu
                 :class="{
                   // Animation
@@ -68,7 +70,10 @@ onMounted(() => {
                 level="first"
               ></Menu>
               <!-- BEGIN: Second Child -->
-              <Transition @enter="enter" @leave="leave">
+              <Transition
+                @enter="enter"
+                @leave="leave"
+              >
                 <ul
                   v-if="menu.subMenu && menu.activeDropdown"
                   :class="[
@@ -143,12 +148,10 @@ onMounted(() => {
       </nav>
       <!-- END: Side Menu -->
       <!-- BEGIN: Content -->
-      <div
-        :class="[
+      <div :class="[
           'max-w-full md:max-w-none rounded-[30px] md:rounded-none px-4 md:px-[22px] min-w-0 min-h-screen bg-slate-100 flex-1 md:pt-20 pb-10 mt-5 md:mt-1 relative dark:bg-darkmode-700',
           'before:content-[\'\'] before:w-full before:h-px before:block',
-        ]"
-      >
+        ]">
         <RouterView />
       </div>
       <!-- END: Content -->

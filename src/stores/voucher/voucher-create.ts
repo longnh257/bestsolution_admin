@@ -59,21 +59,25 @@ export const useVoucherCreateStore = defineStore("VoucherCreate", {
 
         async createVoucher() {
 
-            console.log(this.data);
-            
+            const fd = new FormData();
 
-           /*  const fd = new FormData();
-
-
-            fd.append("name", this.data.title);
-         
+            fd.append("title", this.data.title);
+            fd.append("code", this.data.code);
+            fd.append("image", this.data.image);
+            fd.append("start_date", this.data.start_date);
+            fd.append("expiration_date", this.data.expiration_date);
+            fd.append("value", this.data.value);
+            fd.append("type", this.data.type);
+            fd.append("salon_ids", JSON.stringify(this.data.salon_ids));
+            fd.append("type_customer", this.data.type_customer);
+            fd.append("description", this.data.description);
 
             return await axios
-                .post(`voucher/sign-up`, fd, {
+                .post(`admin/add-voucher-salons`, fd, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
-                }) */
+                })
         }
     }
 }) 

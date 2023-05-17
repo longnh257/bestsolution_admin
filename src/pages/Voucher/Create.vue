@@ -17,6 +17,7 @@ import {
   FormCheck,
   InputGroup,
   FormSwitch,
+  FormTextarea,
 } from "../../base-components/Form";
 import TomSelect from "../../base-components/TomSelect";
 
@@ -60,7 +61,6 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 const submit = () => {
   VoucherCreateStore.createVoucher().then(function (response) {
     console.log(response.data)
-
     VoucherCreateStore.resetData()
 
     scc.value = "Tạo Voucher Thành Công !"
@@ -112,12 +112,8 @@ const revokePreview = () => {
             <div class="grid-cols-2 gap-3 sm:grid">
 
               <div class="mt-3">
-                <FormLabel
-                  htmlFor="crud-form-1"
-                  class="label-require"
-                >Tên voucher</FormLabel>
+                <FormLabel class="label-require">Tên voucher</FormLabel>
                 <FormInput
-                  id="crud-form-1"
                   type="text"
                   class="w-full"
                   v-model="dt.title"
@@ -125,12 +121,8 @@ const revokePreview = () => {
               </div>
 
               <div class="mt-3">
-                <FormLabel
-                  htmlFor="crud-form-1"
-                  class="label-require"
-                >Mã voucher</FormLabel>
+                <FormLabel class="label-require">Mã voucher</FormLabel>
                 <FormInput
-                  id="crud-form-1"
                   type="text"
                   class="w-full"
                   v-model="dt.code"
@@ -141,23 +133,16 @@ const revokePreview = () => {
             <div class="grid-cols-2 gap-3 sm:grid">
 
               <div class="mt-3">
-                <FormLabel
-                  htmlFor="crud-form-1"
-                  class="label-require"
-                >
+                <FormLabel class="label-require">
                   Giá trị
                 </FormLabel>
                 <InputGroup>
                   <FormInput
-                    id="crud-form-4"
                     type="text"
                     v-model="dt.value"
                     aria-describedby="input-group-2"
                   />
-                  <InputGroup.Text
-                    id="input-group-2"
-                    class=" p-0"
-                  >
+                  <InputGroup.Text class=" p-0">
                     <select
                       v-model="dt.type"
                       style="line-height: 20px;border:none !important;"
@@ -173,12 +158,8 @@ const revokePreview = () => {
               </div>
 
               <div class="mt-3">
-                <FormLabel
-                  htmlFor="crud-form-1"
-                  class="label-require"
-                >Loại khách hàng</FormLabel>
+                <FormLabel class="label-require">Loại khách hàng</FormLabel>
                 <FormSelect
-                  id="crud-form-2"
                   type="text"
                   v-model="dt.type_customer"
                   class="w-full"
@@ -192,12 +173,8 @@ const revokePreview = () => {
 
             <div class="grid-cols-2 gap-3 sm:grid">
               <div class="mt-3">
-                <FormLabel
-                  htmlFor="crud-form-1"
-                  class="label-require"
-                >Ngày Bắt Đầu</FormLabel>
+                <FormLabel class="label-require">Ngày Bắt Đầu</FormLabel>
                 <FormInput
-                  id="crud-form-1"
                   type="date"
                   class="w-full"
                   v-model="dt.start_date"
@@ -205,12 +182,9 @@ const revokePreview = () => {
               </div>
 
               <div class="mt-3">
-                <FormLabel
-                  htmlFor="crud-form-1"
-                  class="label-require"
-                >Ngày Kết Thúc</FormLabel>
+                <FormLabel class="label-require">
+                  Ngày Kết Thúc</FormLabel>
                 <FormInput
-                  id="crud-form-1"
                   type="date"
                   class="w-full"
                   v-model="dt.expiration_date"
@@ -219,11 +193,15 @@ const revokePreview = () => {
             </div>
 
             <div class="mt-3">
-              <FormLabel htmlFor="post-form-4">Salon được áp dụng</FormLabel>
+              <FormLabel class="label-require">
+                Salon được áp dụng
+              </FormLabel>
               <TomSelect
-                id="post-form-4"
                 v-model="dt.salon_ids"
                 class="w-full"
+                :options="{
+                  create: false,
+                }"
                 multiple
               >
                 <option
@@ -232,6 +210,14 @@ const revokePreview = () => {
                   :value="item.id"
                 > {{"ID: "+item.id + " " + item.name}}</option>
               </TomSelect>
+            </div>
+            <div class="mt-3">
+              <FormLabel>Mô tả</FormLabel>
+              <FormTextarea
+                type="date"
+                class="w-full"
+                v-model="dt.description"
+              />
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
