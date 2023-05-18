@@ -5,7 +5,7 @@ import Lucide from "../../base-components/Lucide";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Table from "../../base-components/Table";
-import { normalizeInput } from "../../utils/helper";
+import { normalizeInput, getTimeZoneByLocation } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
 import {
@@ -46,7 +46,7 @@ let err = ref("")
 let scc = ref("")
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
-  provide("bind[errorNotification]", (el: NotificationElement) => {
+provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el
 });
 provide("bind[successNotification]", (el: NotificationElement) => {
@@ -118,9 +118,7 @@ const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   }
 };
 
-const getAddressData = ($e: any) => {
-  console.log($e);
-  console.log($e.address_components);
+const getAddressData = async ($e: any) => {
   for (const item of $e.address_components) {
     if (item.types.includes("country")) {
       dt.salon_country = item.short_name
@@ -137,20 +135,22 @@ const getAddressData = ($e: any) => {
       dt.salon_zipcode = item.short_name
     }
   }
-  if(!dt.salon_city){
-    dt.salon_city =  dt.salon_state
+  if (!dt.salon_city) {
+    dt.salon_city = dt.salon_state
   }
-  console.log("state,city",dt.salon_state,dt.salon_city);
 
   dt.salon_lng = $e.geometry.location.lng();
   dt.salon_lat = $e.geometry.location.lat();
-  console.log(dt.salon_lng,dt.salon_lat);
-  
+
+  const timezoneByLocation: any = await getTimeZoneByLocation(dt.salon_lng, dt.salon_lat)
+  dt.salon_timezone = timezoneByLocation.timeZoneId
   dt.salon_address = $e.formatted_address;
   dt.salon_tz =
     "UTC " +
     ($e.utc_offset_minutes < 0 ? "" : "+") +
     $e.utc_offset_minutes / 60;
+  console.log("salon tz: " + dt.salon_timezone);
+  console.log("tz: " + dt.salon_tz);
 };
 </script>
 
@@ -189,7 +189,7 @@ const getAddressData = ($e: any) => {
                 class="label-require"
               >Số điện thoại</FormLabel>
               <FormInput
-                id="crud-form-2"  
+                id="crud-form-2"
                 type="text"
                 class="w-full"
                 placeholder="Số điện thoại dùng để đăng nhập"

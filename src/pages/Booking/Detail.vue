@@ -43,9 +43,42 @@ const nextNewProjects = () => {
   >
     <div class="col-span-12 lg:col-span-8 2xl:col-span-9">
       <!-- BEGIN: Projects -->
-      <div class="col-span-12 intro-y box 2xl:col-span-6">
+      <div class="col-span-12 intro-y box 2xl:col-span-6" v-if="BookingDetailStore.booking.images.length > 0">
         <div class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
           <h2 class="mr-auto text-base font-medium">Hình Ảnh Booking</h2>
+          <a
+            href="#"
+            variant="outline-secondary"
+            class="p-2 slider-btn prev-btn"
+            @click="prevNewProjects"
+            style="
+            position:absolute;
+            z-index: 1000;
+            top: 50%;
+            "
+          >
+            <Lucide
+              icon="ChevronLeft"
+              class="w-4 h-4"
+            />
+          </a>
+          <a
+            href="#"
+            variant="outline-secondary"
+            class="p-2 slider-btn next-btn"
+            @click="nextNewProjects"
+            style="
+            position:absolute;
+            top: 50%;
+            z-index: 1000;
+            right: 20px;
+            "
+          >
+            <Lucide
+              icon="ChevronRight"
+              class="w-4 h-4"
+            />
+          </a>
         </div>
         <TinySlider
           refKey="imgSliderRef"
@@ -56,14 +89,22 @@ const nextNewProjects = () => {
             v-for="item in BookingDetailStore.booking.images"
             :key="item.id"
           >
-            <img
-              class="rounded-md"
+          <img
+              class="rounded-md mx-auto"
               :alt="item.created_at"
               :src="item.image"
+              style="height: 300px;object-fit: contain;"
             />
           </div>
         </TinySlider>
       </div>
+      <div class="col-span-12 intro-y box 2xl:col-span-6" v-else>
+        <div class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+          <h2 class="mr-auto text-base font-medium">Hình Ảnh Booking</h2>
+        </div>
+        <div class="text-center py-4"> Chưa có hình ảnh</div>
+      </div>
+    
       <!-- END: Projects -->
       <!-- BEGIN: Product Information -->
       <div class="p-5 mt-5 intro-y box">
@@ -111,7 +152,7 @@ const nextNewProjects = () => {
                   Thợ được đặt :
                 </div>
                 <span class=" mr-3">
-                  {{ BookingDetailStore.booking.staff.name }}
+                  {{ BookingDetailStore.booking.staff_name }}
                 </span>
               </div>
             </div>

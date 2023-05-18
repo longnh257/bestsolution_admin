@@ -7,7 +7,7 @@ import axios from "axios";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Table from "../../base-components/Table";
-import { normalizeInput } from "../../utils/helper";
+import { normalizeInput,getTimeZoneByLocation } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
 import { useRoute } from "vue-router";
@@ -167,7 +167,7 @@ const maskphone = (key: any) => {
   }
 };
 
-const getAddressData = (placeResultData: any) => {
+const getAddressData = async (placeResultData: any) => {
   for (const item of placeResultData.address_components) {
     if (item.types.includes("country")) {
       salon.value.country = item.short_name;
@@ -190,6 +190,9 @@ const getAddressData = (placeResultData: any) => {
     (placeResultData.utc_offset_minutes < 0 ? "" : "+") +
     placeResultData.utc_offset_minutes / 60;
   console.log(salon.value);
+
+  const timezoneByLocation: any = await getTimeZoneByLocation(salon.value.lng, salon.value.lat)
+  salon.value.timezone = timezoneByLocation.timeZoneId
 };
 let deleteImgArr = ref<any[]>([]);
 const deleteImg = () => {
