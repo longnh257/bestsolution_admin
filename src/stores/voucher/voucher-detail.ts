@@ -31,10 +31,7 @@ export const useVoucherDetailStore = defineStore("VoucherDetail", {
             console.log(voucher_id);
             
             this.loading = true
-            const res = await axios.get(`appointment/detail?id=${voucher_id}`, {
-                headers: {
-                    Authorization: "Bearer " + access_token,
-                },
+            const res = await axios.get(`voucher/detail/${voucher_id}`, {
             })
             this.voucher = res.data.data
             this.loading = false

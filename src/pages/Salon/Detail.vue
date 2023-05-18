@@ -35,8 +35,10 @@ const nextNewProjects = () => {
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 const selectedSalonId = ref();
+
 let err = ref([]);
 let scc = ref([]);
+
 const salonIndex: any = ref("");
 const salonId: any = ref("");
 const salon = ref();

@@ -175,7 +175,7 @@ const revokePreview = () => {
               <div class="mt-3">
                 <FormLabel class="label-require">Ngày Bắt Đầu</FormLabel>
                 <FormInput
-                  type="date"
+                  type="datetime-local"
                   class="w-full"
                   v-model="dt.start_date"
                 />
@@ -185,7 +185,7 @@ const revokePreview = () => {
                 <FormLabel class="label-require">
                   Ngày Kết Thúc</FormLabel>
                 <FormInput
-                  type="date"
+                  type="datetime-local"
                   class="w-full"
                   v-model="dt.expiration_date"
                 />
