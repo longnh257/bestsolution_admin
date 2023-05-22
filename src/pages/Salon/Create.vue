@@ -120,6 +120,8 @@ const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
 
 const getAddressData = async ($e: any) => {
   for (const item of $e.address_components) {
+    console.log($e);
+    
     if (item.types.includes("country")) {
       dt.salon_country = item.short_name
     }
@@ -141,16 +143,18 @@ const getAddressData = async ($e: any) => {
 
   dt.salon_lng = $e.geometry.location.lng();
   dt.salon_lat = $e.geometry.location.lat();
-
-  const timezoneByLocation: any = await getTimeZoneByLocation(dt.salon_lng, dt.salon_lat)
-  dt.salon_timezone = timezoneByLocation.timeZoneId
   dt.salon_address = $e.formatted_address;
   dt.salon_tz =
     "UTC " +
     ($e.utc_offset_minutes < 0 ? "" : "+") +
     $e.utc_offset_minutes / 60;
-  console.log("salon tz: " + dt.salon_timezone);
-  console.log("tz: " + dt.salon_tz);
+  /*   console.log("salon tz: " + dt.salon_timezone);
+    console.log("tz: " + dt.salon_tz); */
+
+  const timezoneByLocation: any = await getTimeZoneByLocation(dt.salon_lat, dt.salon_lng)
+  if (timezoneByLocation.timeZoneId)
+    dt.salon_timezone = timezoneByLocation.timeZoneId
+  console.log("tz: " + dt.salon_timezone);
 };
 </script>
 

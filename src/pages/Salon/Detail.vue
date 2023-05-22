@@ -162,7 +162,7 @@ const activeSalon = (id: any) => {
     <div class="col-span-12 lg:col-span-8 2xl:col-span-9">
       <!-- BEGIN: Projects -->
       <div class="col-span-12 intro-y box 2xl:col-span-6">
-        <div class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+        <div  v-if="salon.images.length > 1" class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
           <h2 class="mr-auto text-base font-medium">Hình Ảnh Salon</h2>
           <a
             href="#"
@@ -198,9 +198,14 @@ const activeSalon = (id: any) => {
             />
           </a>
         </div>
+        <div  v-else class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+          <h2 class="mr-auto text-base font-medium">Hình Ảnh Salon</h2>
+        </div>
+       
         <TinySlider
           refKey="imgSliderRef"
           class="py-5"
+          v-if="salon.images.length > 0"
         >
           <div
             class="px-5"
@@ -215,6 +220,7 @@ const activeSalon = (id: any) => {
             />
           </div>
         </TinySlider>
+        <div v-else class="text-center py-5">Chưa có hình ảnh</div>
       </div>
       <!-- END: Projects -->
       <!-- BEGIN: Product Information -->
@@ -246,15 +252,33 @@ const activeSalon = (id: any) => {
             style="font-size: 15px; line-height: 2rem"
           >
             <div class="text-left">
-              <div class="flex">
+              <div class="flex items-center">
                 <div
                   class="font-semibold mr-2"
                   style="min-width: fit-content"
                 >
-                  Mô Tả :
+                  Email :
                 </div>
                 <span>
-                  {{ salon.description }}
+                  {{ salon.email }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
+            <div class="text-left">
+              <div class="flex items-center">
+                <div
+                  class="font-semibold mr-2"
+                  style="min-width: fit-content"
+                >
+                  Địa chỉ :
+                </div>
+                <span>
+                  {{ salon.address }}
                 </span>
               </div>
             </div>
@@ -277,6 +301,24 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
+            <div class="text-left">
+              <div class="flex">
+                <div
+                  class="font-semibold mr-2"
+                  style="min-width: fit-content"
+                >
+                  Mô Tả :
+                </div>
+                <span v-html="salon.description">
+                </span>
+              </div>
+            </div>
+          </div>
+         
         </div>
         <!--    ////////////////////////  -->
         <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">

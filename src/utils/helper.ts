@@ -245,11 +245,17 @@ const convertToTZ = (date: any, tz: string) => {
 
 const getTimeZoneByLocation = (lat: string, lng: string) => {
       return new Promise((resolve, reject) => {
+
             const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat}%2C${lng}&timestamp=0&key=${import.meta.env.VITE_GOOGLE_SECRET_KEY}`
             axios.get(url, {
-                  headers: { "Access-Control-Allow-Origin": "*" }
-            }
-            ).then(
+                  transformRequest: (data,headers) => {
+                        if (headers.Authorization && headers.lang) {
+                              delete headers.Authorization;
+                              delete headers.lang;
+                        }
+                    return headers;
+                  }
+                }).then(
                   (res) => {
                         return resolve(res.data)
                   },

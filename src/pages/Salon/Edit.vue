@@ -7,7 +7,7 @@ import axios from "axios";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Table from "../../base-components/Table";
-import { normalizeInput,getTimeZoneByLocation } from "../../utils/helper";
+import { normalizeInput, getTimeZoneByLocation } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
 import { useRoute } from "vue-router";
@@ -184,15 +184,16 @@ const getAddressData = async (placeResultData: any) => {
   }
   salon.value.lng = placeResultData.geometry.location.lng();
   salon.value.lat = placeResultData.geometry.location.lat();
-  salon.value.address = placeResultData.name;
+  salon.value.address = placeResultData.formatted_address;
   salon.value.tz =
     "UTC " +
     (placeResultData.utc_offset_minutes < 0 ? "" : "+") +
     placeResultData.utc_offset_minutes / 60;
   console.log(salon.value);
 
-  const timezoneByLocation: any = await getTimeZoneByLocation(salon.value.lng, salon.value.lat)
-  salon.value.timezone = timezoneByLocation.timeZoneId
+  const timezoneByLocation: any = await getTimeZoneByLocation(salon.value.lat, salon.value.lng)
+  if (timezoneByLocation.timeZoneId)
+    salon.value.timezone = timezoneByLocation.timeZoneId
 };
 let deleteImgArr = ref<any[]>([]);
 const deleteImg = () => {
