@@ -12,64 +12,54 @@ import Notification from "../../../base-components/Notification";
 import { NotificationElement } from "../../../base-components/Notification";
 import { useSalonListStore } from "../../../stores/salon/salon-list";
 
-const props = defineProps( {
+const props = defineProps({
   salons: Object as PropType<Salon>,
-} );
+});
 
 const SalonListStore = useSalonListStore();
-const selectedSalonId = ref( 0 );
+const selectedSalonId = ref(0);
 
-const approveSalon = ( id: number, index: any ) =>
-{
-  SalonListStore.approveSalon( id, index )
-    .then( ( res ) =>
-    {
+const approveSalon = (id: number, index: any) => {
+  SalonListStore.approveSalon(id, index)
+    .then((res) => {
       successNotification.value?.showToast();
-    } )
-    .catch( ( res ) => { } );
+    })
+    .catch((res) => { });
 };
 
-const activeSalon = ( id: number, index: any ) =>
-{
-  SalonListStore.activeSalon( id, index )
-    .then( () =>
-    {
+const activeSalon = (id: number, index: any) => {
+  SalonListStore.activeSalon(id, index)
+    .then(() => {
       successNotification.value?.showToast();
-    } )
-    .catch( () =>
-    {
+    })
+    .catch(() => {
       errorNotification.value?.showToast();
-    } );
+    });
 };
 
-const deleteSalon = ( id: number ) =>
-{
+const deleteSalon = (id: number) => {
   deleteConfirmationModal.value = false;
-  SalonListStore.deleteSalon( id )
-    .then( () =>
-    {
+  SalonListStore.deleteSalon(id)
+    .then(() => {
       successNotification.value?.showToast();
-    } )
-    .catch( () => { } );
+    })
+    .catch(() => { });
 };
 
 
-const setDeleteConfirmationModal = ( value: boolean ) =>
-{
+const setDeleteConfirmationModal = (value: boolean) => {
   deleteConfirmationModal.value = value;
 };
-const deleteConfirmationModal = ref( false );
-const deleteButtonRef = ref( null );
+const deleteConfirmationModal = ref(false);
+const deleteButtonRef = ref(null);
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
-provide( "bind[errorNotification]", ( el: NotificationElement ) =>
-{
+provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el;
-} );
-provide( "bind[successNotification]", ( el: NotificationElement ) =>
-{
+});
+provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
-} );
+});
 
 </script>
 
@@ -84,11 +74,20 @@ provide( "bind[successNotification]", ( el: NotificationElement ) =>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Địa chỉ
           </Table.Th>
-          <Table.Th
-            class="text-center border-b-0 whitespace-nowrap"
-            style="width: 500px"
-          >
-            Trạng Thái
+          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+            Booking
+          </Table.Th>
+          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+            Dịch Vụ
+          </Table.Th>
+          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+            Thợ
+          </Table.Th>
+          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+            Rating
+          </Table.Th>
+          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+            Trạng thái
           </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
           </Table.Th>
@@ -170,6 +169,18 @@ provide( "bind[successNotification]", ( el: NotificationElement ) =>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ item.address }}
           </Table.Td>
+          <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            {{ item.total_feedback }}
+          </Table.Td>
+          <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            {{ item.total_feedback }}
+          </Table.Td>
+          <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            {{ item.total_feedback }}
+          </Table.Td>
+          <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            {{ item.total_feedback }}
+          </Table.Td>
           <Table.Td
             class="first:rounded-l-md last:rounded-r-md text-center text-danger bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
             style="max-width: 500px"
@@ -191,6 +202,7 @@ provide( "bind[successNotification]", ( el: NotificationElement ) =>
           >
             Đang Hoạt Động
           </Table.Td>
+       
 
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b] py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">
             <div class="flex items-center justify-center">
