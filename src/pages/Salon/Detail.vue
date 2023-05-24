@@ -162,7 +162,10 @@ const activeSalon = (id: any) => {
     <div class="col-span-12 lg:col-span-8 2xl:col-span-9">
       <!-- BEGIN: Projects -->
       <div class="col-span-12 intro-y box 2xl:col-span-6">
-        <div  v-if="salon.images.length > 1" class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+        <div
+          v-if="salon.images.length > 1"
+          class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400"
+        >
           <h2 class="mr-auto text-base font-medium">Hình Ảnh Salon</h2>
           <a
             href="#"
@@ -198,10 +201,13 @@ const activeSalon = (id: any) => {
             />
           </a>
         </div>
-        <div  v-else class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+        <div
+          v-else
+          class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400"
+        >
           <h2 class="mr-auto text-base font-medium">Hình Ảnh Salon</h2>
         </div>
-       
+
         <TinySlider
           refKey="imgSliderRef"
           class="py-5"
@@ -220,7 +226,10 @@ const activeSalon = (id: any) => {
             />
           </div>
         </TinySlider>
-        <div v-else class="text-center py-5">Chưa có hình ảnh</div>
+        <div
+          v-else
+          class="text-center py-5"
+        >Chưa có hình ảnh</div>
       </div>
       <!-- END: Projects -->
       <!-- BEGIN: Product Information -->
@@ -318,9 +327,126 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-         
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
+            <div class="text-left">
+              <div class="flex">
+                <div
+                  class="font-semibold mr-2"
+                  style="min-width: fit-content"
+                >
+                  Tổng số booking :
+                </div>
+                <router-link
+                  :to="{
+                    name: 'booking-list',
+                    query: { salon_id: salon.id },
+                  }"
+                  v-if="salon.total_booking"
+                  class="text-info"
+                  target='_blank'
+                >
+                  <span
+                    v-html="salon.total_booking"
+                  > </span>
+                </router-link>
+                <span
+                  class="text-info"
+                  v-html="salon.total_booking"
+                  title="Xem list booking"
+                  v-else
+                > </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="mt-2"
+            style="font-size: 15px; line-height: 2rem"
+          >
+            <div class="text-left">
+              <div class="flex">
+                <div
+                  class="font-semibold mr-2"
+                  style="min-width: fit-content"
+                >
+                  Rating :
+                </div>
+                <span
+                  class="text-info"
+                  v-html="salon.rating"
+                  title="Xem list feedback"
+                >
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <!--    ////////////////////////  -->
+        <!--   ///////////////////  SALON SERVICES  ////////////////////////  -->
+        <div
+          class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+          id="services_list"
+        >
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+            Danh sách Dịch vụ :
+          </div>
+          <div class="overflow-x-auto">
+            <Table class="mt-5">
+              <Table.Thead variant="light">
+                <Table.Tr>
+                  <Table.Th class="whitespace-nowrap">STT</Table.Th>
+                  <Table.Th class="whitespace-nowrap"> Tên </Table.Th>
+                  <Table.Th class="whitespace-nowrap"> Giá </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                <Table.Tr
+                  v-for="(item, key) in salon.services"
+                  :key="item.id"
+                >
+                  <Table.Td>{{key+1}}</Table.Td>
+                  <Table.Td>{{ item.name }}</Table.Td>
+                  <Table.Td>{{ item.price }} $</Table.Td>
+                </Table.Tr>
+              </Table.Tbody>
+            </Table>
+          </div>
+        </div>
+        <!-- END SALON SERVICES -->
+        <!--   ///////////////////  SALON STAFFS  ////////////////////////  -->
+        <div
+          class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+          id="staffs_list"
+        >
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+            Danh sách Thợ :
+          </div>
+          <div class="overflow-x-auto">
+            <Table class="mt-5">
+              <Table.Thead variant="light">
+                <Table.Tr>
+                  <Table.Th class="whitespace-nowrap">STT</Table.Th>
+                  <Table.Th class="whitespace-nowrap"> Tên </Table.Th>
+                  <Table.Th class="whitespace-nowrap"> SĐT </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                <Table.Tr
+                  v-for="(item, key) in salon.staffs"
+                  :key="item.id"
+                >
+                  <Table.Td>{{key+1}}</Table.Td>
+                  <Table.Td>{{ item.name }}</Table.Td>
+                  <Table.Td>{{ item.phone_format }}</Table.Td>
+                </Table.Tr>
+              </Table.Tbody>
+            </Table>
+          </div>
+        </div>
+        <!-- END SALON STAFFS -->
+        <!--   ///////////////////  SALON SCHEDULE  ////////////////////////  -->
         <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             Giờ làm việc : &nbsp;
@@ -350,6 +476,7 @@ const activeSalon = (id: any) => {
             </Table>
           </div>
         </div>
+        <!-- END SALON SCHEDULE -->
       </div>
       <!-- END: Product Information -->
     </div>

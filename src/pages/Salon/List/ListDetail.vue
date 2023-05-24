@@ -182,10 +182,10 @@ provide("bind[successNotification]", (el: NotificationElement) => {
             </router-link>
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{ item.total_feedback }}
+            {{ item.total_service }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{ item.total_feedback }}
+            {{ item.total_staff }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ item.total_feedback }}
