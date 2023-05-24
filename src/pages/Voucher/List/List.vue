@@ -58,19 +58,34 @@ const clickCallback = () => {
     </div>
 
     <!-- BEGIN: Data List -->
-    <ListDetail
-      :vouchers="VoucherListStore.vouchers"
-      v-if="!VoucherListStore.loading"
-    />
+    <div
+      v-if="VoucherListStore.loading"
+      class="col-span-12"
+    >
+      <div class="w-8 mx-auto mt-5">
+        <LoadingIcon icon="puff" />
+      </div>
+    </div>
     <div v-else class="col-span-12">
-      <div class="w-8 mx-auto mt-5"><LoadingIcon icon="puff" /></div>
+      <ListDetail
+        :vouchers="VoucherListStore.vouchers"
+        v-if=" VoucherListStore.vouchers.length != 0"
+      />
+      <div
+        v-else
+        class="col-span-12"
+      >
+        <div class="w-100 mx-auto mt-10 text-center">
+          <h1 style="font-weight:700;font-size:18px">Chưa có voucher nào.</h1>
+        </div>
+      </div>
     </div>
     <!-- END: Data List -->
     <!-- BEGIN: Pagination -->
     <div
       class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
       style="margin-bottom: 50px"
-      v-if="!VoucherListStore.loading && VoucherListStore.totalPage !== 1"
+      v-if="!VoucherListStore.loading && VoucherListStore.totalPage && VoucherListStore.totalPage !== 1"
     >
       <paginate
         v-model="VoucherListStore.page"

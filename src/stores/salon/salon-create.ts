@@ -252,11 +252,11 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             
             const fd = new FormData();
 
-            this.data.staffs = this.data.staffs.filter(item => {
-                return item.phone != '' && item.name != '' || item.phone == '' && item.name == ''
+            let staffs = this.data.staffs.filter(item => {
+                return item.phone != '' && item.name != '' 
             })
-            this.data.services = this.data.services.filter(item => {
-                return item.price != '' && item.name != '' || item.price == '' && item.name == ''
+            let services = this.data.services.filter(item => {
+                return item.price != '' && item.name != ''
             })
             for (let index in this.data.images) {
                 fd.append("images", this.data.images[index]);
@@ -283,8 +283,8 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             fd.append("salon_lat", this.data.salon_lat);
             fd.append("salon_lng", this.data.salon_lng);
      /*        fd.append("lang", this.data.lang); */
-            fd.append("services", JSON.stringify(this.data.services));
-            fd.append("staffs", JSON.stringify(this.data.staffs));
+            fd.append("services", JSON.stringify(services));
+            fd.append("staffs", JSON.stringify(staffs));
             fd.append("schedules", JSON.stringify(this.data.schedules));
 
 

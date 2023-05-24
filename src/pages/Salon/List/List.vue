@@ -56,17 +56,27 @@ const clickCallback = () => {
       </div>
     </div>
     <!-- BEGIN: Data List -->
-    <ListDetail
-      :salons="SalonListStore.salons"
-      v-if="!SalonListStore.loading && SalonListStore.salons.length != 0"
-    />
-    <div v-if="!SalonListStore.loading && SalonListStore.salons.length == 0" class="col-span-12">
-      <div class="w-100 mx-auto mt-10 text-center">
-        <h1 style="font-weight:700;font-size:18px">Chưa có salon nào.</h1>
+    <div
+      v-if="SalonListStore.loading"
+      class="col-span-12"
+    >
+      <div class="w-8 mx-auto mt-5">
+        <LoadingIcon icon="puff" />
       </div>
     </div>
-    <div  v-if="SalonListStore.loading" class="col-span-12">
-      <div class="w-8 mx-auto mt-5"><LoadingIcon icon="puff" /></div>
+    <div v-else class="col-span-12">
+      <ListDetail
+        :salons="SalonListStore.salons"
+        v-if=" SalonListStore.salons.length != 0"
+      />
+      <div
+        v-else
+        class="col-span-12"
+      >
+        <div class="w-100 mx-auto mt-10 text-center">
+          <h1 style="font-weight:700;font-size:18px">Chưa có salon nào.</h1>
+        </div>
+      </div>
     </div>
     <!-- END: Data List -->
     <!-- BEGIN: Pagination -->

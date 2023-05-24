@@ -24,18 +24,8 @@ const clickCallback = () => {
 <template>
   <h2 class="mt-10 text-lg font-medium intro-y">Danh Sách Booking</h2>
   <div class="grid grid-cols-12 gap-6 mt-5">
-    <div
-      class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
-    >
-     <!--  <Button
-        variant="primary"
-        class="mr-2 shadow-md"
-        @click="router.push({ name: 'booking-create' })"
-      >
-        Thêm mới booking
-      </Button> -->
+    <div class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap">
       <div class="hidden mx-auto md:block text-slate-500">
-        <!-- Showing 1 to 10 of 150 entries -->
       </div>
       <div class="w-full mt-3 sm:w-auto sm:mt-0 sm:ml-auto md:ml-0">
         <div class="relative w-56 text-slate-500">
@@ -58,19 +48,35 @@ const clickCallback = () => {
     </div>
 
     <!-- BEGIN: Data List -->
-    <ListDetail
-      :bookings="BookingListStore.bookings"
-      v-if="!BookingListStore.loading"
-    />
-    <div v-else class="col-span-12">
-      <div class="w-8 mx-auto mt-5"><LoadingIcon icon="puff" /></div>
+    <div
+      v-if="BookingListStore.loading"
+      class="col-span-12"
+    >
+      <div class="w-8 mx-auto mt-5">
+        <LoadingIcon icon="puff" />
+      </div>
     </div>
+    <div v-else class="col-span-12">
+      <ListDetail
+        :bookings="BookingListStore.bookings"
+        v-if=" BookingListStore.bookings.length != 0"
+      />
+      <div
+        v-else
+        class="col-span-12"
+      >
+        <div class="w-100 mx-auto mt-10 text-center">
+          <h1 style="font-weight:700;font-size:18px">Chưa có booking nào.</h1>
+        </div>
+      </div>
+    </div>
+
     <!-- END: Data List -->
     <!-- BEGIN: Pagination -->
     <div
       class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
       style="margin-bottom: 50px"
-      v-if="!BookingListStore.loading && BookingListStore.totalPage !== 1"
+      v-if="!BookingListStore.loading && BookingListStore.totalPage && BookingListStore.totalPage != 1"
     >
       <paginate
         v-model="BookingListStore.page"

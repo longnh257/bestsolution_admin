@@ -38,9 +38,7 @@ export const useVoucherListStore = defineStore("VoucherList", {
           txt_search: this.txtSearch,
           num_per_page: this.recPerPage,
         },
-        headers: {
-          Authorization: "Bearer " + access_token,
-        },
+     
       })
       this.vouchers = res.data.data
       this.totalPage = res.data.total_page
