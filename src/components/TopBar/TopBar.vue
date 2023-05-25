@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import Lucide from "../../base-components/Lucide";
-import logoUrl from "../../assets/images/logo.jpg";
+import logoUrl from "../../assets/images/logo.png";
 import Breadcrumb from "../../base-components/Breadcrumb";
 import { FormInput } from "../../base-components/Form";
 import { Menu, Popover } from "../../base-components/Headless";
@@ -58,7 +58,7 @@ const logout = () => {
       >
         <img
           alt="Việt Nails"
-          class="w-6"
+          class="w-12"
           :src="logoUrl"
         />
         <!--  src='../../../public/favicon.jpg' -->
@@ -66,7 +66,9 @@ const logout = () => {
             'ml-3 text-lg text-white',
             props.layout == 'side-menu' && 'hidden xl:block',
             props.layout == 'simple-menu' && 'hidden',
-          ]">
+          ]"
+          style="align-self:center"
+          >
           Việt Nails
         </span>
       </RouterLink>

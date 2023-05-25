@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
 import { twMerge } from "tailwind-merge";
-import logoUrl from "../../assets/images/logo.svg";
+import logoUrl from "../../assets/images/logo.png";
 import Divider from "./Divider.vue";
 import Menu from "./Menu.vue";
 import Lucide from "../../base-components/Lucide";
@@ -59,7 +59,7 @@ onMounted(() => {
       <a href="" class="flex mr-auto">
         <img
           alt="Midone Tailwind HTML Admin Template"
-          class="w-6"
+          class="w-12"
           :src="logoUrl"
         />
       </a>

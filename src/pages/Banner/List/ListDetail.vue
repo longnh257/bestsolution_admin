@@ -93,7 +93,24 @@ provide("bind[successNotification]", (el: NotificationElement) => {
             </div>
           </div>
           <div class="flex items-center justify-center p-5 border-t lg:justify-end border-slate-200/60 dark:border-darkmode-400">
-
+            <a
+              class="flex items-center mr-auto text-primary"
+              href="#"
+            >
+              <Lucide
+                icon="Eye"
+                class="w-4 h-4 mr-1"
+              /> Preview
+            </a>
+            <a
+              class="flex items-center mr-3"
+              href="#"
+            >
+              <Lucide
+                icon="CheckSquare"
+                class="w-4 h-4 mr-1"
+              /> Edit
+            </a>
             <a
               class="flex items-center text-danger"
               href="#"
