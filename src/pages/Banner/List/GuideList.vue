@@ -37,35 +37,7 @@ const clickCallback = () => {
       <div class="hidden mx-auto md:block text-slate-500">
         <!-- Showing 1 to 10 of 150 entries -->
       </div>
-      <div>
-        <Menu>
-          <Menu.Button
-            :as="Button"
-            class="px-2 !box"
-            style="box-shadow: none !important"
-          >
-            <span class="flex items-center justify-center w-5 h-5">
-              <Lucide
-                icon="MoreVertical"
-                class="block mx-auto"
-              />
-            </span>
-          </Menu.Button>
-          <Menu.Items class="w-40">
-            <Menu.Item
-              class="text-danger"
-              style="cursor: pointer"
-            >
-              <router-link :to="{
-              name: 'banner-list',
-              query: { type: 3 },
-            }">
-                Guide
-              </router-link>
-            </Menu.Item>
-          </Menu.Items>
-        </Menu>
-      </div>
+     
 
     </div>
 
