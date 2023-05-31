@@ -67,8 +67,9 @@ const saveSalon = () => {
 const saveNew = () => { };
 
 const submit = () => {
-  const fd = new FormData();
 
+  const fd = new FormData();
+  const dateNow = moment().utc().format('YYYY-MM-DD')
   let scheduleData: any = []
   salon.value.schedules.map(item => {
     if (!item.start_time || !item.end_time) {
@@ -80,11 +81,13 @@ const submit = () => {
     } else {
       scheduleData.push({
         day: item.day,
-        start_time: item.start_time ? item.start_time : null,
-        end_time: item.end_time ? item.end_time : null
+        start_time: item.start_time ? convertToTZ(new Date(`${dateNow} ${item.start_time}`),salon.value.timezone) : null,
+        end_time: item.end_time ? convertToTZ(new Date(`${dateNow} ${item.end_time}`), salon.value.timezone) : null
       })
     }
   })
+  console.log(scheduleData);
+
 
   fd.append("id", salon.value.id);
   fd.append("name", salon.value.name);

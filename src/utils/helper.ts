@@ -231,16 +231,9 @@ const convertToTZ = (date: any, tz: string) => {
       const input = moment(date).format('YYYY-MM-DD HH:mm:ss')
       const fmt = "YYYY-MM-DD HH:mm:ss";  // must match the input
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-      const m = moment.tz(input, fmt, timezone)
-      const s = m.tz(tz)
-      return {
-            time: s.format(),
-            format: s.format('LLL'),
-            timestamp: new Date(s.format()).getTime(),
-            day: s.day(),
-            hour: s.format('HH:mm:ss'),
-            hour_format: s.format('hh:mm a')
-      }
+      const m = moment.tz(input, fmt, tz)
+      const s = m.tz('Africa/Ouagadougou')
+      return s.format('HH:mm:ss')
 }
 
 const getTimeZoneByLocation = (lat: string, lng: string) => {
@@ -248,14 +241,14 @@ const getTimeZoneByLocation = (lat: string, lng: string) => {
 
             const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat}%2C${lng}&timestamp=0&key=${import.meta.env.VITE_GOOGLE_SECRET_KEY}`
             axios.get(url, {
-                  transformRequest: (data,headers) => {
+                  transformRequest: (data, headers) => {
                         if (headers.Authorization && headers.lang) {
                               delete headers.Authorization;
                               delete headers.lang;
                         }
-                    return headers;
+                        return headers;
                   }
-                }).then(
+            }).then(
                   (res) => {
                         return resolve(res.data)
                   },
