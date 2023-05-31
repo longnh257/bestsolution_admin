@@ -13,6 +13,9 @@ import { method } from "lodash";
 import Lucide from "../base-components/Lucide";
 import router from "../router";
 import LoadingIcon from "../base-components/LoadingIcon";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 
 var data = {
   email: "",
@@ -20,8 +23,8 @@ var data = {
 };
 let loading = ref(false)
 
-let err = ref([]);
-let scc = ref([]);
+let err = ref();
+let scc = ref();
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
 provide("bind[errorNotification]", (el: NotificationElement) => {
@@ -30,6 +33,7 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
 provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
 });
+
 
 const onSubmit = () => {
   loading.value = true
@@ -42,7 +46,9 @@ const onSubmit = () => {
       // handle success
       scc.value = response.data.message;
       successNotification.value?.showToast();
-      localStorage.setItem("access_token", response.data.data.access_token);
+      const access_token = response.data.data.access_token
+      localStorage.setItem("access_token", access_token);
+      axios.defaults.headers.common['Authorization'] = "Bearer: " + access_token
       router.push(`/salon`);
     })
     .catch(function (error) {
@@ -52,6 +58,14 @@ const onSubmit = () => {
       loading.value = false
     });
 };
+
+if (route.query.err) {
+  err.value = 'Vui lòng đăng nhập';
+  setTimeout(() => {
+    errorNotification.value?.showToast();
+  }, 500)
+
+}
 </script>
 
 <template>

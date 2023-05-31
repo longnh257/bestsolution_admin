@@ -31,11 +31,7 @@ export const useBookingDetailStore = defineStore("BookingDetail", {
             console.log(booking_id);
             
             this.loading = true
-            const res = await axios.get(`appointment/detail?id=${booking_id}`, {
-                headers: {
-                    Authorization: "Bearer " + access_token,
-                },
-            })
+            const res = await axios.get(`appointment/detail?id=${booking_id}`)
             this.booking = res.data.data
             this.loading = false
             console.log(this.booking);

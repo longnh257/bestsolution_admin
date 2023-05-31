@@ -39,9 +39,6 @@ export const useSalonListStore = defineStore("SalonList", {
           txt_search: this.txtSearch,
           num_per_page: this.recPerPage,
         },
-        headers: {
-          Authorization: "Bearer " + access_token,
-        },
       })
       this.salons = res.data.data
       this.totalPage = res.data.total_page
@@ -53,13 +50,7 @@ export const useSalonListStore = defineStore("SalonList", {
     async getSalonListApproved(): Promise<void> {
       this.loading = true
 
-      const res = await axios.get("salon/list-salon", {
-        params: {
-        },
-        headers: {
-          Authorization: "",
-        },
-      })
+      const res = await axios.get("salon/list-salon",)
       this.salons = res.data.data
       this.totalPage = res.data.total_page
       this.loading = false

@@ -43,10 +43,7 @@ export const useBannerListStore = defineStore("BannerList", {
           type: this.type,
           txt_search: this.txtSearch,
           num_per_page: this.recPerPage,
-        },
-        headers: {
-          Authorization: "Bearer " + access_token,
-        },
+        }
       })
       this.banners = res.data.data
       this.totalPage = res.data.total_page
@@ -55,10 +52,10 @@ export const useBannerListStore = defineStore("BannerList", {
       console.log(this.banners);
 
     },
-  
+
     async deleteBanner(): Promise<void> {
       console.log(this.selectedId);
-      
+
       return await axios
         .post(
           "banner/delete-banner",

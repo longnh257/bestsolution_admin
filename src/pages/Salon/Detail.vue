@@ -305,7 +305,7 @@ const activeSalon = (id: any) => {
                   Số Điện Thoại liên hệ :
                 </div>
                 <span>
-                  {{ salon.phone }}
+                  {{ salon.phone_format }}
                 </span>
               </div>
             </div>
@@ -501,7 +501,7 @@ const activeSalon = (id: any) => {
               <Lucide
                 icon="Phone"
                 class="w-4 h-4 mr-2"
-              />{{ salon.partner.phone }}
+              />{{ salon.partner.phone_format }}
             </div>
           </div>
         </div>
