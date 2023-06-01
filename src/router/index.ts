@@ -6,6 +6,10 @@ import SalonList from "../pages/Salon/List/List.vue";
 import SalonCreate from "../pages/Salon/Create.vue";
 import SalonDetail from "../pages/Salon/Detail.vue";
 import SalonEdit from "../pages/Salon/Edit.vue";
+import JobList from "../pages/Job/List/List.vue";
+import JobCreate from "../pages/Job/Create.vue";
+import JobDetail from "../pages/Job/Detail.vue";
+import JobEdit from "../pages/Job/Edit.vue";
 import BookingList from "../pages/Booking/List/List.vue";
 import BookingDetail from "../pages/Booking/Detail.vue";
 import VoucherList from "../pages/Voucher/List/List.vue";
@@ -54,6 +58,31 @@ const routes = [
             path: "edit/:salon_id",
             name: "salon-edit",
             component: SalonEdit,
+          },
+        ]
+      },
+      {
+        path: "job",
+        children: [
+          {
+            path: "",
+            name: "job-list",
+            component: JobList,
+          },
+          {
+            path: "create",
+            name: "job-create",
+            component: JobCreate,
+          },
+          {
+            path: "detail/:job_id",
+            name: "job-detail",
+            component: JobDetail,
+          },
+          {
+            path: "edit/:job_id",
+            name: "job-edit",
+            component: JobEdit,
           },
         ]
       },
