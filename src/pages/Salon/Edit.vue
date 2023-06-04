@@ -54,9 +54,12 @@ var salon_id = route.params.salon_id;
 
 
 const password = ref("");
+const newPassword = ref("");
+const newPasswordConfirm = ref("");
 let listImgs: any = ref([]);
 let listStaffImgs: any = ref([]);
 let showPassword = ref(true);
+let showPasswordConfirm = ref(true);
 
 const maskedValue = ref("");
 const bindedObject = reactive({ unmasked: "" });
@@ -81,7 +84,7 @@ const submit = () => {
     } else {
       scheduleData.push({
         day: item.day,
-        start_time: item.start_time ? convertToTZ(new Date(`${dateNow} ${item.start_time}`),salon.value.timezone) : null,
+        start_time: item.start_time ? convertToTZ(new Date(`${dateNow} ${item.start_time}`), salon.value.timezone) : null,
         end_time: item.end_time ? convertToTZ(new Date(`${dateNow} ${item.end_time}`), salon.value.timezone) : null
       })
     }
@@ -127,6 +130,7 @@ const submit = () => {
       errorNotification.value?.showToast();
     });
 };
+
 provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el;
 });
@@ -208,13 +212,25 @@ const deleteImg = () => {
 };
 
 const getSalon = async () => {
-  const response = await axios.get(`salon/${salon_id}`, {
-    params: {
-      page: 1,
-    },
-  });
+  const response = await axios.get(`salon/${salon_id}`);
   salon.value = response.data.data;
   console.log(salon.value);
+};
+const changePassword = async () => {
+  console.log(newPassword.value, newPasswordConfirm.value);
+
+  await axios.post(`admin/change-password/${salon.value.partner.id}`, {
+    new_password: newPassword.value,
+    confirm_password: newPasswordConfirm.value,
+  }).then(function (response) {
+    // handle success     
+    scc.value = response.data.message;
+    successNotification.value?.showToast();
+  })
+    .catch(function (error) {
+      err.value = error.response.data.message;
+      errorNotification.value?.showToast();
+    });
 };
 
 onMounted(() => {
@@ -231,6 +247,118 @@ onMounted(() => {
     v-if="salon"
   >
     <div class="col-span-11 intro-y 2xl:col-span-9">
+
+      <!-- BEGIN: Salon Info -->
+      <div class="p-5 mt-5 intro-y box">
+        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+            <Lucide
+              icon="Home"
+              class="w-4 h-4 mr-2"
+            /> Thông tin Tài Khoản
+          </div>
+          <div class="mt-5">
+            <div class="mt-3">
+              <FormLabel>Số điện thoại</FormLabel>
+              <FormInput
+                id="crud-form-2"
+                type="text"
+                class="w-full"
+                placeholder="Số điện thoại dùng để đăng nhập"
+                v-model="salon.partner.phone_format"
+                disabled="true"
+              />
+            </div>
+
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-3">Mật Khẩu Mới</FormLabel>
+
+              <InputGroup v-if="!showPassword">
+                <FormInput
+                  id="crud-form-3"
+                  type="text"
+                  v-model="newPassword"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
+                />
+
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPassword = !showPassword"
+                >
+                  <Lucide icon="Eye" />
+                </InputGroup.Text>
+              </InputGroup>
+              <InputGroup v-else>
+                <FormInput
+                  id="crud-form-3"
+                  type="password"
+                  v-model="newPassword"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
+                />
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPassword = !showPassword"
+                >
+                  <Lucide icon="EyeOff" />
+                </InputGroup.Text>
+              </InputGroup>
+            </div>
+
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-3">Nhập Lại Mật Khẩu Mới</FormLabel>
+
+              <InputGroup v-if="!showPasswordConfirm">
+                <FormInput
+                  id="crud-form-3"
+                  type="text"
+                  v-model="newPasswordConfirm"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
+                />
+
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPasswordConfirm = !showPasswordConfirm"
+                >
+                  <Lucide icon="Eye" />
+                </InputGroup.Text>
+              </InputGroup>
+              <InputGroup v-else>
+                <FormInput
+                  id="crud-form-3"
+                  type="password"
+                  v-model="newPasswordConfirm"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
+                />
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPasswordConfirm = !showPasswordConfirm"
+                >
+                  <Lucide icon="EyeOff" />
+                </InputGroup.Text>
+              </InputGroup>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
+          <Button
+            variant="primary"
+            type="button"
+            class="w-full py-3 md:w-52"
+            @click="changePassword"
+          >
+            Lưu
+          </Button>
+        </div>
+      </div>
+      <!-- END: Salon Info -->
 
       <!-- BEGIN: Salon Info -->
       <div class="p-5 mt-5 intro-y box">
@@ -479,32 +607,19 @@ onMounted(() => {
             </div>
           </div>
         </div>
+        <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
+          <Button
+            variant="primary"
+            type="button"
+            class="w-full py-3 md:w-52"
+            @click="saveSalon"
+          >
+            Lưu
+          </Button>
+        </div>
       </div>
       <!-- END: Salon Info -->
 
-      <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
-        <!--  <Button
-          type="button"
-          class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
-        >
-          Cancel
-        </Button> -->
-        <!--  <Button
-          type="button"
-          class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
-          @click="saveNew"
-        >
-          Save & Add New Product
-        </Button> -->
-        <Button
-          variant="primary"
-          type="button"
-          class="w-full py-3 md:w-52"
-          @click="saveSalon"
-        >
-          Lưu
-        </Button>
-      </div>
     </div>
   </div>
   <div class="p-5">

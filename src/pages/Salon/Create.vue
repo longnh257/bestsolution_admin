@@ -121,7 +121,7 @@ const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
 const getAddressData = async ($e: any) => {
   for (const item of $e.address_components) {
     console.log($e);
-    
+
     if (item.types.includes("country")) {
       dt.salon_country = item.short_name
     }
@@ -498,7 +498,7 @@ const getAddressData = async ($e: any) => {
 
       <!-- BEGIN: service & Service Info -->
       <div class="p-5 mt-5 intro-y box">
-        <div class="mb-5">
+        <!--   <div class="mb-5">
           <FormLabel
             htmlFor=""
             class="text-base font-medium"
@@ -544,7 +544,7 @@ const getAddressData = async ($e: any) => {
               </div>
             </div>
           </FormInline>
-        </div>
+        </div> -->
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             <Lucide

@@ -72,7 +72,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
           <Table.Th class="border-b-0 whitespace-nowrap"> Salon </Table.Th>
 
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
-            Địa chỉ
+            Tiêu Đề
           </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Booking

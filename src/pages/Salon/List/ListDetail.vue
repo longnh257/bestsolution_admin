@@ -177,13 +177,31 @@ provide("bind[successNotification]", (el: NotificationElement) => {
             </router-link>
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{ item.total_service }}
+            <router-link
+              :to="{
+                          name: 'salon-detail',
+                          params: { salon_id: item.id },
+                        }"
+              class="text-info"
+            >
+              {{ item.total_service }}
+            </router-link>
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{ item.total_staff }}
+            <router-link
+              :to="{
+                          name: 'salon-detail',
+                          params: { salon_id: item.id },
+                        }"
+              class="text-info"
+            >
+              {{ item.total_staff }}
+            </router-link>
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{ item.total_feedback }}
+            {{ item.rating }} Sao
+            <br>
+            ({{ item.total_feedback }} Feedback)
           </Table.Td>
           <Table.Td
             class="first:rounded-l-md last:rounded-r-md text-center text-danger bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
@@ -263,14 +281,14 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                       <Lucide
                         icon="Send"
                         class="w-4 h-4 mr-2"
-                      /> 
+                      />
                       Đăng Tin Tuyển Dụng
                     </router-link>
                   </Menu.Item>
                   <Menu.Item>
                     <router-link
                       :to="{
-                          name: 'job-create',
+                          name: 'job-list',
                           params: { salon_id: item.id },
                         }"
                       style="display:flex !important"
@@ -278,7 +296,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                       <Lucide
                         icon="List"
                         class="w-4 h-4 mr-2"
-                      /> 
+                      />
                       DS Tin Tuyển Dụng
                     </router-link>
                   </Menu.Item>
