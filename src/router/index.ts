@@ -70,7 +70,7 @@ const routes = [
             component: JobList,
           },
           {
-            path: "create",
+            path: "create/:salon_id",
             name: "job-create",
             component: JobCreate,
           },

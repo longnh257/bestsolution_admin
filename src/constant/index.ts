@@ -7,6 +7,7 @@ export const APM_STATUS = {
       6: "Deleted",
       7: "Accepted",
 }
+
 export const VOUCHER_STATUS = {
       1: "Pending",
       2: "Waitting",
@@ -25,6 +26,21 @@ export const BANNER_NAME = {
       2: "ADS",
       3: "Guide",
       4: "Banner",
+}
+
+export const SKILLS_NAME = {
+      1: "Manicure",
+      2: "Pedicure",
+      3: "Pink and White",
+      4: "Acrylic",
+      5: "Cancel",
+      6: "Gel",
+      7: "Ombre",
+      8: "Eyelash",
+      9: "Eyebrows",
+      10: "Waxing",
+      11: "Micro-blading/ Tatoo",
+      12: "Facial",
 }
 
 export const BANNER_TYPE_INTRO = 1

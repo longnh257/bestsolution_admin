@@ -140,20 +140,15 @@ provide("bind[successNotification]", (el: NotificationElement) => {
             </div>
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            <a
-              href="#"
-              class="font-medium whitespace-nowrap"
-              @click="
-                () => {
-                  router.push({
-                    name: 'salon-detail',
-                    params: { salon_id: item.id },
-                  });
-                }
-              "
+            <router-link
+              :to="{
+                          name: 'salon-detail',
+                          params: { salon_id: item.id },
+                        }"
+              style="display:flex !important"
             >
               {{ item.name }}
-            </a>
+            </router-link>
             <div
               class="text-slate-500 text-xs whitespace-nowrap mt-0.5"
               style="display: flex; align-items: center"
@@ -227,35 +222,65 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                     />
                   </span>
                 </Menu.Button>
-                <Menu.Items class="w-40">
-                  <Menu.Item @click="
-                      () => {
-                        router.push({
+                <Menu.Items class="w-48">
+                  <Menu.Item>
+                    <router-link
+                      :to="{
                           name: 'salon-detail',
                           params: { salon_id: item.id },
-                        });
-                      }
-                    ">
-                    <Lucide
-                      icon="File"
-                      class="w-4 h-4 mr-2"
-                    /> Chi Tiết
+                        }"
+                      style="display:flex !important"
+                    >
+                      <Lucide
+                        icon="File"
+                        class="w-4 h-4 mr-2"
+                      />
+                      Chi Tiết
+                    </router-link>
                   </Menu.Item>
-                  <Menu.Item
-                    href="#"
-                    @click="
-                      () => {
-                        router.push({
+                  <Menu.Item>
+                    <router-link
+                      :to="{
                           name: 'salon-edit',
                           params: { salon_id: item.id },
-                        });
-                      }
-                    "
-                  >
-                    <Lucide
-                      icon="Edit"
-                      class="w-4 h-4 mr-2"
-                    /> Chỉnh Sửa
+                        }"
+                      style="display:flex !important"
+                    >
+                      <Lucide
+                        icon="Edit"
+                        class="w-4 h-4 mr-2"
+                      /> Chỉnh Sửa
+                    </router-link>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <router-link
+                      :to="{
+                          name: 'job-create',
+                          params: { salon_id: item.id },
+                        }"
+                      style="display:flex !important"
+                    >
+                      <Lucide
+                        icon="Send"
+                        class="w-4 h-4 mr-2"
+                      /> 
+                      Đăng Tin Tuyển Dụng
+                    </router-link>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <router-link
+                      :to="{
+                          name: 'job-create',
+                          params: { salon_id: item.id },
+                        }"
+                      style="display:flex !important"
+                    >
+                      <Lucide
+                        icon="List"
+                        class="w-4 h-4 mr-2"
+                      /> 
+                      DS Tin Tuyển Dụng
+                    </router-link>
                   </Menu.Item>
                   <Menu.Item
                     class="text-success"

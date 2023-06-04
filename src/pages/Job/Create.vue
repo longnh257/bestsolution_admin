@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { reactive, ref, provide } from "vue";
+import { reactive, ref, provide, onMounted } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
-import Table from "../../base-components/Table";
-import { normalizeInput, getTimeZoneByLocation } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
 import {
@@ -18,22 +16,17 @@ import {
   InputGroup,
   FormSwitch,
 } from "../../base-components/Form";
-import { useJobCreateStore } from "../../stores/job/job-create";
-import router from "../../router";
+import { SKILLS_NAME } from "../../constant";
+import axios from "axios";
+import { useRoute } from "vue-router";
 
-const JobCreateStore = useJobCreateStore();
-const dt = JobCreateStore.data;
+const route = useRoute();
+var salon_id = route.params.salon_id;
 
 const bindedObject = reactive({ unmasked: "" });
-
+const maskedValue = ref();
 let listImgs: any = ref([]);
-let listStaffImgs: any = ref([]);
-
-let showPassword = ref(true);
-
-const saveJob = () => {
-  submit();
-};
+const salon = ref()
 
 let err = ref("");
 let scc = ref("");
@@ -46,17 +39,104 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
 });
 
-const submit = () => {
-  JobCreateStore.createJob()
-    .then(function (response) {
-      console.log(response.data);
+const dt = ref({
+  salon_id: salon_id,
+  salon_name: "",
+  title: "",
+  contact_name: "",
+  contact_phone: "",
+  salon_state: "",
+  salon_city: "",
+  salon_exists_time: "",
+  customer_skin_color: "4",
+  gender: "4",
+  salary: "",
+  salary_form: "1",
+  type_salary: "1",
+  is_shuttle: "0",
+  is_there_house: "0",
+  skills: [],
+  short_description: "",
+  description: "",
+  images: <any>[],
+})
 
+const getSalon = async () => {
+  const response = await axios.get(`salon/${salon_id}`);
+  salon.value = response.data.data;
+
+  dt.value.salon_id = salon_id
+  dt.value.contact_name = salon.value.partner.name
+  maskedValue.value = salon.value.partner.phone
+  dt.value.contact_phone = salon.value.partner.phone
+  dt.value.salon_name = salon.value.name
+  dt.value.salon_state = salon.value.state
+  dt.value.salon_city = salon.value.city
+
+};
+
+onMounted(async () => {
+  await getSalon();
+});
+
+const saveJob = () => {
+  submit();
+};
+
+const createJob = async () => {
+  const fd = new FormData();
+  for (let index in dt.value.images) {
+    fd.append("images", dt.value.images[index]);
+  }
+  console.log(dt.value);
+
+  fd.append("salon_name", dt.value.salon_name);
+  fd.append("title", dt.value.title);
+  fd.append("contact_name", dt.value.contact_name);
+  fd.append("contact_phone", dt.value.contact_phone);
+  fd.append("salon_state", dt.value.salon_state);
+  fd.append("salon_city", dt.value.salon_city);
+  fd.append("salon_exists_time", dt.value.salon_exists_time);
+  fd.append("customer_skin_color", dt.value.customer_skin_color);
+  fd.append("salary_form", dt.value.salary_form);
+  fd.append("type_salary", dt.value.type_salary);
+  fd.append("is_shuttle", dt.value.is_shuttle);
+  fd.append("is_there_house", dt.value.is_there_house);
+  fd.append("skills", JSON.stringify(dt.value.skills));
+  fd.append("short_description", dt.value.short_description);
+  fd.append("description", dt.value.description);
+
+  return await axios
+    .post(`admin/create-job/${salon_id}`, fd, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+}
+
+const publicJob = async (id: any) => {
+
+  return await axios
+    .post(`admin/publish-job`, {
+      id: id,
+      status: 1
+    },)
+}
+
+const submit = () => {
+  createJob()
+    .then(function (response) {
+      publicJob(response.data.data.id)
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       scc.value = "Tạo Job Thành Công !";
       successNotification.value?.showToast();
 
-      router.push({
-        name: "job-list",
-      });
+
     })
     .catch(function (error) {
       console.log(error.response);
@@ -68,7 +148,7 @@ const submit = () => {
 const previewImages = (e: any) => {
   for (var i = 0; i < e.target.files.length; i++) {
     let file = e.target.files[i];
-    dt.images.push(file);
+    dt.value.images.push(file);
     listImgs.value.push(URL.createObjectURL(file));
   }
 };
@@ -76,12 +156,12 @@ const previewImages = (e: any) => {
 const revokePreview = (index: any) => {
   URL.revokeObjectURL(listImgs.value[index]);
   listImgs.value.splice(index, 1);
-  dt.images.splice(index, 1);
+  dt.value.images.splice(index, 1);
 };
 
 
 const maskphone = () => {
-  dt.contact_phone = bindedObject.unmasked;
+  dt.value.contact_phone = bindedObject.unmasked;
 }
 
 </script>
@@ -92,189 +172,421 @@ const maskphone = () => {
   </div>
   <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6">
     <div class="col-span-11 intro-y 2xl:col-span-9">
-      <!-- BEGIN: Account Info -->
-      <div class="p-5 mt-5 intro-y box">
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            <Lucide
-              icon="User"
-              class="w-4 h-4 mr-2"
-            /> Thông tin tài khoản
-          </div>
-          <div class="mt-5">
-            <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >
-
-                Tên salon
-
-              </FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên salon"
-                v-model="dt.salon_name"
-              />
-            </div>
-            <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
-              >
-
-                Tiêu đề
-
-              </FormLabel>
-              <FormInput
-                id="crud-form-2"
-                type="text"
-                class="w-full"
-                placeholder="Số điện thoại dùng để đăng nhập"
-                v-maska="bindedObject"
-                data-maska="##########"
-                @change="maskphone(`phone`)"
-              />
-            </div>
-            <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-3"
-                class="label-require"
-              >Mật Khẩu</FormLabel>
-
-              <InputGroup v-if="!showPassword">
-                <FormInput
-                  id="crud-form-3"
-                  type="text"
-                  v-model="dt.password"
-                  class="w-full"
-                  placeholder="Mật Khẩu"
-                />
-
-                <InputGroup.Text
-                  id="input-group-1"
-                  style="cursor: pointer"
-                  @click="showPassword = !showPassword"
-                >
-                  <Lucide icon="Eye" />
-                </InputGroup.Text>
-              </InputGroup>
-              <InputGroup v-else>
-                <FormInput
-                  id="crud-form-3"
-                  type="password"
-                  v-model="dt.password"
-                  class="w-full"
-                  placeholder="Mật Khẩu"
-                />
-                <InputGroup.Text
-                  id="input-group-1"
-                  style="cursor: pointer"
-                  @click="showPassword = !showPassword"
-                >
-                  <Lucide icon="EyeOff" />
-                </InputGroup.Text>
-              </InputGroup>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- END: Account Info -->
       <!-- BEGIN: Job Info -->
-      <div class="p-5 mt-5 intro-y box">
+      <div
+        class="p-5 mt-5 intro-y box"
+        v-if="salon"
+      >
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             <Lucide
               icon="Home"
               class="w-4 h-4 mr-2"
-            /> Thông tin Job
+            /> Thông tin
           </div>
           <div class="mt-5">
+
             <div>
               <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Tên Job</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ job"
-                v-model="dt.job_name"
-              />
-            </div>
-            <div class="mt-3">
-              <FormLabel
                 htmlFor="crud-form-2"
                 class="label-require"
-              >Địa chỉ job</FormLabel>
-              <br />
-              <GMapAutocomplete
-                id="map"
-                class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 w-full"
-                language="en"
-                style="
-                  padding: 8px 12px;
-                  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-                  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
-                  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
-                    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-                  border-radius: 0.375rem;
-                  --tw-border-opacity: 1;
-                  border: solid 1px rgb(226 232 240 / var(--tw-border-opacity));
-                "
-                placeholder="Nhập địa chỉ"
-                @place_changed="getAddressData"
               >
-              </GMapAutocomplete>
-            </div>
-            <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
-              >Số điện thoại liên hệ</FormLabel>
+                Tiêu đề
+              </FormLabel>
               <FormInput
                 id="crud-form-2"
                 type="text"
                 class="w-full"
-                placeholder="Số điện thoại"
-                v-maska="bindedObject"
-                data-maska="(###) ###-####"
-                @change="maskphone(`job_phone`)"
+                placeholder="Tiêu đề"
+                v-model="dt.title"
               />
             </div>
-            <div class="mt-3">
+
+            <div class="mt-5">
               <FormLabel
                 htmlFor="crud-form-2"
                 class="label-require"
-              >Email</FormLabel>
-              <FormInput
-                id="crud-form-2"
-                type="text"
-                v-model="dt.job_email"
-                class="w-full"
-                placeholder="Email"
-              />
-            </div>
-            <!-- <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Ngôn Ngữ</FormLabel>
-              <FormSelect
-                id="crud-form-2"
-                type="text"
-                v-model="dt.lang"
-                class="w-full"
               >
-                <option value="en">Tiếng Anh</option>
-                <option value="vi">Tiếng Việt</option>
-              </FormSelect>
-            </div> -->
-            <div class="mt-3">
+                Tên liên hệ
+              </FormLabel>
+              <FormInput
+                id="crud-form-2"
+                type="text"
+                class="w-full"
+                placeholder="Tên liên hệ"
+                v-model="dt.contact_name"
+              />
+            </div>
+
+            <div class="grid-cols-2 gap-6 sm:grid">
+              <div class="mt-5">
+                <FormLabel htmlFor="crud-form-1">
+                  Tên salon
+                </FormLabel>
+                <FormInput
+                  id="crud-form-1"
+                  type="text"
+                  class="w-full"
+                  placeholder="Tên salon"
+                  v-model="dt.salon_name"
+                />
+              </div>
+
+              <div class="mt-5">
+                <FormLabel
+                  htmlFor="crud-form-2"
+                  class="label-require"
+                >Số điện thoại liên hệ</FormLabel>
+                <FormInput
+                  id="crud-form-2"
+                  type="text"
+                  class="w-full"
+                  placeholder="Số điện thoại"
+                  v-maska="bindedObject"
+                  data-maska="(###) ###-####"
+                  v-model="maskedValue"
+                  @change="maskphone()"
+                />
+              </div>
+            </div>
+
+            <div class="grid-cols-2 gap-6 sm:grid">
+              <div class="mt-5">
+                <FormLabel
+                  htmlFor="crud-form-2"
+                  class="label-require"
+                >
+                  Thành phố
+                </FormLabel>
+                <FormInput
+                  id="crud-form-2"
+                  type="text"
+                  class="w-full"
+                  placeholder="Thành phố cư trú"
+                  v-model="dt.salon_city"
+                />
+              </div>
+
+              <div class="mt-5">
+                <FormLabel
+                  htmlFor="crud-form-2"
+                  class="label-require"
+                >
+                  Tiểu Bang
+                </FormLabel>
+                <FormInput
+                  id="crud-form-2"
+                  type="text"
+                  class="w-full"
+                  placeholder="Bang cư trú"
+                  v-model="dt.salon_state"
+                />
+              </div>
+            </div>
+
+            <div class="grid-cols-2 gap-6 sm:grid">
+              <div class="mt-5">
+                <FormLabel class="label-require">
+                  Tiệm tồn tại bao lâu?
+                </FormLabel>
+                <InputGroup>
+                  <FormInput
+                    type="number"
+                    v-model="dt.salon_exists_time"
+                    aria-describedby="input-group-2"
+                    maxlength="3"
+                  />
+                  <InputGroup.Text>
+                    Năm
+                  </InputGroup.Text>
+                </InputGroup>
+              </div>
+
+              <div class="mt-5">
+                <FormLabel>
+                  Khách thuộc sắc dân nào?
+                </FormLabel>
+                <div class="flex flex-col mt-2 sm:flex-row">
+                  <FormCheck class="mr-4">
+                    <FormCheck.Input
+                      id="customer_skin_color-switch-4"
+                      type="radio"
+                      name="customer_skin_color"
+                      value="1"
+                      v-model="dt.customer_skin_color"
+                    />
+                    <FormCheck.Label htmlFor="customer_skin_color-switch-4">
+                      Da Trắng
+                    </FormCheck.Label>
+                  </FormCheck>
+                  <FormCheck class="mt-2 mr-4 sm:mt-0">
+                    <FormCheck.Input
+                      id="customer_skin_color-switch-5"
+                      type="radio"
+                      name="customer_skin_color"
+                      value="2"
+                      v-model="dt.customer_skin_color"
+                    />
+                    <FormCheck.Label htmlFor="customer_skin_color-switch-5">
+                      Da Đen
+                    </FormCheck.Label>
+                  </FormCheck>
+                  <FormCheck class="mt-2 mr-4 sm:mt-0">
+                    <FormCheck.Input
+                      id="customer_skin_color-switch-6"
+                      type="radio"
+                      name="customer_skin_color"
+                      value="3"
+                      v-model="dt.customer_skin_color"
+                    />
+                    <FormCheck.Label htmlFor="customer_skin_color-switch-6">
+                      Xi
+                    </FormCheck.Label>
+                  </FormCheck>
+                  <FormCheck class="mt-2 mr-4 sm:mt-0">
+                    <FormCheck.Input
+                      id="customer_skin_color-switch-7"
+                      type="radio"
+                      name="customer_skin_color"
+                      value="4"
+                      v-model="dt.customer_skin_color"
+                    />
+                    <FormCheck.Label htmlFor="customer_skin_color-switch-7">
+                      Tổng hợp
+                    </FormCheck.Label>
+                  </FormCheck>
+                </div>
+              </div>
+            </div>
+            <div class="grid-cols-2 gap-6 sm:grid">
+              <div class="mt-5">
+                <FormLabel class="label-require">
+                  Thu nhập trung bình của thợ
+                </FormLabel>
+                <InputGroup>
+                  <FormInput
+                    type="number"
+                    v-model="dt.salary"
+                    aria-describedby="input-group-2"
+                  />
+                  <InputGroup.Text class=" p-0">
+                    <select
+                      v-model="dt.type_salary"
+                      style="line-height: 20px;border:none !important;"
+                    >
+                      <option value="1"> $ / Tuần </option>
+                      <option value="2"> $ / Tháng </option>
+                      <option value="3"> $ / Năm </option>
+                    </select>
+                  </InputGroup.Text>
+                </InputGroup>
+              </div>
+
+              <div class="mt-5">
+                <FormLabel>
+                  Cách Tính Lương
+                </FormLabel>
+                <div class="flex flex-col mt-2 sm:flex-row">
+                  <FormCheck class="mr-4">
+                    <FormCheck.Input
+                      id="radio-switch-4"
+                      type="radio"
+                      name="horizontal_radio_button"
+                      value="1"
+                      v-model="dt.salary_form"
+                    />
+                    <FormCheck.Label htmlFor="radio-switch-4">
+                      Bao Lương
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                  <FormCheck class="mt-2 mr-4 sm:mt-0">
+                    <FormCheck.Input
+                      id="radio-switch-5"
+                      type="radio"
+                      name="horizontal_radio_button"
+                      value="2"
+                      v-model="dt.salary_form"
+                    />
+                    <FormCheck.Label htmlFor="radio-switch-5">
+                      Ăn Chia 6/4
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                  <FormCheck class="mt-2 mr-4 sm:mt-0">
+                    <FormCheck.Input
+                      id="radio-switch-6"
+                      type="radio"
+                      name="horizontal_radio_button"
+                      value="3"
+                      v-model="dt.salary_form"
+                    />
+                    <FormCheck.Label htmlFor="radio-switch-6">
+                      Thương Lượng
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 grid-cols-3 gap-6 sm:grid">
+              <div class="mt-5">
+                <FormLabel>
+                  Có Xe Đưa Đón Thợ Không ?
+                </FormLabel>
+                <div class=" mt-2">
+                  <FormCheck class="mt-2">
+                    <FormCheck.Input
+                      id="shutter-switch2"
+                      type="radio"
+                      name="shutter-switch"
+                      value="1"
+                      v-model="dt.is_shuttle"
+                    />
+                    <FormCheck.Label htmlFor="shutter-switch2">
+                      Có
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                  <FormCheck class="mt-2">
+                    <FormCheck.Input
+                      id="shutter-switch1"
+                      type="radio"
+                      name="shutter-switch"
+                      value="0"
+                      v-model="dt.is_shuttle"
+                    />
+                    <FormCheck.Label htmlFor="shutter-switch1">
+                      Không
+                    </FormCheck.Label>
+                  </FormCheck>
+                </div>
+              </div>
+
+              <div class="mt-5">
+                <FormLabel>
+                  Có nhà cho thợ xuyên bang không?
+                </FormLabel>
+                <div class="mt-2">
+                  <FormCheck class="mt-2">
+                    <FormCheck.Input
+                      id="is_there_house1"
+                      type="radio"
+                      name="is_there_house"
+                      value="1"
+                      v-model="dt.is_there_house"
+                    />
+                    <FormCheck.Label htmlFor="is_there_house1">
+                      Có
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                  <FormCheck class="mt-2">
+                    <FormCheck.Input
+                      id="is_there_house"
+                      type="radio"
+                      name="is_there_house"
+                      value="0"
+                      v-model="dt.is_there_house"
+                    />
+                    <FormCheck.Label htmlFor="is_there_house">
+                      Không
+                    </FormCheck.Label>
+                  </FormCheck>
+                </div>
+              </div>
+
+              <div class="mt-5">
+                <label>
+                  Tìm Thợ Nam Hay Nữ?
+                </label>
+                <div class=" ">
+                  <FormCheck class="mt-2 mr-5">
+                    <FormCheck.Input
+                      id="gender-switch"
+                      type="radio"
+                      name="gender-switch"
+                      value="1"
+                      v-model="dt.gender"
+                    />
+                    <FormCheck.Label htmlFor="gender-switch">
+                      Nam
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                  <FormCheck class="mt-2 mr-5">
+                    <FormCheck.Input
+                      id="gender-switch-1"
+                      type="radio"
+                      name="gender-switch"
+                      value="2"
+                      v-model="dt.gender"
+                    />
+                    <FormCheck.Label htmlFor="gender-switch-1">
+                      Nữ
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                  <FormCheck class="mt-2 mr-5">
+                    <FormCheck.Input
+                      id="gender-switch-2"
+                      type="radio"
+                      name="gender-switch"
+                      value="4"
+                      v-model="dt.gender"
+                    />
+                    <FormCheck.Label htmlFor="gender-switch-2">
+                      Tất Cả
+                    </FormCheck.Label>
+                  </FormCheck>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 grid-cols-2 gap-6 lg:grid">
+              <div class="mt-5">
+                <label class="label-require">
+                  Tuyển Thợ Có Kinh Nghiệm (Skill) Làm :
+                </label>
+                <div
+                  class="flex"
+                  style=" flex-flow: wrap;"
+                >
+                  <FormCheck
+                    v-for="(skill,key) in SKILLS_NAME"
+                    class="mr-5 mt-3"
+                    :key="key"
+                  >
+                    <FormCheck.Input
+                      :id="'skill-'+key"
+                      type="checkbox"
+                      v-model="dt.skills"
+                      :value="key"
+                    />
+                    <FormCheck.Label :htmlFor="'skill-'+key">
+                      {{  skill }}
+                    </FormCheck.Label>
+                  </FormCheck>
+
+                </div>
+              </div>
+
+            </div>
+
+            <div class="mt-5">
+              <FormLabel htmlFor="crud-form-2">Nội dung tuyển dụng</FormLabel>
+              <ClassicEditor
+                v-model="dt.description"
+                class="mt-4"
+                aria-placeholder="Thông Tin Giới Thiệu Về Job"
+              />
+            </div>
+
+            <div class="mt-5">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
-                <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
-                  <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
+                <div class="flex-1 w-full pt-4 mt-5 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
+                  <div class="grid grid-cols-10 gap-6 pl-4 pr-5">
                     <div
                       v-for="(image, index) in listImgs"
                       :key="image"
@@ -314,386 +626,13 @@ const maskphone = () => {
                 </div>
               </FormInline>
             </div>
-            <FormLabel
-              htmlFor="crud-form-2"
-              class="mt-3"
-            >Giờ mở cửa</FormLabel>
-            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-              <div
-                class="flex"
-                v-for="schedule in dt.schedules"
-                :key="schedule.day"
-              >
-                <FormInline class="flex-row flex w-1/2">
-                  <FormLabel
-                    htmlFor=""
-                    class="text-left w-20 mt-3"
-                  >
-                    {{ schedule.day_name }}
-                  </FormLabel>
-                  <div
-                    class="relative w-full"
-                    id="timepicker-with-button"
-                    data-te-timepicker-init
-                    data-te-format24="true"
-                    data-te-input-wrapper-init
-                  >
-                    <input
-                      type="text"
-                      class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
-                      id="form4"
-                      style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.start_time"
-                    />
-                    <button
-                      tabindex="0"
-                      type="button"
-                      class="timepicker-toggle-button absolute right-2.5 top-1/2 ml-auto h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent fill-neutral-700 outline-none transition-all duration-[300ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:fill-[#3b71ca] focus:fill-[#3b71ca] dark:fill-white dark:hover:fill-[#3b71ca] dark:focus:fill-[#3b71ca]"
-                      data-te-toggle="timepicker-with-button"
-                      data-te-timepicker-toggle-button
-                    >
-                      <span data-te-timepicker-icon>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="h-5 w-5 hover:text-[#3b71ca] focus:text-[#3b71ca] dark:text-white dark:hover:text-[#3b71ca] dark:focus:text-[#3b71ca]"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5"
-                          />
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
-                </FormInline>
-                <FormInline class="flex-row flex w-1/2">
-                  <FormLabel
-                    htmlFor=""
-                    class="text-left w-20 mt-3"
-                  > đến </FormLabel>
-                  <div
-                    class="relative w-full"
-                    id="timepicker-with-button"
-                    data-te-timepicker-init
-                    data-te-format24="true"
-                    data-te-input-wrapper-init
-                  >
-                    <input
-                      type="text"
-                      class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
-                      id="form4"
-                      style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.end_time"
-                    />
-                    <button
-                      tabindex="0"
-                      type="button"
-                      class="timepicker-toggle-button absolute right-2.5 top-1/2 ml-auto h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent fill-neutral-700 outline-none transition-all duration-[300ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:fill-[#3b71ca] focus:fill-[#3b71ca] dark:fill-white dark:hover:fill-[#3b71ca] dark:focus:fill-[#3b71ca]"
-                      data-te-toggle="timepicker-with-button"
-                      data-te-timepicker-toggle-button
-                    >
-                      <span data-te-timepicker-icon>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="h-5 w-5 hover:text-[#3b71ca] focus:text-[#3b71ca] dark:text-white dark:hover:text-[#3b71ca] dark:focus:text-[#3b71ca]"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5"
-                          />
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
-                </FormInline>
-              </div>
-            </div>
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Mô tả về Job</FormLabel>
-              <ClassicEditor
-                v-model="dt.job_description"
-                class="mt-4"
-                aria-placeholder="Thông Tin Giới Thiệu Về Job"
-              />
-            </div>
+
           </div>
         </div>
       </div>
       <!-- END: Job Info -->
 
-      <!-- BEGIN: service & Service Info -->
-      <div class="p-5 mt-5 intro-y box">
-        <div class="mb-5">
-          <FormLabel
-            htmlFor=""
-            class="text-base font-medium"
-          >Hình ảnh Dịch Vụ, Thợ</FormLabel>
-          <FormInline class="flex-col items-start mt-3 xl:flex-row">
-            <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
-              <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
-                <div
-                  v-for="(image, index) in listStaffImgs"
-                  :key="image"
-                  class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
-                >
-                  <img
-                    class="rounded-md"
-                    alt=""
-                    :src="image"
-                  />
-                  <Tippy
-                    content="Remove this image?"
-                    class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
-                    @click="revokeStaffPreview(index)"
-                  >
-                    <Lucide
-                      icon="X"
-                      class="w-4 h-4"
-                    />
-                  </Tippy>
-                </div>
-              </div>
-              <div class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer">
-                <Lucide
-                  icon="Image"
-                  class="w-4 h-4 mr-2"
-                />
-                <span class="mr-1 text-primary"> Tải lên file</span>
-                <FormInput
-                  id="staff-image"
-                  type="file"
-                  class="absolute top-0 left-0 w-full h-full opacity-0"
-                  multiple
-                  @change="previewStaffImages"
-                />
-              </div>
-            </div>
-          </FormInline>
-        </div>
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            <Lucide
-              icon="User"
-              class="w-4 h-4 mr-2"
-            /> Thông tin dịch vụ
-          </div>
-          <div class="mt-5">
-            <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
-              <div class="flex-1 w-full mt-3 xl:mt-0">
-                <div class="overflow-x-auto">
-                  <Table class="border">
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
-                          Dịch Vụ
-                        </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
-                          Giá Tiền
-                        </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-
-                    <Table.Tbody>
-                      <tr
-                        class=""
-                        v-for="(service, index) in dt.services"
-                        :key="index"
-                      >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
-                          <input
-                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
-                            type="text"
-                            v-model="service.name"
-                          />
-                        </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
-                          <input
-                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
-                            type="text"
-                            v-model="service.price"
-                          />
-                        </td>
-                        <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
-                          <a
-                            style="cursor: pointer"
-                            @click="JobCreateStore.deleteService(index)"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="stroke-1.5 w-4 h-4"
-                              style="margin: 0px auto"
-                            >
-                              <path d="M3 6h18"></path>
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                              <line
-                                x1="10"
-                                y1="11"
-                                x2="10"
-                                y2="17"
-                              ></line>
-                              <line
-                                x1="14"
-                                y1="11"
-                                x2="14"
-                                y2="17"
-                              ></line>
-                            </svg>
-                          </a>
-                        </td>
-                      </tr>
-                    </Table.Tbody>
-                  </Table>
-                </div>
-                <Button
-                  variant="outline-primary"
-                  class="w-full mt-4 border-dashed"
-                  @click="JobCreateStore.addService()"
-                >
-                  <Lucide
-                    icon="Plus"
-                    class="w-4 h-4 mr-2"
-                  /> Thêm dịch vụ
-                </Button>
-              </div>
-            </FormInline>
-          </div>
-        </div>
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            <Lucide
-              icon="User"
-              class="w-4 h-4 mr-2"
-            /> Thông tin thợ
-          </div>
-          <div class="mt-5">
-            <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
-              <div class="flex-1 w-full mt-3 xl:mt-0">
-                <div class="overflow-x-auto">
-                  <Table class="border">
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
-                          Tên Thợ
-                        </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
-                          Số Điện Thoại
-                        </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      <tr
-                        class=""
-                        v-for="(staff, index) in dt.staffs"
-                        :key="index"
-                      >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
-                          <input
-                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
-                            type="text"
-                            v-model="staff.name"
-                          />
-                        </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
-                          <input
-                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
-                            type="text"
-                            v-maska="bindedObject"
-                            data-maska="(###) ###-####"
-                            @change="maskphone('', true, index)"
-                          />
-                        </td>
-                        <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
-                          <a
-                            style="cursor: pointer"
-                            @click="JobCreateStore.deleteStaff(index)"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="stroke-1.5 w-4 h-4"
-                              style="margin: 0px auto"
-                            >
-                              <path d="M3 6h18"></path>
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                              <line
-                                x1="10"
-                                y1="11"
-                                x2="10"
-                                y2="17"
-                              ></line>
-                              <line
-                                x1="14"
-                                y1="11"
-                                x2="14"
-                                y2="17"
-                              ></line>
-                            </svg>
-                          </a>
-                        </td>
-                      </tr>
-                    </Table.Tbody>
-                  </Table>
-                </div>
-                <Button
-                  variant="outline-primary"
-                  class="w-full mt-4 border-dashed"
-                  @click="JobCreateStore.addStaff()"
-                >
-                  <Lucide
-                    icon="Plus"
-                    class="w-4 h-4 mr-2"
-                  /> Thêm Thợ
-                </Button>
-              </div>
-            </FormInline>
-          </div>
-        </div>
-      </div>
-      <!-- END: service & Service  Info -->
-
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
-        <!-- <Button
-                  type="button"
-                  class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
-                >
-                  Cancel
-                </Button> -->
-        <!--   <Button
-                  type="button"
-                  class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
-                  @click="saveNew"
-                >
-                  Save & Add New Product
-                </Button> -->
         <Button
           variant="primary"
           type="button"

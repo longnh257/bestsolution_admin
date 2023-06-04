@@ -61,14 +61,7 @@ onMounted(() => {
 });
 
 const getSalon = async () => {
-  const response = await axios.get(`salon/${salon_id}`, {
-    params: {
-      page: 1,
-    },
-    headers: {
-      Authorization: "Bearer " + access_token,
-    },
-  });
+  const response = await axios.get(`salon/${salon_id}`);
   salon.value = response.data.data;
   console.log(salon.value);
 };
@@ -80,11 +73,6 @@ const approveSalon = (id: any) => {
     .post(
       "salon/approve",
       { id: id },
-      {
-        headers: {
-          Authorization: "Bearer " + access_token,
-        },
-      }
     )
     .then(function (response) {
       scc.value = response.data.message;
@@ -108,11 +96,7 @@ const deleteSalon = (salonId: any) => {
     .post(
       "admin/delete-salon",
       { id: selectedSalonId.value },
-      {
-        headers: {
-          Authorization: "Bearer " + access_token,
-        },
-      }
+      
     )
     .then(function (response) {
       scc.value = response.data.message;
