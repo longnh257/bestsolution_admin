@@ -21,7 +21,54 @@ import {
 import { useSalonListStore } from "../../stores/salon/salon-list";
 import { useSalonCreateStore } from "../../stores/salon/salon-create";
 import router from "../../router";
-import moment from 'moment';
+import {
+  required,
+  minLength,
+  maxLength,
+  email,
+  url,
+  integer,
+} from "@vuelidate/validators";
+import { useVuelidate } from "@vuelidate/core";
+
+
+
+const formData = reactive({
+  staff_name: "",
+  email: "",
+  password: "",
+  age: "",
+  url: "",
+  comment: "",
+});
+
+const rules = {
+  staff_name: {
+    minLength: minLength(3),
+  },
+  email: {
+    required,
+    email,
+  },
+  password: {
+    required,
+    minLength: minLength(6),
+  },
+  age: {
+    required,
+    integer,
+    maxLength: maxLength(3),
+  },
+  url: {
+    url,
+  },
+  comment: {
+    required,
+    minLength: minLength(10),
+  },
+};
+
+const validate = useVuelidate(rules, toRefs(formData));
 
 
 
@@ -156,6 +203,7 @@ const getAddressData = async ($e: any) => {
     dt.salon_timezone = timezoneByLocation.timeZoneId
   console.log("tz: " + dt.salon_timezone);
 };
+
 </script>
 
 <template>
@@ -174,6 +222,19 @@ const getAddressData = async ($e: any) => {
             /> Thông tin tài khoản
           </div>
           <div class="mt-5">
+            <div>
+              <FormLabel
+                htmlFor="crud-form-1"
+                class="label-require"
+              >Tên chủ salon</FormLabel>
+              <FormInput
+                id="crud-form-1"
+                type="text"
+                class="w-full"
+                name="staff_name"
+                placeholder="Tên chủ salon"
+              />
+            </div>
             <div>
               <FormLabel
                 htmlFor="crud-form-1"
