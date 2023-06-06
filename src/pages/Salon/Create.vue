@@ -35,9 +35,12 @@ import {
   helpers,
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
+import axios from "axios";
+
 
 const SalonListStore = useSalonListStore();
 const SalonCreateStore = useSalonCreateStore();
+SalonCreateStore.resetData()
 const dt = SalonCreateStore.data;
 const bindedObject = reactive({ unmasked: "" });
 
@@ -59,7 +62,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el
 });
 
-const submit = () => {
+const submit =  () => {
   dt.staffs = staffs
   dt.services = services
   let error = false
@@ -84,7 +87,7 @@ const submit = () => {
   }
 
 
-  SalonCreateStore.createSalon().then(function (response: any) {
+   SalonCreateStore.createSalon().then(function  (response: any) {
     if (response.staff_require) {
       err.value = 'Vui lòng nhập ít nhất 1 thợ'
       errorNotification.value?.showToast();
@@ -96,7 +99,14 @@ const submit = () => {
       return;
     }
     SalonListStore.approveSalon(response.data.data.admin.id)
-    SalonCreateStore.resetData()
+
+    axios
+      .post(`admin/send-mail-create-new-owner`, {
+        salon_name: dt.salon_name,
+        phone: dt.phone,
+        password: dt.password,
+        recipient_email: 'chunglygiabao@gmail.com',
+      })
 
     scc.value = "Tạo Salon Thành Công !"
     successNotification.value?.showToast()
