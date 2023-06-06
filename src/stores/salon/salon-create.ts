@@ -6,10 +6,12 @@ import moment from 'moment';
 interface Service {
     name: string,
     price: string,
+    avatar: string
 }
 interface Staff {
     name: string,
     phone: string,
+    avatar: string
 }
 interface Schedule {
     day: number,
@@ -36,7 +38,7 @@ interface SalonCreateState {
         salon_tz: string,
         salon_lat: string,
         salon_lng: string,
-        /*   lang: string, */
+      /*   lang: string, */
         images: Blob[],
         fileList: Blob[],
         staffs: Staff[],
@@ -63,19 +65,21 @@ const defaultData = {
     salon_tz: "",
     salon_lat: "",
     salon_lng: "",
-    /*   lang: "en", */
+  /*   lang: "en", */
     images: [],
     fileList: [],
     staffs: [
         {
             name: "",
             phone: "",
+            avatar: "",
         }
     ],
     services: [
         {
             name: "",
             price: "",
+            avatar: "",
         }
     ],
     schedules: [
@@ -145,19 +149,21 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
                 salon_tz: "",
                 salon_lat: "",
                 salon_lng: "",
-                /*  lang: "en", */
+               /*  lang: "en", */
                 images: [],
                 fileList: [],
                 staffs: [
                     {
                         name: "",
                         phone: "",
+                        avatar: "",
                     }
                 ],
                 services: [
                     {
                         name: "",
                         price: "",
+                        avatar: "",
                     }
                 ],
                 schedules: [
@@ -212,32 +218,48 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
     actions: {
 
         resetData() {
-            for (const item in this.data) {
+            for(const item in this.data){
                 this.data[item] = defaultData[item]
             }
         },
+        addService() {
+            this.data.services.push({ name: "", price: "", avatar: "" });
 
+        },
+
+        addStaff() {
+            this.data.staffs.push({ name: "", phone: "", avatar: "" })
+        },
+
+        deleteService(index: any) {
+            if (this.data.services.length > 1) {
+                this.data.services.splice(index, 1)
+            } else {
+                this.data.services[index].name = ""
+                this.data.services[index].price = ""
+
+            }
+        },
+
+        deleteStaff(index: any) {
+            if (this.data.staffs.length > 1) {
+                this.data.staffs.splice(index, 1)
+            } else {
+                this.data.staffs[index].name = ""
+                this.data.staffs[index].phone = ""
+            }
+        },
 
         async createSalon() {
-
-            console.log("create salon ");
+            
             const fd = new FormData();
 
             let staffs = this.data.staffs.filter(item => {
-                return item.phone != '' && item.name != ''
+                return item.phone != '' && item.name != '' 
             })
             let services = this.data.services.filter(item => {
                 return item.price != '' && item.name != ''
             })
-
-
-            if (staffs.length < 1) {
-                return { staff_require: 1 }
-            }
-            if (services.length < 1) {
-                return { services_require: 1 }
-            }
-
             for (let index in this.data.images) {
                 fd.append("images", this.data.images[index]);
             }
@@ -280,7 +302,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             fd.append("salon_tz", this.data.salon_tz);
             fd.append("salon_lat", this.data.salon_lat);
             fd.append("salon_lng", this.data.salon_lng);
-            /*        fd.append("lang", this.data.lang); */
+     /*        fd.append("lang", this.data.lang); */
             fd.append("services", JSON.stringify(services));
             fd.append("staffs", JSON.stringify(staffs));
             fd.append("schedules", JSON.stringify(scheduleData));

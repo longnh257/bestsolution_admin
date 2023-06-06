@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, provide, toRefs } from "vue";
+import { reactive, ref, provide } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
 import Notification from "../../base-components/Notification";
@@ -20,31 +20,72 @@ import {
 } from "../../base-components/Form";
 import { useSalonListStore } from "../../stores/salon/salon-list";
 import { useSalonCreateStore } from "../../stores/salon/salon-create";
-import Toastify from "toastify-js";
 import router from "../../router";
 import {
   required,
   minLength,
   maxLength,
-  maxValue,
-  minValue,
   email,
   url,
   integer,
-  decimal,
-  helpers,
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import axios from "axios";
+
+
+
+
+const formData = reactive({
+  staff_name: "",
+  email: "",
+  password: "",
+  age: "",
+  url: "",
+  comment: "",
+});
+
+const rules = {
+  staff_name: {
+    minLength: minLength(3),
+  },
+  email: {
+    required,
+    email,
+  },
+  password: {
+    required,
+    minLength: minLength(6),
+  },
+  age: {
+    required,
+    integer,
+    maxLength: maxLength(3),
+  },
+  url: {
+    url,
+  },
+  comment: {
+    required,
+    minLength: minLength(10),
+  },
+};
+
+const validate = useVuelidate(rules, toRefs(formData));
+
 
 
 const SalonListStore = useSalonListStore();
 const SalonCreateStore = useSalonCreateStore();
 SalonCreateStore.resetData()
 const dt = SalonCreateStore.data;
+
 const bindedObject = reactive({ unmasked: "" });
 
+
+
 let listImgs: any = ref([]);
+let listStaffImgs: any = ref([]);
+
 let showPassword = ref(true);
 
 const saveSalon = () => {
@@ -62,43 +103,10 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el
 });
 
-const submit =  () => {
-  dt.staffs = staffs
-  dt.services = services
-  let error = false
+const submit = () => {
+  SalonCreateStore.createSalon().then(function (response) {
+    console.log(response.data)
 
-  for (var i = 0; i < validate.length; i++) {
-    if (validate[i].value.$invalid) {
-      error = true
-      break;
-    }
-  }
-  for (var i = 0; i < servicesValidate.length; i++) {
-    if (servicesValidate[i].value.$invalid) {
-      error = true
-      break;
-    }
-  }
-
-  if (error) {
-    err.value = 'Thông tin thợ hoặc dịch vụ không hợp lệ'
-    errorNotification.value?.showToast();
-    return;
-  }
-
-  console.log("truoc create salon ");
-
-   SalonCreateStore.createSalon().then(function  (response: any) {
-    if (response.staff_require) {
-      err.value = 'Vui lòng nhập ít nhất 1 thợ'
-      errorNotification.value?.showToast();
-      return;
-    }
-    if (response.services_require) {
-      err.value = 'Vui lòng nhập ít nhất 1 dịch vụ'
-      errorNotification.value?.showToast();
-      return;
-    }
     SalonListStore.approveSalon(response.data.data.admin.id)
 
     axios
@@ -137,9 +145,26 @@ const revokePreview = (index: any) => {
   dt.images.splice(index, 1);
 };
 
+const previewStaffImages = (e: any) => {
+  for (var i = 0; i < e.target.files.length; i++) {
+    let file = e.target.files[i];
+    dt.fileList.push(file);
+    listStaffImgs.value.push(URL.createObjectURL(file));
+  }
+};
+
+const revokeStaffPreview = (index: any) => {
+  URL.revokeObjectURL(listStaffImgs.value[index]);
+  listStaffImgs.value.splice(index, 1);
+  dt.fileList.splice(index, 1);
+};
+
 const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
-    staffs[index].phone = bindedObject.unmasked;
+    console.log(index, dt.staffs[index].phone);
+    dt.staffs[index].phone = bindedObject.unmasked;
+    console.log("123: ", index, dt.staffs[index].phone);
+    console.log(dt.staffs);
   } else {
     if (key === "phone") {
       dt.phone = bindedObject.unmasked;
@@ -189,120 +214,6 @@ const getAddressData = async ($e: any) => {
   console.log("tz: " + dt.salon_timezone);
 };
 
-
-
-const staffs = reactive(
-  [
-    { name: '', phone: '', phone_val: '' },
-  ]
-);
-
-const services = reactive(
-  [
-    { name: '', price: '' },
-  ]
-);
-
-const validations = {
-  name: {
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
-      minLength(3)
-    ),
-    maxLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
-      maxLength(25)
-    ),
-  },
-  phone_val: {
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Số điện thoại phải là 10 số`,
-      minLength(14)
-    ),
-  },
-};
-
-const servicesValidations = {
-  name: {
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
-      minLength(3)
-    ),
-    maxLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
-      maxLength(25)
-    ),
-  },
-  price: {
-    minValue: helpers.withMessage(
-      ({
-        $params,
-      }) => `Giá dịch vụ phải > ${$params.min}`,
-      minValue(0)
-    ),
-    maxValue: helpers.withMessage(
-      ({
-        $params,
-      }) => `Giá dịch vụ phải < ${$params.max}`,
-      maxValue(99999.99),
-    ),
-
-  }
-};
-
-// Use Vuelidate
-const validate = <any>[]
-
-staffs.map((item) => {
-  validate.push(useVuelidate(validations, item))
-})
-const servicesValidate = <any>[]
-
-services.map((item) => {
-  servicesValidate.push(useVuelidate(servicesValidations, item))
-})
-
-
-const addService = () => {
-  services.push({ name: "", price: "" });
-  servicesValidate.push(useVuelidate(servicesValidations, reactive({ name: "", price: "" })))
-}
-const addStaff = () => {
-  staffs.push({ name: "", phone: "", phone_val: "" })
-  validate.push(useVuelidate(validations, reactive({ name: "", phone: "", phone_val: "" })))
-}
-
-const deleteService = (index: any) => {
-  if (services.length > 1) {
-    services.splice(index, 1)
-    servicesValidate.splice(index, 1)
-  } else {
-    services[index].name = ""
-    services[index].price = ""
-
-  }
-}
-
-const deleteStaff = (index: any) => {
-  if (staffs.length > 1) {
-    staffs.splice(index, 1)
-    validate.splice(index, 1)
-  } else {
-    staffs[index].name = ""
-    staffs[index].phone = ""
-  }
-}
-
 </script>
 
 <template>
@@ -320,8 +231,20 @@ const deleteStaff = (index: any) => {
               class="w-4 h-4 mr-2"
             /> Thông tin tài khoản
           </div>
-
           <div class="mt-5">
+            <div>
+              <FormLabel
+                htmlFor="crud-form-1"
+                class="label-require"
+              >Tên chủ salon</FormLabel>
+              <FormInput
+                id="crud-form-1"
+                type="text"
+                class="w-full"
+                name="staff_name"
+                placeholder="Tên chủ salon"
+              />
+            </div>
             <div>
               <FormLabel
                 htmlFor="crud-form-1"
@@ -469,7 +392,18 @@ const deleteStaff = (index: any) => {
                 placeholder="Email"
               />
             </div>
-
+            <!-- <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Ngôn Ngữ</FormLabel>
+              <FormSelect
+                id="crud-form-2"
+                type="text"
+                v-model="dt.lang"
+                class="w-full"
+              >
+                <option value="en">Tiếng Anh</option>
+                <option value="vi">Tiếng Việt</option>
+              </FormSelect>
+            </div> -->
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
@@ -635,7 +569,53 @@ const deleteStaff = (index: any) => {
 
       <!-- BEGIN: service & Service Info -->
       <div class="p-5 mt-5 intro-y box">
-
+        <!--   <div class="mb-5">
+          <FormLabel
+            htmlFor=""
+            class="text-base font-medium"
+          >Hình ảnh Dịch Vụ, Thợ</FormLabel>
+          <FormInline class="flex-col items-start mt-3 xl:flex-row">
+            <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
+              <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
+                <div
+                  v-for="(image, index) in listStaffImgs"
+                  :key="image"
+                  class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
+                >
+                  <img
+                    class="rounded-md"
+                    alt=""
+                    :src="image"
+                  />
+                  <Tippy
+                    content="Remove this image?"
+                    class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
+                    @click="revokeStaffPreview(index)"
+                  >
+                    <Lucide
+                      icon="X"
+                      class="w-4 h-4"
+                    />
+                  </Tippy>
+                </div>
+              </div>
+              <div class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer">
+                <Lucide
+                  icon="Image"
+                  class="w-4 h-4 mr-2"
+                />
+                <span class="mr-1 text-primary"> Tải lên file</span>
+                <FormInput
+                  id="staff-image"
+                  type="file"
+                  class="absolute top-0 left-0 w-full h-full opacity-0"
+                  multiple
+                  @change="previewStaffImages"
+                />
+              </div>
+            </div>
+          </FormInline>
+        </div> -->
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             <Lucide
@@ -663,49 +643,27 @@ const deleteStaff = (index: any) => {
                     <Table.Tbody>
                       <tr
                         class=""
-                        v-for="(service, key) in dt.services"
-                        :key="key"
+                        v-for="(service, index) in dt.services"
+                        :key="index"
                       >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
-                          <FormInput
-                            id="validation-form-1"
-                            v-model.trim="servicesValidate[key].value.name.$model"
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
-                            name="name"
-                            :class="{'border-danger': servicesValidate[key].value.name.$error,} "
+                            v-model="service.name"
                           />
-                          <template v-if="servicesValidate[key].value.name.$error">
-                            <div
-                              v-for="(error, index) in servicesValidate[key].value.name.$errors"
-                              :key="index"
-                              class="mt-2 text-danger"
-                            >
-                              {{ error.$message }}
-                            </div>
-                          </template>
                         </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
-                          <FormInput
-                            id="validation-form-1"
-                            v-model.trim="servicesValidate[key].value.price.$model"
-                            type="number"
-                            step="0.01"
-                            :class="{'border-danger': servicesValidate[key].value.price.$error,}"
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
+                            type="text"
+                            v-model="service.price"
                           />
-                          <template v-if="servicesValidate[key].value.price.$error">
-                            <div
-                              v-for="(error, index) in servicesValidate[key].value.price.$errors"
-                              :key="index"
-                              class="mt-2 text-danger"
-                            >
-                              {{ error.$message }}
-                            </div>
-                          </template>
                         </td>
                         <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
                           <a
                             style="cursor: pointer"
-                            @click="deleteService(key)"
+                            @click="SalonCreateStore.deleteService(index)"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -745,7 +703,7 @@ const deleteStaff = (index: any) => {
                 <Button
                   variant="outline-primary"
                   class="w-full mt-4 border-dashed"
-                  @click="addService()"
+                  @click="SalonCreateStore.addService()"
                 >
                   <Lucide
                     icon="Plus"
@@ -782,51 +740,29 @@ const deleteStaff = (index: any) => {
                     <Table.Tbody>
                       <tr
                         class=""
-                        v-for="(staff, key) in staffs"
-                        :key="key"
+                        v-for="(staff, index) in dt.staffs"
+                        :key="index"
                       >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
-                          <FormInput
-                            id="validation-form-1"
-                            v-model.trim="validate[key].value.name.$model"
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
-                            name="name"
-                            :class="{'border-danger': validate[key].value.name.$error,}"
+                            v-model="staff.name"
                           />
-                          <template v-if="validate[key].value.name.$error">
-                            <div
-                              v-for="(error, index) in validate[key].value.name.$errors"
-                              :key="index"
-                              class="mt-2 text-danger"
-                            >
-                              {{ error.$message }}
-                            </div>
-                          </template>
                         </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
                           <input
                             class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
                             v-maska="bindedObject"
                             data-maska="(###) ###-####"
-                            v-model.trim="validate[key].value.phone_val.$model"
-                            @change="maskphone('',true,key)"
-                            :class="{'border-danger': validate[key].value.phone_val.$error,}"
+                            @change="maskphone('',true,index)"
                           />
-                          <template v-if="validate[key].value.phone_val.$error">
-                            <div
-                              v-for="(error, index) in validate[key].value.phone_val.$errors"
-                              :key="index"
-                              class="mt-2 text-danger"
-                            >
-                              {{ error.$message }}
-                            </div>
-                          </template>
                         </td>
                         <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
                           <a
                             style="cursor: pointer"
-                            @click="deleteStaff(key)"
+                            @click="SalonCreateStore.deleteStaff(index)"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -866,7 +802,7 @@ const deleteStaff = (index: any) => {
                 <Button
                   variant="outline-primary"
                   class="w-full mt-4 border-dashed"
-                  @click="addStaff()"
+                  @click="SalonCreateStore.addStaff()"
                 >
                   <Lucide
                     icon="Plus"
