@@ -86,6 +86,7 @@ const submit =  () => {
     return;
   }
 
+  console.log("truoc create salon ");
 
    SalonCreateStore.createSalon().then(function  (response: any) {
     if (response.staff_require) {
@@ -116,7 +117,7 @@ const submit =  () => {
     });
   })
     .catch(function (error) {
-      console.log(error.response);
+      console.log("error: ",error);
       err.value = error.response.data.message;
       errorNotification.value?.showToast();
     });
