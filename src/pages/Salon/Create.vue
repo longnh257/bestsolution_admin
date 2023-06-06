@@ -70,6 +70,12 @@ const submit = () => {
       break;
     }
   }
+  for (var i = 0; i < servicesValidate.length; i++) {
+    if (servicesValidate[i].value.$invalid) {
+      error = true
+      break;
+    }
+  }
 
   if (error) {
     err.value = 'Thông tin thợ hoặc dịch vụ không hợp lệ'
@@ -227,8 +233,19 @@ const servicesValidations = {
     ),
   },
   price: {
-    minValue: minValue(0),
-    maxValue: maxValue(99999.99),
+    minValue: helpers.withMessage(
+      ({
+        $params,
+      }) => `Giá dịch vụ phải > ${$params.min}`,
+      minValue(0)
+    ),
+    maxValue: helpers.withMessage(
+      ({
+        $params,
+      }) => `Giá dịch vụ phải < ${$params.max}`,
+      maxValue(99999.99),
+    ),
+
   }
 };
 
@@ -257,6 +274,7 @@ const addStaff = () => {
 const deleteService = (index: any) => {
   if (services.length > 1) {
     services.splice(index, 1)
+    servicesValidate.splice(index, 1)
   } else {
     services[index].name = ""
     services[index].price = ""
@@ -267,6 +285,7 @@ const deleteService = (index: any) => {
 const deleteStaff = (index: any) => {
   if (staffs.length > 1) {
     staffs.splice(index, 1)
+    validate.splice(index, 1)
   } else {
     staffs[index].name = ""
     staffs[index].phone = ""
@@ -636,13 +655,13 @@ const deleteStaff = (index: any) => {
                         v-for="(service, key) in dt.services"
                         :key="key"
                       >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
                             v-model.trim="servicesValidate[key].value.name.$model"
                             type="text"
                             name="name"
-                            :class="{'border-danger': servicesValidate[key].value.name.$error,}"
+                            :class="{'border-danger': servicesValidate[key].value.name.$error,} "
                           />
                           <template v-if="servicesValidate[key].value.name.$error">
                             <div
@@ -654,7 +673,7 @@ const deleteStaff = (index: any) => {
                             </div>
                           </template>
                         </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2">
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
                             v-model.trim="servicesValidate[key].value.price.$model"

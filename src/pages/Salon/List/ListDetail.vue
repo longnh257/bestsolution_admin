@@ -285,7 +285,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                       Đăng Tin Tuyển Dụng
                     </router-link>
                   </Menu.Item>
-                  <Menu.Item>
+                 <!--  <Menu.Item>
                     <router-link
                       :to="{
                           name: 'job-list',
@@ -299,7 +299,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                       />
                       DS Tin Tuyển Dụng
                     </router-link>
-                  </Menu.Item>
+                  </Menu.Item> -->
                   <Menu.Item
                     class="text-success"
                     style="cursor: pointer"
