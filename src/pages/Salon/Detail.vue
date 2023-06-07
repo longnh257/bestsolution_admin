@@ -96,7 +96,7 @@ const deleteSalon = (salonId: any) => {
     .post(
       "admin/delete-salon",
       { id: selectedSalonId.value },
-      
+
     )
     .then(function (response) {
       scc.value = response.data.message;
@@ -332,9 +332,7 @@ const activeSalon = (id: any) => {
                   class="text-info"
                   target='_blank'
                 >
-                  <span
-                    v-html="salon.total_booking"
-                  > </span>
+                  <span v-html="salon.total_booking"> </span>
                 </router-link>
                 <span
                   class="text-info"
@@ -502,6 +500,21 @@ const activeSalon = (id: any) => {
           </router-link>
         </div>
         <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+          <router-link
+            :to="{
+                          name: 'job-create',
+                          params: { salon_id: salon.id },
+                        }"
+            style="display:flex !important"
+          >
+            <Lucide
+              icon="Send"
+              class="w-4 h-4 mr-2"
+            />
+            Đăng Tin Tuyển Dụng
+          </router-link>
+        </div>
+        <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
           <a
             class="flex items-center"
             href="#"
@@ -518,6 +531,7 @@ const activeSalon = (id: any) => {
               class="w-4 h-4 mr-2"
             /> Phê duyệt
           </a>
+         
           <a
             class="flex items-center text-success"
             href="#"

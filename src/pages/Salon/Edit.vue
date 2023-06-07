@@ -644,7 +644,7 @@ onMounted(() => {
       </div>
     </Notification>
     <Notification
-     refKey="successNotification"
+      refKey="successNotification"
       :options="{
         duration: 5000,
     }"
