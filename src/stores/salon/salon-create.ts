@@ -220,6 +220,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
 
         async createSalon() {
 
+            console.log("create salon ");
             const fd = new FormData();
 
             let staffs = this.data.staffs.filter(item => {
