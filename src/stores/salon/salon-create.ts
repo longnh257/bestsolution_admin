@@ -229,7 +229,6 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
                 return item.price != '' && item.name != ''
             })
 
-
             if (staffs.length < 1) {
                 return { staff_require: 1 }
             }
@@ -247,21 +246,24 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
 
             const dateNow = moment().utc().format('YYYY-MM-DD')
             let scheduleData: any = []
+            console.log(this.data.schedules);
             this.data.schedules.map(item => {
-              if (!item.start_time || !item.end_time) {
-                scheduleData.push({
-                  day: item.day,
-                  start_time: null,
-                  end_time: null
-                })
-              } else {
-                scheduleData.push({
-                  day: item.day,
-                  start_time: item.start_time ? convertToTZ(new Date(`${dateNow} ${item.start_time}`), this.data.salon_timezone) : null,
-                  end_time: item.end_time ? convertToTZ(new Date(`${dateNow} ${item.end_time}`), this.data.salon_timezone) : null
-                })
-              }
+                if (!item.start_time || !item.end_time) {
+                    console.log(1);
+                    scheduleData.push({
+                        day: item.day,
+                        start_time: null,
+                        end_time: null
+                    })
+                } else {
+                    scheduleData.push({
+                        day: item.day,
+                        start_time: item.start_time ? convertToTZ(new Date(`${dateNow} ${item.start_time}`), this.data.salon_timezone) : null,
+                        end_time: item.end_time ? convertToTZ(new Date(`${dateNow} ${item.end_time}`), this.data.salon_timezone) : null
+                    })
+                }
             })
+
             fd.append("name", this.data.name);
             fd.append("phone", this.data.phone);
             fd.append("salon_email", this.data.salon_email);
@@ -279,7 +281,6 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             fd.append("salon_tz", this.data.salon_tz);
             fd.append("salon_lat", this.data.salon_lat);
             fd.append("salon_lng", this.data.salon_lng);
-            /*        fd.append("lang", this.data.lang); */
             fd.append("services", JSON.stringify(services));
             fd.append("staffs", JSON.stringify(staffs));
             fd.append("schedules", JSON.stringify(scheduleData));

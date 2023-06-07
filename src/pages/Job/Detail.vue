@@ -348,9 +348,7 @@ const activeSalon = (id: any) => {
                   class="text-info"
                   target='_blank'
                 >
-                  <span
-                    v-html="salon.total_booking"
-                  > </span>
+                  <span v-html="salon.total_booking"> </span>
                 </router-link>
                 <span
                   class="text-info"
@@ -591,6 +589,9 @@ const activeSalon = (id: any) => {
     <!-- BEGIN: Success Notification -->
     <Notification
       refKey="errorNotification"
+      :options="{
+        duration: 5000,
+    }"
       class="flex"
     >
       <Lucide
@@ -607,6 +608,9 @@ const activeSalon = (id: any) => {
     </Notification>
     <Notification
       refKey="successNotification"
+      :options="{
+        duration: 5000,
+    }"
       class="flex"
     >
       <Lucide

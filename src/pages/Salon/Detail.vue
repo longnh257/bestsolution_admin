@@ -575,6 +575,9 @@ const activeSalon = (id: any) => {
     <!-- BEGIN: Success Notification -->
     <Notification
       refKey="errorNotification"
+      :options="{
+        duration: 5000,
+    }"
       class="flex"
     >
       <Lucide
@@ -591,6 +594,9 @@ const activeSalon = (id: any) => {
     </Notification>
     <Notification
       refKey="successNotification"
+      :options="{
+        duration: 5000,
+    }"
       class="flex"
     >
       <Lucide

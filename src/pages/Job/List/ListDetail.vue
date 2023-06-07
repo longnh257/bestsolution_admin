@@ -366,7 +366,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   <Notification
     refKey="errorNotification"
     :options="{
-      duration: 3000,
+      duration: 5000,
     }"
     class="flex"
   >
@@ -385,7 +385,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   <Notification
     refKey="successNotification"
     :options="{
-      duration: 3000,
+      duration: 5000,
     }"
     class="flex"
   >

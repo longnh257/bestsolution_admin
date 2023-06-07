@@ -511,6 +511,9 @@ onMounted(() => {
     <!-- BEGIN: Success Notification -->
     <Notification
       refKey="errorNotification"
+      :options="{
+        duration: 5000,
+    }"
       class="flex"
     >
       <Lucide
@@ -526,7 +529,10 @@ onMounted(() => {
       </div>
     </Notification>
     <Notification
-      refKey="successNotification"
+     refKey="successNotification"
+      :options="{
+        duration: 5000,
+    }"
       class="flex"
     >
       <Lucide

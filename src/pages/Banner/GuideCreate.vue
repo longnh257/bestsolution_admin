@@ -309,7 +309,7 @@ const saveBanner = () => {
     <Notification
       refKey="errorNotification"
       :options="{
-      duration: 3000,
+      duration: 5000,
     }"
       class="flex"
     >
@@ -328,7 +328,7 @@ const saveBanner = () => {
     <Notification
       refKey="successNotification"
       :options="{
-      duration: 3000,
+      duration: 5000,
     }"
       class="flex"
     >

@@ -193,7 +193,7 @@ if (route.query.err) {
   <Notification
     refKey="errorNotification"
     :options="{
-      duration: 3000,
+      duration: 5000,
     }"
     class="flex"
   >
@@ -212,7 +212,7 @@ if (route.query.err) {
   <Notification
     refKey="successNotification"
     :options="{
-      duration: 3000,
+      duration: 5000,
     }"
     class="flex"
   >

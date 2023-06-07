@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { parseColor } from "tailwindcss/lib/util/color";
-import * as moment from 'moment';
+import moment from 'moment';
 import 'moment-timezone';
 import axios from "axios";
 
@@ -227,13 +227,13 @@ const normalizeInput = (value: any, previousValue: any) => {
 }
 
 const convertToTZ = (date: any, tz: string) => {
+      
       if (!date) return null
       const input = moment(date).format('YYYY-MM-DD HH:mm:ss')
       const fmt = "YYYY-MM-DD HH:mm:ss";  // must match the input
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
       const m = moment.tz(input, fmt, tz)
       const s = m.tz('UTC')
-      console.log(s.format('HH:mm:ss'));
       
       return s.format('HH:mm:ss')
 }

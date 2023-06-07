@@ -62,7 +62,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el
 });
 
-const submit =  () => {
+const submit = () => {
   dt.staffs = staffs
   dt.services = services
   let error = false
@@ -87,7 +87,7 @@ const submit =  () => {
   }
 
 
-   SalonCreateStore.createSalon().then(function  (response: any) {
+  SalonCreateStore.createSalon().then(function (response: any) {
     if (response.staff_require) {
       err.value = 'Vui lòng nhập ít nhất 1 thợ'
       errorNotification.value?.showToast();
@@ -116,6 +116,7 @@ const submit =  () => {
     });
   })
     .catch(function (error) {
+      console.log('error');
       console.log(error.response);
       err.value = error.response.data.message;
       errorNotification.value?.showToast();
@@ -322,10 +323,7 @@ const deleteStaff = (index: any) => {
 
           <div class="mt-5">
             <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Tên chủ salon</FormLabel>
+              <FormLabel>Tên chủ salon</FormLabel>
               <FormInput
                 id="crud-form-1"
                 type="text"
@@ -354,7 +352,6 @@ const deleteStaff = (index: any) => {
                 htmlFor="crud-form-3"
                 class="label-require"
               >Mật Khẩu</FormLabel>
-
               <InputGroup v-if="!showPassword">
                 <FormInput
                   id="crud-form-3"
@@ -456,13 +453,10 @@ const deleteStaff = (index: any) => {
               />
             </div>
             <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
-              >Email</FormLabel>
+              <FormLabel htmlFor="crud-form-2">Email</FormLabel>
               <FormInput
                 id="crud-form-2"
-                type="text"
+                type="email"
                 v-model="dt.salon_email"
                 class="w-full"
                 placeholder="Email"
@@ -909,7 +903,7 @@ const deleteStaff = (index: any) => {
     <Notification
       refKey="errorNotification"
       :options="{
-      duration: 3000,
+        duration: 5000,
     }"
       class="flex"
     >
@@ -928,7 +922,7 @@ const deleteStaff = (index: any) => {
     <Notification
       refKey="successNotification"
       :options="{
-      duration: 3000,
+      duration: 5000,
     }"
       class="flex"
     >
