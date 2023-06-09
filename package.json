@@ -50,6 +50,7 @@
     "vue": "^3.2.41",
     "vue-google-autocomplete": "^1.1.4",
     "vue-router": "^4.1.6",
+    "vue3-timepicker": "^1.0.0-beta.2",
     "vuejs-paginate-next": "^1.0.2",
     "xlsx": "^0.18.5",
     "zoom-vanilla.js": "^2.0.6"

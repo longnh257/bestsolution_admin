@@ -11,6 +11,7 @@ import Tippy from "../../../base-components/Tippy";
 import Notification from "../../../base-components/Notification";
 import { NotificationElement } from "../../../base-components/Notification";
 import { useSalonListStore } from "../../../stores/salon/salon-list";
+import axios from "axios";
 
 const props = defineProps({
   salons: Object as PropType<Salon>,
@@ -36,6 +37,16 @@ const activeSalon = (id: number, index: any) => {
       errorNotification.value?.showToast();
     });
 };
+
+const sendAccountInfoEmail = (item: any) => {
+  axios
+    .post(`admin/send-mail-create-new-owner`, {
+      salon_name: item.name,
+      phone: item.phone,
+      password: "123456",
+      recipient_email: item.email,
+    })
+}
 
 const deleteSalon = (id: number) => {
   deleteConfirmationModal.value = false;
@@ -241,51 +252,47 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                   </span>
                 </Menu.Button>
                 <Menu.Items class="w-48">
-                  <Menu.Item>
-                    <router-link
-                      :to="{
+                  <router-link
+                    class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400"
+                    :to="{
                           name: 'salon-detail',
                           params: { salon_id: item.id },
                         }"
-                      style="display:flex !important"
-                    >
-                      <Lucide
-                        icon="File"
-                        class="w-4 h-4 mr-2"
-                      />
-                      Chi Tiết
-                    </router-link>
-                  </Menu.Item>
-                  <Menu.Item>
-                    <router-link
-                      :to="{
+                  >
+                    <Lucide
+                      icon="File"
+                      class="w-4 h-4 mr-2"
+                    />
+                    Chi Tiết
+                  </router-link>
+
+                  <router-link
+                    class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400"
+                    :to="{
                           name: 'salon-edit',
                           params: { salon_id: item.id },
                         }"
-                      style="display:flex !important"
-                    >
-                      <Lucide
-                        icon="Edit"
-                        class="w-4 h-4 mr-2"
-                      /> Chỉnh Sửa
-                    </router-link>
-                  </Menu.Item>
-                  <Menu.Item>
-                    <router-link
-                      :to="{
+                  >
+                    <Lucide
+                      icon="Edit"
+                      class="w-4 h-4 mr-2"
+                    /> Chỉnh Sửa
+                  </router-link>
+
+                  <router-link
+                    class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400"
+                    :to="{
                           name: 'job-create',
                           params: { salon_id: item.id },
                         }"
-                      style="display:flex !important"
-                    >
-                      <Lucide
-                        icon="Send"
-                        class="w-4 h-4 mr-2"
-                      />
-                      Đăng Tin Tuyển Dụng
-                    </router-link>
-                  </Menu.Item>
-                 <!--  <Menu.Item>
+                  >
+                    <Lucide
+                      icon="Send"
+                      class="w-4 h-4 mr-2"
+                    />
+                    Đăng Tin Tuyển Dụng
+                  </router-link>
+                  <!--  <Menu.Item>
                     <router-link
                       :to="{
                           name: 'job-list',
@@ -300,6 +307,18 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                       DS Tin Tuyển Dụng
                     </router-link>
                   </Menu.Item> -->
+
+                  <Menu.Item
+                    style="cursor: pointer"
+                    v-if="item.email"
+                    @click="sendAccountInfoEmail(item)"
+                  >
+                    <Lucide
+                      icon="Unlock"
+                      class="w-4 h-4 mr-2"
+                    /> Send Mail
+                  </Menu.Item>
+
                   <Menu.Item
                     class="text-success"
                     style="cursor: pointer"
@@ -311,6 +330,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                       class="w-4 h-4 mr-2"
                     /> Phê Duyệt
                   </Menu.Item>
+
                   <Menu.Item
                     class="text-success"
                     style="cursor: pointer"

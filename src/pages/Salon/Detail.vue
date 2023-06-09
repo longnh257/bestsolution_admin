@@ -477,7 +477,7 @@ const activeSalon = (id: any) => {
           </div>
           <div class="ml-4 mr-auto">
             <div class="text-base font-semibold">
-              {{ salon.name }}
+              {{ salon.partner.name }}
             </div>
             <div class="text-slate-500 flex">
               <Lucide

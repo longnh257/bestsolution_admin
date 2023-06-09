@@ -75,9 +75,10 @@
 .label-require::after {
    content: " *";
    color: red;
-  
+
 }
-.label-require{
+
+.label-require {
    text-transform: capitalize;
 }
 
@@ -85,18 +86,45 @@
    margin: 0 4px !important
 }
 
-.slider-btn{
-   position:absolute;
+.slider-btn {
+   position: absolute;
    z-index: 1000;
    top: 50%;
    transform: translateY(-50%);
    background-color: #f8f8f888
 }
 
-.slider-btn.btn-next{
+.slider-btn.btn-next {
    right: 20px;
 }
 
-.slider-btn:hover{
+.slider-btn:hover {
    background-color: #dadada !important;
+}
+
+.vue__time-picker {
+   width: 100%;
+   line-height: 1.5rem;
+}
+
+.vue__time-picker-input {
+   height: 2.5rem !important;
+   margin-top: 0.5em;
+   margin-bottom: 0.5em;
+   width: 100% !important;
+   border: none !important;
+   border-bottom: 1px solid rgb(226, 232, 240) !important;
+   font-size: 18px !important;
+}
+
+.vue__time-picker-input:focus {
+   --tw-ring-color: none;
+}
+
+.vue__time-picker .dropdown, .vue__time-picker .dropdown .select-list {
+   width: 100%;
+}
+.vue__time-picker .dropdown{
+   width: 100%;
+   top: calc(2.2em + 20px) !important;
 }

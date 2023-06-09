@@ -36,6 +36,9 @@ import {
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import axios from "axios";
+import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
+import 'vue3-timepicker/dist/VueTimepicker.css'
+
 
 
 const SalonListStore = useSalonListStore();
@@ -101,13 +104,13 @@ const submit = () => {
     }
     SalonListStore.approveSalon(response.data.data.admin.id)
 
-    axios
-      .post(`admin/send-mail-create-new-owner`, {
-        salon_name: dt.salon_name,
-        phone: dt.phone,
-        password: dt.password,
-        recipient_email: 'chunglygiabao@gmail.com',
-      })
+    /*  axios
+       .post(`admin/send-mail-create-new-owner`, {
+         salon_name: dt.salon_name,
+         phone: dt.phone,
+         password: dt.password,
+         recipient_email: 'chunglygiabao@gmail.com',
+       }) */
 
     scc.value = "Tạo Salon Thành Công !"
     successNotification.value?.showToast()
@@ -117,7 +120,7 @@ const submit = () => {
     });
   })
     .catch(function (error) {
-      console.log("error: ",error);
+      console.log("error: ", error);
       err.value = error.response.data.message;
       errorNotification.value?.showToast();
     });
@@ -524,45 +527,9 @@ const deleteStaff = (index: any) => {
                   >
                     {{ schedule.day_name }}
                   </FormLabel>
-                  <div
-                    class="relative w-full"
-                    id="timepicker-with-button"
-                    data-te-timepicker-init
-                    data-te-format24="true"
-                    data-te-input-wrapper-init
-                  >
-                    <input
-                      type="text"
-                      class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
-                      id="form4"
-                      style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.start_time"
-                    />
-                    <button
-                      tabindex="0"
-                      type="button"
-                      class="timepicker-toggle-button absolute right-2.5 top-1/2 ml-auto h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent fill-neutral-700 outline-none transition-all duration-[300ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:fill-[#3b71ca] focus:fill-[#3b71ca] dark:fill-white dark:hover:fill-[#3b71ca] dark:focus:fill-[#3b71ca]"
-                      data-te-toggle="timepicker-with-button"
-                      data-te-timepicker-toggle-button
-                    >
-                      <span data-te-timepicker-icon>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="h-5 w-5 hover:text-[#3b71ca] focus:text-[#3b71ca] dark:text-white dark:hover:text-[#3b71ca] dark:focus:text-[#3b71ca]"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5"
-                          />
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
+
+                  <VueTimepicker v-model="schedule.start_time" />
+
                 </FormInline>
                 <FormInline class="flex-row flex w-1/2">
                   <FormLabel
@@ -571,45 +538,7 @@ const deleteStaff = (index: any) => {
                   >
                     đến
                   </FormLabel>
-                  <div
-                    class="relative w-full"
-                    id="timepicker-with-button"
-                    data-te-timepicker-init
-                    data-te-format24="true"
-                    data-te-input-wrapper-init
-                  >
-                    <input
-                      type="text"
-                      class="peer block min-h-[auto] w-full bg-transparent py-[0.32rem] px-3 leading-[2.15] outline-none transition-all duration-200 ease-linear focus:ring-0 border-0"
-                      id="form4"
-                      style="border-bottom: 1px solid rgb(226 232 240)"
-                      v-model="schedule.end_time"
-                    />
-                    <button
-                      tabindex="0"
-                      type="button"
-                      class="timepicker-toggle-button absolute right-2.5 top-1/2 ml-auto h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent fill-neutral-700 outline-none transition-all duration-[300ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:fill-[#3b71ca] focus:fill-[#3b71ca] dark:fill-white dark:hover:fill-[#3b71ca] dark:focus:fill-[#3b71ca]"
-                      data-te-toggle="timepicker-with-button"
-                      data-te-timepicker-toggle-button
-                    >
-                      <span data-te-timepicker-icon>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="h-5 w-5 hover:text-[#3b71ca] focus:text-[#3b71ca] dark:text-white dark:hover:text-[#3b71ca] dark:focus:text-[#3b71ca]"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5"
-                          />
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
+                  <VueTimepicker v-model="schedule.end_time" />
                 </FormInline>
               </div>
             </div>
