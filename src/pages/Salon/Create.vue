@@ -17,6 +17,7 @@ import {
   FormCheck,
   InputGroup,
   FormSwitch,
+  FormTextarea,
 } from "../../base-components/Form";
 import { useSalonListStore } from "../../stores/salon/salon-list";
 import { useSalonCreateStore } from "../../stores/salon/salon-create";
@@ -64,6 +65,8 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
 provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el
 });
+let staff_id = ref(0)
+let service_id = ref(0)
 
 const submit = () => {
   dt.staffs = staffs
@@ -188,22 +191,23 @@ const getAddressData = async ($e: any) => {
   const timezoneByLocation: any = await getTimeZoneByLocation(dt.salon_lat, dt.salon_lng)
   if (timezoneByLocation.timeZoneId)
     dt.salon_timezone = timezoneByLocation.timeZoneId
-  console.log("tz: " + dt.salon_timezone);
+  /* console.log("tz: " + dt.salon_timezone); */
 };
 
 
 
 const staffs = reactive(
   [
-    { name: '', phone: '', phone_val: '' },
+    { staff_id: 0, name: '', phone: '', phone_val: '' },
   ]
 );
 
 const services = reactive(
   [
-    { name: '', price: '' },
+    { service_id: 0, name: '', price: '' },
   ]
 );
+
 
 const validations = {
   name: {
@@ -274,34 +278,40 @@ services.map((item) => {
   servicesValidate.push(useVuelidate(servicesValidations, item))
 })
 
-
 const addService = () => {
-  services.push({ name: "", price: "" });
-  servicesValidate.push(useVuelidate(servicesValidations, reactive({ name: "", price: "" })))
+  service_id.value = service_id.value + 1
+  services.push({ service_id: service_id.value, name: "", price: "" });
+  servicesValidate.push(useVuelidate(servicesValidations, reactive({ service_id: service_id.value, name: "", price: "" })))
 }
 const addStaff = () => {
-  staffs.push({ name: "", phone: "", phone_val: "" })
-  validate.push(useVuelidate(validations, reactive({ name: "", phone: "", phone_val: "" })))
+  staff_id.value = staff_id.value + 1
+  staffs.push({ staff_id: staff_id.value, name: "", phone: "", phone_val: "" })
+  validate.push(useVuelidate(validations, reactive({ staff_id: staff_id.value, name: "", phone: "", phone_val: "" })))
 }
 
-const deleteService = (index: any) => {
+const deleteService = (id: any) => {
+  const i = services.findIndex((staff) => staff.service_id === id);
   if (services.length > 1) {
-    services.splice(index, 1)
-    servicesValidate.splice(index, 1)
+    if (i !== -1) {
+      services.splice(i, 1)
+      servicesValidate.splice(i, 1)
+    }
   } else {
-    services[index].name = ""
-    services[index].price = ""
-
+    services[i].name = ""
+    services[i].price = ""
   }
 }
 
-const deleteStaff = (index: any) => {
+const deleteStaff = (id: any) => {
+  const i = staffs.findIndex((staff) => staff.staff_id === id);
   if (staffs.length > 1) {
-    staffs.splice(index, 1)
-    validate.splice(index, 1)
+    if (i !== -1) {
+      staffs.splice(i, 1);
+      validate.splice(i, 1)
+    }
   } else {
-    staffs[index].name = ""
-    staffs[index].phone = ""
+    staffs[i].name = ""
+    staffs[i].phone = ""
   }
 }
 
@@ -543,10 +553,11 @@ const deleteStaff = (index: any) => {
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
-              <ClassicEditor
+              <FormTextarea
                 v-model="dt.salon_description"
                 class="mt-4"
                 aria-placeholder="Thông Tin Giới Thiệu Về Salon"
+                rows="6"
               />
             </div>
           </div>
@@ -581,11 +592,11 @@ const deleteStaff = (index: any) => {
                       </Table.Tr>
                     </Table.Thead>
 
-                    <Table.Tbody>
+                    <tbody>
                       <tr
                         class=""
-                        v-for="(service, key) in dt.services"
-                        :key="key"
+                        v-for="(service, key) in services"
+                        :key="service.service_id"
                       >
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
@@ -593,7 +604,8 @@ const deleteStaff = (index: any) => {
                             v-model.trim="servicesValidate[key].value.name.$model"
                             type="text"
                             name="name"
-                            :class="{'border-danger': servicesValidate[key].value.name.$error,} "
+                            :class="{'border-danger': servicesValidate[key].value.name.$error,}"
+                            @change="()=> {service.name = servicesValidate[key].value.name.$model}"
                           />
                           <template v-if="servicesValidate[key].value.name.$error">
                             <div
@@ -612,6 +624,7 @@ const deleteStaff = (index: any) => {
                             type="number"
                             step="0.01"
                             :class="{'border-danger': servicesValidate[key].value.price.$error,}"
+                            @change="()=> {service.price = servicesValidate[key].value.price.$model}"
                           />
                           <template v-if="servicesValidate[key].value.price.$error">
                             <div
@@ -626,7 +639,9 @@ const deleteStaff = (index: any) => {
                         <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
                           <a
                             style="cursor: pointer"
-                            @click="deleteService(key)"
+                            @click="()=>{
+                              deleteService(service.service_id)
+                            }"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -660,7 +675,7 @@ const deleteStaff = (index: any) => {
                           </a>
                         </td>
                       </tr>
-                    </Table.Tbody>
+                    </tbody>
                   </Table>
                 </div>
                 <Button
@@ -688,8 +703,8 @@ const deleteStaff = (index: any) => {
             <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
               <div class="flex-1 w-full mt-3 xl:mt-0">
                 <div class="overflow-x-auto">
-                  <Table class="border">
-                    <Table.Thead>
+                  <table class="w-full text-left border">
+                    <thead>
                       <Table.Tr>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
                           Tên Thợ
@@ -699,12 +714,12 @@ const deleteStaff = (index: any) => {
                         </Table.Th>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
                       </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
+                    </thead>
+                    <tbody>
                       <tr
                         class=""
                         v-for="(staff, key) in staffs"
-                        :key="key"
+                        :key="staff.staff_id"
                       >
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
@@ -713,6 +728,7 @@ const deleteStaff = (index: any) => {
                             type="text"
                             name="name"
                             :class="{'border-danger': validate[key].value.name.$error,}"
+                            @change="()=> {staff.name = validate[key].value.name.$model}"
                           />
                           <template v-if="validate[key].value.name.$error">
                             <div
@@ -747,7 +763,7 @@ const deleteStaff = (index: any) => {
                         <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
                           <a
                             style="cursor: pointer"
-                            @click="deleteStaff(key)"
+                            @click="deleteStaff(staff.staff_id)"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -781,8 +797,8 @@ const deleteStaff = (index: any) => {
                           </a>
                         </td>
                       </tr>
-                    </Table.Tbody>
-                  </Table>
+                    </tbody>
+                  </table>
                 </div>
                 <Button
                   variant="outline-primary"

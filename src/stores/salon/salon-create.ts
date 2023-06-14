@@ -45,7 +45,7 @@ interface SalonCreateState {
     }
 }
 
-const defaultData  = {
+const defaultData = {
     name: "",
     phone: "",
     password: "",
@@ -207,7 +207,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
                         end_time: "18:30",
                     },
                 ],
-            }
+            },
         }),
     getters: {
 
@@ -215,7 +215,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
     actions: {
 
         resetData() {
-            for (const item  in this.data) {
+            for (const item in this.data) {
                 this.data[item] = defaultData[item]
             }
         },
