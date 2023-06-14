@@ -79,9 +79,9 @@ provide("bind[successNotification]", (el: NotificationElement) => {
     <Table class="border-spacing-y-[10px] border-separate -mt-2">
       <Table.Thead>
         <Table.Tr>
+          <Table.Th class="border-b-0 whitespace-nowrap"> ID </Table.Th>
           <Table.Th class="border-b-0 whitespace-nowrap"> Hình Ảnh </Table.Th>
           <Table.Th class="border-b-0 whitespace-nowrap"> Salon </Table.Th>
-
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Địa chỉ
           </Table.Th>
@@ -105,11 +105,15 @@ provide("bind[successNotification]", (el: NotificationElement) => {
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
+
         <Table.Tr
           v-for="(item, index) in props.salons"
           :key="item.id"
           class="intro-x"
         >
+          <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            {{ item.id }}
+          </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md w-40 bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             <div class="flex">
               <div

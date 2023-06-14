@@ -25,7 +25,7 @@ const props = defineProps({
     <Table class="border-spacing-y-[10px] border-separate -mt-2">
       <Table.Thead>
         <Table.Tr>
-          <Table.Th class="border-b-0 whitespace-nowrap"> Booking ID </Table.Th>
+          <Table.Th class="border-b-0 whitespace-nowrap"> ID </Table.Th>
           <Table.Th class="border-b-0 whitespace-nowrap"> Salon </Table.Th>
           <Table.Th class="border-b-0 whitespace-nowrap"> Khách Book </Table.Th>
           <Table.Th class="border-b-0 whitespace-nowrap"> Ngày Booking Được Tạo </Table.Th>

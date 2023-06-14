@@ -123,8 +123,10 @@
 
 .vue__time-picker .dropdown, .vue__time-picker .dropdown .select-list {
    width: 100%;
+   height: 300px;
 }
 .vue__time-picker .dropdown{
    width: 100%;
    top: calc(2.2em + 20px) !important;
+   height: 300px;
 }

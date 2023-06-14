@@ -45,7 +45,7 @@ interface SalonCreateState {
     }
 }
 
-const defaultData = {
+const defaultData  = {
     name: "",
     phone: "",
     password: "",
@@ -79,48 +79,50 @@ const defaultData = {
         }
     ],
     schedules: [
+
         {
-            day: 0,
+            day: 1,
             day_name: "Thứ 2",
             start_time: "08:00",
             end_time: "18:30",
         },
         {
-            day: 1,
+            day: 2,
             day_name: "Thứ 3",
             start_time: "08:00",
             end_time: "18:30",
         },
         {
-            day: 2,
+            day: 3,
             day_name: "Thứ 4",
             start_time: "08:00",
             end_time: "18:30",
         },
         {
-            day: 3,
+            day: 4,
             day_name: "Thứ 5",
             start_time: "08:00",
             end_time: "18:30",
         },
         {
-            day: 4,
+            day: 5,
             day_name: "Thứ 6",
             start_time: "08:00",
             end_time: "18:30",
         },
         {
-            day: 5,
+            day: 6,
             day_name: "Thứ 7",
             start_time: "08:00",
             end_time: "18:30",
         },
         {
-            day: 6,
+            day: 0,
             day_name: "Chủ nhật",
             start_time: "08:00",
             end_time: "18:30",
         },
+
     ],
 }
 
@@ -161,44 +163,45 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
                     }
                 ],
                 schedules: [
+
                     {
-                        day: 0,
+                        day: 1,
                         day_name: "Thứ 2",
                         start_time: "08:00",
                         end_time: "18:30",
                     },
                     {
-                        day: 1,
+                        day: 2,
                         day_name: "Thứ 3",
                         start_time: "08:00",
                         end_time: "18:30",
                     },
                     {
-                        day: 2,
+                        day: 3,
                         day_name: "Thứ 4",
                         start_time: "08:00",
                         end_time: "18:30",
                     },
                     {
-                        day: 3,
+                        day: 4,
                         day_name: "Thứ 5",
                         start_time: "08:00",
                         end_time: "18:30",
                     },
                     {
-                        day: 4,
+                        day: 5,
                         day_name: "Thứ 6",
                         start_time: "08:00",
                         end_time: "18:30",
                     },
                     {
-                        day: 5,
+                        day: 6,
                         day_name: "Thứ 7",
                         start_time: "08:00",
                         end_time: "18:30",
                     },
                     {
-                        day: 6,
+                        day: 0,
                         day_name: "Chủ nhật",
                         start_time: "08:00",
                         end_time: "18:30",
@@ -212,7 +215,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
     actions: {
 
         resetData() {
-            for (const item in this.data) {
+            for (const item  in this.data) {
                 this.data[item] = defaultData[item]
             }
         },
@@ -288,7 +291,7 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
 
 
             return await axios
-                .post(`salon/sign-up`, fd, {
+                .post(`admin/create-salon`, fd, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },

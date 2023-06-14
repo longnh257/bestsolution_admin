@@ -89,7 +89,6 @@ const submit = () => {
     return;
   }
 
-  console.log("truoc create salon ");
 
   SalonCreateStore.createSalon().then(function (response: any) {
     if (response.staff_require) {

@@ -46,8 +46,8 @@ const clickCallback = () => {
         </div>
       </div>
     </div>
- <!-- BEGIN: Pagination -->
- <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
+    <!-- BEGIN: Pagination -->
+    <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
       <paginate
         v-if="!BookingListStore.loading && BookingListStore.totalPage && BookingListStore.totalPage != 1"
         v-model="BookingListStore.page"
@@ -91,7 +91,10 @@ const clickCallback = () => {
         <LoadingIcon icon="puff" />
       </div>
     </div>
-    <div v-else class="col-span-12">
+    <div
+      v-else
+      class="col-span-12"
+    >
       <ListDetail
         :bookings="BookingListStore.bookings"
         v-if=" BookingListStore.bookings.length != 0"
@@ -107,7 +110,7 @@ const clickCallback = () => {
     </div>
 
     <!-- END: Data List -->
-    
+
     <!-- BEGIN: Pagination -->
     <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
       <paginate
