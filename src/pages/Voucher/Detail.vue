@@ -15,6 +15,7 @@ import { useRoute } from "vue-router";
 
 import { useVoucherDetailStore } from "../../stores/voucher/voucher-detail";
 import { VOUCHER_CUSTOMER_TYPE } from "../../constant";
+import moment from "moment";
 
 const VoucherDetailStore = useVoucherDetailStore()
 VoucherDetailStore.getVoucherDetail()
@@ -80,7 +81,7 @@ const nextNewProjects = () => {
           </div>
           <div class="">
 
-            {{ VoucherDetailStore.voucher.start_date }}
+            {{  moment(new Date(VoucherDetailStore.voucher.start_date)).format("DD/MM/YYYY")}}
           </div>
         </div>
         <div class="flex items-center leading-8">
@@ -88,7 +89,7 @@ const nextNewProjects = () => {
             <strong>Ngày kết thúc:</strong>
           </div>
           <div class="">
-            {{ VoucherDetailStore.voucher.expiration_date }}
+            {{  moment(new Date(VoucherDetailStore.voucher.expiration_date)).format("DD/MM/YYYY")}}
           </div>
         </div>
         <div class="flex items-center leading-8">
@@ -96,7 +97,7 @@ const nextNewProjects = () => {
             <strong>Ngày tạo:</strong>
           </div>
           <div class="">
-            {{ VoucherDetailStore.voucher.created_at }}
+            {{  moment(new Date(VoucherDetailStore.voucher.created_at)).format("DD/MM/YYYY")}}
           </div>
         </div>
         <div class="flex items-center leading-8">

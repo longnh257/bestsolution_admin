@@ -12,6 +12,7 @@ import Notification from "../../../base-components/Notification";
 import { NotificationElement } from "../../../base-components/Notification";
 import { useSalonListStore } from "../../../stores/salon/salon-list";
 import axios from "axios";
+import moment from "moment";
 
 const props = defineProps({
   salons: Object as PropType<Salon>,
@@ -99,6 +100,9 @@ provide("bind[successNotification]", (el: NotificationElement) => {
           </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Trạng thái
+          </Table.Th>
+          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+            Ngày Tạo
           </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
           </Table.Th>
@@ -232,12 +236,16 @@ provide("bind[successNotification]", (el: NotificationElement) => {
           >
             Đang Chờ Phê Duyệt
           </Table.Td>
+          
           <Table.Td
             class="first:rounded-l-md last:rounded-r-md text-center text-success bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
             style="max-width: 500px"
             v-if="item.status == 1 && item.partner.is_approve == 1"
           >
             Đang Hoạt Động
+          </Table.Td>
+          <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            {{  moment(new Date(item.created_at)).format("DD/MM/YYYY")}}
           </Table.Td>
 
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b] py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">

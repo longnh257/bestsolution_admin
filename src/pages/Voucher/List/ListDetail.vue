@@ -9,6 +9,7 @@ import Lucide from "../../../base-components/Lucide";
 import Tippy from "../../../base-components/Tippy";
 import Notification from "../../../base-components/Notification";
 import {VOUCHER_CUSTOMER_TYPE} from "../../../constant/index";
+import moment from "moment";
 
 
 const props = defineProps({
@@ -74,18 +75,16 @@ const props = defineProps({
             {{ item.value  }}{{ item.type == 1 ? '%' : ' $'  }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-
-            {{  item.start_date  }}
+            {{  moment(new Date(item.start_date)).format("DD/MM/YYYY")}}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-
-            {{ item.expiration_date  }}
+            {{  moment(new Date(item.expiration_date)).format("DD/MM/YYYY")}}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md  bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ VOUCHER_CUSTOMER_TYPE[item.type_customer] }}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md  bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{ item.created_at }}
+            {{  moment(new Date(item.created_at)).format("DD/MM/YYYY")}}
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md  bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ item.status_name }}
