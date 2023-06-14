@@ -16,6 +16,7 @@ import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import router from "../../router";
 import { useRoute } from "vue-router";
+import moment from "moment";
 const route = useRoute();
 var salon_id = route.params.salon_id;
 
@@ -451,8 +452,8 @@ const activeSalon = (id: any) => {
                   <Table.Td>{{
                     schedule.day == 0 ? "Chủ Nhật" : `Thứ ${schedule.day + 1}`
                   }}</Table.Td>
-                  <Table.Td>{{ schedule.start_time }}</Table.Td>
-                  <Table.Td>{{ schedule.end_time }}</Table.Td>
+                  <Table.Td>{{ moment(schedule.start_time,'HH:mm:ss').format('HH:mm') }}</Table.Td>
+                  <Table.Td>{{ moment(schedule.end_time,'HH:mm:ss').format('HH:mm') }}</Table.Td>
                 </Table.Tr>
               </Table.Tbody>
             </Table>

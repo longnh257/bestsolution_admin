@@ -270,12 +270,12 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
 
             fd.append("name", this.data.name);
             fd.append("phone", this.data.phone);
-            fd.append("salon_email", this.data.salon_email);
+            fd.append("salon_email", this.data.salon_email ? this.data.salon_email : '');
             fd.append("password", this.data.password);
             fd.append("salon_name", this.data.salon_name);
             fd.append("salon_phone", this.data.salon_phone);
             fd.append("salon_address", this.data.salon_address);
-            fd.append("salon_description", this.data.salon_description);
+            fd.append("salon_description", this.data.salon_description ? this.data.salon_description : '');
             fd.append("salon_country", this.data.salon_country);
             fd.append("salon_city", this.data.salon_city);
             fd.append("salon_state", this.data.salon_state);

@@ -26,6 +26,7 @@ import {
   FormCheck,
   InputGroup,
   FormSwitch,
+  FormTextarea,
 } from "../../base-components/Form";
 import moment from 'moment';
 import { convertToTZ } from "../../utils/helper";
@@ -93,10 +94,10 @@ const submit = () => {
 
   fd.append("id", salon.value.id);
   fd.append("name", salon.value.name);
-  fd.append("email", salon.value.email);
-  fd.append("phone", salon.value.phone);
   fd.append("address", salon.value.address);
-  fd.append("description", salon.value.description);
+  fd.append("phone", salon.value.phone);
+  fd.append("email", salon.value.email ? salon.value.email : '');
+  fd.append("description", salon.value.description?salon.value.description:'');
   fd.append("country", salon.value.country);
   fd.append("city", salon.value.city);
   fd.append("state", salon.value.state);
@@ -522,10 +523,11 @@ onMounted(() => {
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
-              <ClassicEditor
+              <FormTextarea
                 v-model="salon.description"
                 class="mt-4"
                 aria-placeholder="Thông Tin Giới Thiệu Về Salon"
+                rows="6"
               />
             </div>
           </div>
