@@ -46,7 +46,42 @@ const clickCallback = () => {
         </div>
       </div>
     </div>
-
+ <!-- BEGIN: Pagination -->
+ <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
+      <paginate
+        v-if="!BookingListStore.loading && BookingListStore.totalPage && BookingListStore.totalPage != 1"
+        v-model="BookingListStore.page"
+        :page-count="BookingListStore.totalPage"
+        :page-range="5"
+        :margin-pages="1"
+        :click-handler="clickCallback"
+        :prev-text="`<`"
+        :next-text="'>'"
+        :container-class="'pagination flex w-full mr-0 sm:w-auto'"
+        :page-class="'flex-1 sm:flex-initial'"
+        :page-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :prev-class="'flex-1 sm:flex-initial'"
+        :prev-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :next-class="'flex-1 sm:flex-initial'"
+        :next-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :active-class="'!box font-medium dark:bg-darkmode-400 !mr-0'"
+      >
+      </paginate>
+      <FormSelect
+        class="w-30 mt-3 !box sm:mt-0 ml-auto"
+        v-if="!BookingListStore.loading && (BookingListStore.bookings.length >10 || BookingListStore.totalPage > 1)"
+        v-model="BookingListStore.recPerPage"
+        @change="()=> {
+          BookingListStore.page = 1
+          BookingListStore.getBookingList()
+          }"
+      >
+        <option>10</option>
+        <option>25</option>
+        <option>50</option>
+      </FormSelect>
+    </div>
+    <!-- END: Pagination -->
     <!-- BEGIN: Data List -->
     <div
       v-if="BookingListStore.loading"
@@ -72,13 +107,11 @@ const clickCallback = () => {
     </div>
 
     <!-- END: Data List -->
+    
     <!-- BEGIN: Pagination -->
-    <div
-      class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
-      style="margin-bottom: 50px"
-      v-if="!BookingListStore.loading && BookingListStore.totalPage && BookingListStore.totalPage != 1"
-    >
+    <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
       <paginate
+        v-if="!BookingListStore.loading && BookingListStore.totalPage && BookingListStore.totalPage != 1"
         v-model="BookingListStore.page"
         :page-count="BookingListStore.totalPage"
         :page-range="5"
@@ -86,7 +119,7 @@ const clickCallback = () => {
         :click-handler="clickCallback"
         :prev-text="`<`"
         :next-text="'>'"
-        :container-class="'pagination flex w-full mr-0 sm:w-auto sm:mr-auto'"
+        :container-class="'pagination flex w-full mr-0 sm:w-auto'"
         :page-class="'flex-1 sm:flex-initial'"
         :page-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
         :prev-class="'flex-1 sm:flex-initial'"
@@ -97,9 +130,13 @@ const clickCallback = () => {
       >
       </paginate>
       <FormSelect
-        class="w-30 mt-3 !box sm:mt-0"
+        class="w-30 mt-3 !box sm:mt-0 ml-auto"
+        v-if="!BookingListStore.loading && (BookingListStore.bookings.length >10 || BookingListStore.totalPage > 1)"
         v-model="BookingListStore.recPerPage"
-        @change="BookingListStore.getBookingList"
+        @change="()=> {
+          BookingListStore.page = 1
+          BookingListStore.getBookingList()
+          }"
       >
         <option>10</option>
         <option>25</option>

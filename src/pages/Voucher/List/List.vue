@@ -24,9 +24,7 @@ const clickCallback = () => {
 <template>
   <h2 class="mt-10 text-lg font-medium intro-y">Danh Sách Voucher</h2>
   <div class="grid grid-cols-12 gap-6 mt-5">
-    <div
-      class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
-    >
+    <div class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap">
       <Button
         variant="primary"
         class="mr-2 shadow-md"
@@ -57,6 +55,42 @@ const clickCallback = () => {
       </div>
     </div>
 
+ <!-- BEGIN: Pagination -->
+ <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
+      <paginate
+        v-if="!VoucherListStore.loading && VoucherListStore.totalPage && VoucherListStore.totalPage != 1"
+        v-model="VoucherListStore.page"
+        :page-count="VoucherListStore.totalPage"
+        :page-range="5"
+        :margin-pages="1"
+        :click-handler="clickCallback"
+        :prev-text="`<`"
+        :next-text="'>'"
+        :container-class="'pagination flex w-full mr-0 sm:w-auto'"
+        :page-class="'flex-1 sm:flex-initial'"
+        :page-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :prev-class="'flex-1 sm:flex-initial'"
+        :prev-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :next-class="'flex-1 sm:flex-initial'"
+        :next-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
+        :active-class="'!box font-medium dark:bg-darkmode-400 !mr-0'"
+      >
+      </paginate>
+      <FormSelect
+        class="w-30 mt-3 !box sm:mt-0 ml-auto"
+        v-if="!VoucherListStore.loading && (VoucherListStore.vouchers.length >10 || VoucherListStore.totalPage > 1)"
+        v-model="VoucherListStore.recPerPage"
+        @change="()=> {
+          VoucherListStore.page = 1
+          VoucherListStore.getVoucherList()
+          }"
+      >
+        <option>10</option>
+        <option>25</option>
+        <option>50</option>
+      </FormSelect>
+    </div>
+    <!-- END: Pagination -->
     <!-- BEGIN: Data List -->
     <div
       v-if="VoucherListStore.loading"
@@ -66,7 +100,10 @@ const clickCallback = () => {
         <LoadingIcon icon="puff" />
       </div>
     </div>
-    <div v-else class="col-span-12">
+    <div
+      v-else
+      class="col-span-12"
+    >
       <ListDetail
         :vouchers="VoucherListStore.vouchers"
         v-if=" VoucherListStore.vouchers.length != 0"
@@ -81,13 +118,11 @@ const clickCallback = () => {
       </div>
     </div>
     <!-- END: Data List -->
+
     <!-- BEGIN: Pagination -->
-    <div
-      class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
-      style="margin-bottom: 50px"
-      v-if="!VoucherListStore.loading && VoucherListStore.totalPage && VoucherListStore.totalPage !== 1"
-    >
+    <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
       <paginate
+        v-if="!VoucherListStore.loading && VoucherListStore.totalPage && VoucherListStore.totalPage != 1"
         v-model="VoucherListStore.page"
         :page-count="VoucherListStore.totalPage"
         :page-range="5"
@@ -95,7 +130,7 @@ const clickCallback = () => {
         :click-handler="clickCallback"
         :prev-text="`<`"
         :next-text="'>'"
-        :container-class="'pagination flex w-full mr-0 sm:w-auto sm:mr-auto'"
+        :container-class="'pagination flex w-full mr-0 sm:w-auto'"
         :page-class="'flex-1 sm:flex-initial'"
         :page-link-class="'transition duration-200 border py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex items-center justify-center border-transparent text-slate-800  dark:text-slate-300 px-1 sm:px-3'"
         :prev-class="'flex-1 sm:flex-initial'"
@@ -106,9 +141,13 @@ const clickCallback = () => {
       >
       </paginate>
       <FormSelect
-        class="w-30 mt-3 !box sm:mt-0"
+        class="w-30 mt-3 !box sm:mt-0 ml-auto"
+        v-if="!VoucherListStore.loading && (VoucherListStore.vouchers.length >10 || VoucherListStore.totalPage > 1)"
         v-model="VoucherListStore.recPerPage"
-        @change="VoucherListStore.getVoucherList"
+        @change="()=> {
+          VoucherListStore.page = 1
+          VoucherListStore.getVoucherList()
+          }"
       >
         <option>10</option>
         <option>25</option>
