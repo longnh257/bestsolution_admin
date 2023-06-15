@@ -164,9 +164,7 @@ const validations = {
       minLength(14)
     ),
   },
-  avatar: {
-    required: helpers.withMessage(() => 'Vui lòng nhập hình ảnh dịch vụ', required),
-  }
+
 };
 
 const servicesValidations = {
@@ -201,9 +199,7 @@ const servicesValidations = {
       maxValue(99999.99),
     ),
   },
-  avatar: {
-    required: helpers.withMessage(() => 'Vui lòng nhập hình ảnh dịch vụ', required),
-  }
+
 };
 
 // Use Vuelidate
@@ -242,6 +238,14 @@ const deleteStaff = (id: any) => {
   const i = staffs.findIndex((staff) => staff.staff_id === id);
   if (staffs.length > 1) {
     if (i !== -1) {
+      axios
+        .post(`upload/delete-avatar`, {
+          filename: staffs[i].avatar
+        }).then((res) => {
+          console.log(res);
+        }).catch((err) => {
+          console.log(err);
+        })
       staffs.splice(i, 1);
       validate.splice(i, 1)
     }
@@ -255,6 +259,14 @@ const deleteService = (id: any) => {
   const i = services.findIndex((staff) => staff.service_id === id);
   if (services.length > 1) {
     if (i !== -1) {
+      axios
+        .post(`upload/delete-avatar`, {
+          filename: services[i].avatar
+        }).then((res) => {
+          console.log(res);
+        }).catch((err) => {
+          console.log(err);
+        })
       services.splice(i, 1)
       servicesValidate.splice(i, 1)
     }
@@ -362,13 +374,15 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
         if (type == 1) {
           const i = staffs.findIndex((staff) => staff.staff_id === id);
           staffs[i].avatar = res.data.data.avatar
-          validate[i].avatar = res.data.data.avatar
         }
         if (type == 2) {
           const i = services.findIndex((service) => service.service_id === id);
           services[i].avatar = res.data.data.avatar
-          servicesValidate[i].avatar = res.data.data.avatar
         }
+      }).catch((error) => {
+        err.value = "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png"
+        errorNotification.value?.showToast();
+        console.log(err);
       })
   }
 }
@@ -393,7 +407,7 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
 
           <div class="mt-5">
             <div>
-              <FormLabel>Tên chủ salon</FormLabel>
+              <FormLabel class="label-require">Tên chủ salon</FormLabel>
               <FormInput
                 id="crud-form-1"
                 type="text"
@@ -627,11 +641,11 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
       <div class="p-5 mt-5 intro-y box">
 
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require">
             <Lucide
               icon="User"
-              class="w-4 h-4 mr-2"
-            /> Thông tin dịch vụ
+              class="w-4 h-4 mr-2 "
+            /> Thông tin dịch vụ &nbsp;
           </div>
           <div class="mt-5">
             <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
@@ -640,13 +654,13 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
                   <Table class="border">
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16">
                           Hình Ảnh
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap ">
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
                           Dịch Vụ
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
                           Giá Tiền
                         </Table.Th>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
@@ -659,7 +673,7 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
                         v-for="(service, key) in services"
                         :key="service.service_id"
                       >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
                           <input
                             type="file"
                             :key="service.service_id"
@@ -679,15 +693,6 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
                               width="60"
                             />
                           </label>
-                          <template v-if="servicesValidate[key].value.avatar.$error">
-                            <div
-                              v-for="(error, index) in servicesValidate[key].value.avatar.$errors"
-                              :key="index"
-                              class="mt-2 text-danger"
-                            >
-                              {{ error.$message }}
-                            </div>
-                          </template>
                         </td>
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
@@ -784,11 +789,11 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
           </div>
         </div>
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require">
             <Lucide
               icon="User"
-              class="w-4 h-4 mr-2"
-            /> Thông tin thợ
+              class="w-4 h-4 mr-2 "
+            /> Thông tin thợ &nbsp;
           </div>
           <div class="mt-5">
             <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
@@ -797,13 +802,13 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
                   <table class="w-full text-left border">
                     <thead>
                       <Table.Tr>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16">
                           Hình Ảnh
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
                           Tên Thợ
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
                           Số Điện Thoại
                         </Table.Th>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
@@ -815,7 +820,7 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
                         v-for="(staff, key) in staffs"
                         :key="staff.staff_id"
                       >
-                      <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
                           <input
                             type="file"
                             :key="staff.staff_id"
@@ -835,15 +840,6 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
                               width="60"
                             />
                           </label>
-                          <template v-if="validate[key].value.avatar.$error">
-                            <div
-                              v-for="(error, index) in validate[key].value.avatar.$errors"
-                              :key="index"
-                              class="mt-2 text-danger"
-                            >
-                              {{ error.$message }}
-                            </div>
-                          </template>
                         </td>
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
