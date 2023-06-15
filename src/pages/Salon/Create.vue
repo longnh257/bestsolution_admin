@@ -39,7 +39,7 @@ import { useVuelidate } from "@vuelidate/core";
 import axios from "axios";
 import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
 import 'vue3-timepicker/dist/VueTimepicker.css'
-
+import addURL from "../../assets/images/add.png";
 
 
 const SalonListStore = useSalonListStore();
@@ -51,9 +51,6 @@ const bindedObject = reactive({ unmasked: "" });
 let listImgs: any = ref([]);
 let showPassword = ref(true);
 
-const saveSalon = () => {
-  submit();
-};
 
 let err = ref("")
 let scc = ref("")
@@ -68,73 +65,6 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 let staff_id = ref(0)
 let service_id = ref(0)
 
-const submit = () => {
-  dt.staffs = staffs
-  dt.services = services
-  let error = false
-
-  for (var i = 0; i < validate.length; i++) {
-    if (validate[i].value.$invalid) {
-      error = true
-      break;
-    }
-  }
-  for (var i = 0; i < servicesValidate.length; i++) {
-    if (servicesValidate[i].value.$invalid) {
-      error = true
-      break;
-    }
-  }
-
-  if (error) {
-    err.value = 'Thông tin thợ hoặc dịch vụ không hợp lệ'
-    errorNotification.value?.showToast();
-    return;
-  }
-
-
-  SalonCreateStore.createSalon().then(function (response: any) {
-    if (response.staff_require) {
-      err.value = 'Vui lòng nhập ít nhất 1 thợ'
-      errorNotification.value?.showToast();
-      return;
-    }
-    if (response.services_require) {
-      err.value = 'Vui lòng nhập ít nhất 1 dịch vụ'
-      errorNotification.value?.showToast();
-      return;
-    }
-    SalonListStore.approveSalon(response.data.data.admin.id)
-
-    /*  axios
-       .post(`admin/send-mail-create-new-owner`, {
-         salon_name: dt.salon_name,
-         phone: dt.phone,
-         password: dt.password,
-         recipient_email: 'chunglygiabao@gmail.com',
-       }) */
-
-    scc.value = "Tạo Salon Thành Công !"
-    successNotification.value?.showToast()
-
-    router.push({
-      name: 'salon-list',
-    });
-  })
-    .catch(function (error) {
-      console.log("error: ", error);
-      err.value = error.response.data.message;
-      errorNotification.value?.showToast();
-    });
-};
-
-const previewImages = (e: any) => {
-  for (var i = 0; i < e.target.files.length; i++) {
-    let file = e.target.files[i];
-    dt.images.push(file);
-    listImgs.value.push(URL.createObjectURL(file));
-  }
-};
 
 const revokePreview = (index: any) => {
   URL.revokeObjectURL(listImgs.value[index]);
@@ -198,19 +128,20 @@ const getAddressData = async ($e: any) => {
 
 const staffs = reactive(
   [
-    { staff_id: 0, name: '', phone: '', phone_val: '' },
+    { staff_id: 0, name: '', phone: '', phone_val: '', avatar: '' },
   ]
 );
 
 const services = reactive(
   [
-    { service_id: 0, name: '', price: '' },
+    { service_id: 0, name: '', price: '', avatar: '' },
   ]
 );
 
 
 const validations = {
   name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
     minLength: helpers.withMessage(
       ({
         $params,
@@ -225,6 +156,7 @@ const validations = {
     ),
   },
   phone_val: {
+    required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
     minLength: helpers.withMessage(
       ({
         $params,
@@ -232,10 +164,14 @@ const validations = {
       minLength(14)
     ),
   },
+  avatar: {
+    required: helpers.withMessage(() => 'Vui lòng nhập hình ảnh dịch vụ', required),
+  }
 };
 
 const servicesValidations = {
   name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên dịch vụ', required),
     minLength: helpers.withMessage(
       ({
         $params,
@@ -250,6 +186,8 @@ const servicesValidations = {
     ),
   },
   price: {
+    required: helpers.withMessage(() => 'Vui lòng nhập giá dịch vụ', required),
+    decimal: helpers.withMessage(() => 'Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
     minValue: helpers.withMessage(
       ({
         $params,
@@ -262,7 +200,9 @@ const servicesValidations = {
       }) => `Giá dịch vụ phải < ${$params.max}`,
       maxValue(99999.99),
     ),
-
+  },
+  avatar: {
+    required: helpers.withMessage(() => 'Vui lòng nhập hình ảnh dịch vụ', required),
   }
 };
 
@@ -278,15 +218,37 @@ services.map((item) => {
   servicesValidate.push(useVuelidate(servicesValidations, item))
 })
 
-const addService = () => {
-  service_id.value = service_id.value + 1
-  services.push({ service_id: service_id.value, name: "", price: "" });
-  servicesValidate.push(useVuelidate(servicesValidations, reactive({ service_id: service_id.value, name: "", price: "" })))
-}
+
 const addStaff = () => {
   staff_id.value = staff_id.value + 1
-  staffs.push({ staff_id: staff_id.value, name: "", phone: "", phone_val: "" })
-  validate.push(useVuelidate(validations, reactive({ staff_id: staff_id.value, name: "", phone: "", phone_val: "" })))
+  staffs.push({ staff_id: staff_id.value, name: "", phone: "", phone_val: "", avatar: '' })
+  validate.push(useVuelidate(validations, reactive({ staff_id: staff_id.value, name: "", phone: "", phone_val: "", avatar: '' })))
+  for (var i = 0; i < validate.length; i++) {
+    validate[i].value.$touch()
+  }
+}
+const addService = () => {
+  service_id.value = service_id.value + 1
+  services.push({ service_id: service_id.value, name: "", price: "", avatar: '' });
+  servicesValidate.push(useVuelidate(servicesValidations, reactive({ service_id: service_id.value, name: "", price: "", avatar: '' })))
+  for (var i = 0; i < servicesValidate.length; i++) {
+    servicesValidate[i].value.$touch()
+  }
+}
+
+
+
+const deleteStaff = (id: any) => {
+  const i = staffs.findIndex((staff) => staff.staff_id === id);
+  if (staffs.length > 1) {
+    if (i !== -1) {
+      staffs.splice(i, 1);
+      validate.splice(i, 1)
+    }
+  } else {
+    staffs[i].name = ""
+    staffs[i].phone = ""
+  }
 }
 
 const deleteService = (id: any) => {
@@ -302,16 +264,112 @@ const deleteService = (id: any) => {
   }
 }
 
-const deleteStaff = (id: any) => {
-  const i = staffs.findIndex((staff) => staff.staff_id === id);
-  if (staffs.length > 1) {
-    if (i !== -1) {
-      staffs.splice(i, 1);
-      validate.splice(i, 1)
+const saveSalon = () => {
+
+  submit();
+};
+
+const submit = () => {
+  dt.staffs = staffs
+  dt.services = services
+  let error = false
+
+
+  for (var i = 0; i < validate.length; i++) {
+    validate[i].value.$touch()
+  }
+  for (var i = 0; i < servicesValidate.length; i++) {
+    servicesValidate[i].value.$touch()
+  }
+  for (var i = 0; i < validate.length; i++) {
+    if (validate[i].value.$invalid) {
+      error = true
+      break;
     }
-  } else {
-    staffs[i].name = ""
-    staffs[i].phone = ""
+  }
+  for (var i = 0; i < servicesValidate.length; i++) {
+    if (servicesValidate[i].value.$invalid) {
+      error = true
+      break;
+    }
+  }
+
+  if (error) {
+    err.value = 'Thông tin thợ hoặc dịch vụ không hợp lệ'
+    errorNotification.value?.showToast();
+    return;
+  }
+
+
+  SalonCreateStore.createSalon().then(function (response: any) {
+    if (response.staff_require) {
+      err.value = 'Vui lòng nhập ít nhất 1 thợ'
+      errorNotification.value?.showToast();
+      return;
+    }
+    if (response.services_require) {
+      err.value = 'Vui lòng nhập ít nhất 1 dịch vụ'
+      errorNotification.value?.showToast();
+      return;
+    }
+    SalonListStore.approveSalon(response.data.data.admin.id)
+
+    /*  axios
+       .post(`admin/send-mail-create-new-owner`, {
+         salon_name: dt.salon_name,
+         phone: dt.phone,
+         password: dt.password,
+         recipient_email: 'chunglygiabao@gmail.com',
+       }) */
+
+    scc.value = "Tạo Salon Thành Công !"
+    successNotification.value?.showToast()
+
+    router.push({
+      name: 'salon-list',
+    });
+  })
+    .catch(function (error) {
+      console.log("error: ", error);
+      err.value = error.response.data.message;
+      errorNotification.value?.showToast();
+    });
+};
+
+const previewImages = (e: any) => {
+  for (var i = 0; i < e.target.files.length; i++) {
+    let file = e.target.files[i];
+    dt.images.push(file);
+    listImgs.value.push(URL.createObjectURL(file));
+  }
+};
+
+const handleFileChange = async (id: any, type: any, event: Event) => {
+  const files = (event.target as HTMLInputElement).files;
+  if (files && files.length > 0) {
+    const imageFile = files[0];
+
+    const fd = new FormData();
+    fd.append('type', type)
+    fd.append('avatar', imageFile)
+    await axios
+      .post(`upload/upload-avatar`, fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }).then((res) => {
+        console.log(res.data.data);
+        if (type == 1) {
+          const i = staffs.findIndex((staff) => staff.staff_id === id);
+          staffs[i].avatar = res.data.data.avatar
+          validate[i].avatar = res.data.data.avatar
+        }
+        if (type == 2) {
+          const i = services.findIndex((service) => service.service_id === id);
+          services[i].avatar = res.data.data.avatar
+          servicesValidate[i].avatar = res.data.data.avatar
+        }
+      })
   }
 }
 
@@ -583,6 +641,9 @@ const deleteStaff = (id: any) => {
                     <Table.Thead>
                       <Table.Tr>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
+                          Hình Ảnh
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap ">
                           Dịch Vụ
                         </Table.Th>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
@@ -598,6 +659,36 @@ const deleteStaff = (id: any) => {
                         v-for="(service, key) in services"
                         :key="service.service_id"
                       >
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                          <input
+                            type="file"
+                            :key="service.service_id"
+                            :id="'service_img'+service.service_id"
+                            @change="($event:Event)=> {
+                              handleFileChange(service.service_id, 2, $event)
+                            }"
+                            class="hidden"
+                          />
+                          <label
+                            :for="'service_img'+service.service_id"
+                            class="input-img-label"
+                          >
+                            <img
+                              :src="service.avatar?service.avatar:addURL"
+                              height="60"
+                              width="60"
+                            />
+                          </label>
+                          <template v-if="servicesValidate[key].value.avatar.$error">
+                            <div
+                              v-for="(error, index) in servicesValidate[key].value.avatar.$errors"
+                              :key="index"
+                              class="mt-2 text-danger"
+                            >
+                              {{ error.$message }}
+                            </div>
+                          </template>
+                        </td>
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
@@ -621,7 +712,7 @@ const deleteStaff = (id: any) => {
                           <FormInput
                             id="validation-form-1"
                             v-model.trim="servicesValidate[key].value.price.$model"
-                            type="number"
+                            type="text"
                             step="0.01"
                             :class="{'border-danger': servicesValidate[key].value.price.$error,}"
                             @change="()=> {service.price = servicesValidate[key].value.price.$model}"
@@ -707,6 +798,9 @@ const deleteStaff = (id: any) => {
                     <thead>
                       <Table.Tr>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
+                          Hình Ảnh
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
                           Tên Thợ
                         </Table.Th>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap">
@@ -721,14 +815,44 @@ const deleteStaff = (id: any) => {
                         v-for="(staff, key) in staffs"
                         :key="staff.staff_id"
                       >
+                      <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                          <input
+                            type="file"
+                            :key="staff.staff_id"
+                            :id="'staff_img'+staff.staff_id"
+                            @change="($event:Event)=> {
+                              handleFileChange(staff.staff_id, 1, $event)
+                            }"
+                            class="hidden"
+                          />
+                          <label
+                            :for="'staff_img'+staff.staff_id"
+                            class="input-img-label"
+                          >
+                            <img
+                              :src="staff.avatar?staff.avatar:addURL"
+                              height="60"
+                              width="60"
+                            />
+                          </label>
+                          <template v-if="validate[key].value.avatar.$error">
+                            <div
+                              v-for="(error, index) in validate[key].value.avatar.$errors"
+                              :key="index"
+                              class="mt-2 text-danger"
+                            >
+                              {{ error.$message }}
+                            </div>
+                          </template>
+                        </td>
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
                             v-model.trim="validate[key].value.name.$model"
                             type="text"
                             name="name"
-                            :class="{'border-danger': validate[key].value.name.$error,}"
                             @change="()=> {staff.name = validate[key].value.name.$model}"
+                            :class="{'border-danger': validate[key].value.name.$error,}"
                           />
                           <template v-if="validate[key].value.name.$error">
                             <div
@@ -742,13 +866,14 @@ const deleteStaff = (id: any) => {
                         </td>
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <input
-                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
                             v-maska="bindedObject"
                             data-maska="(###) ###-####"
                             v-model.trim="validate[key].value.phone_val.$model"
                             @change="maskphone('',true,key)"
-                            :class="{'border-danger': validate[key].value.phone_val.$error,}"
+                            :class="{'border-danger': validate[key].value.phone_val.$error,
+                            'border-slate-200':!validate[key].value.phone_val.$error,}"
                           />
                           <template v-if="validate[key].value.phone_val.$error">
                             <div

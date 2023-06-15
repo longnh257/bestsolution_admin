@@ -17,6 +17,7 @@ import { NotificationElement } from "../../base-components/Notification";
 import router from "../../router";
 import { useRoute } from "vue-router";
 import moment from "moment";
+import logoURL from "../../assets/images/logo.png";
 const route = useRoute();
 var salon_id = route.params.salon_id;
 
@@ -379,17 +380,17 @@ const activeSalon = (id: any) => {
             <Table class="mt-5">
               <Table.Thead variant="light">
                 <Table.Tr>
-                  <Table.Th class="whitespace-nowrap">STT</Table.Th>
+                  <Table.Th class="whitespace-nowrap">Hình Ảnh</Table.Th>
                   <Table.Th class="whitespace-nowrap"> Tên </Table.Th>
                   <Table.Th class="whitespace-nowrap"> Giá </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 <Table.Tr
-                  v-for="(item, key) in salon.services"
+                  v-for="item in salon.services"
                   :key="item.id"
                 >
-                  <Table.Td>{{key+1}}</Table.Td>
+                  <Table.Td><img :src="item.image?item.image:logoURL" width="60" height="60"/></Table.Td>
                   <Table.Td>{{ item.name }}</Table.Td>
                   <Table.Td>{{ item.price }} $</Table.Td>
                 </Table.Tr>
@@ -410,17 +411,17 @@ const activeSalon = (id: any) => {
             <Table class="mt-5">
               <Table.Thead variant="light">
                 <Table.Tr>
-                  <Table.Th class="whitespace-nowrap">STT</Table.Th>
+                  <Table.Th class="whitespace-nowrap">Hình Ảnh</Table.Th>
                   <Table.Th class="whitespace-nowrap"> Tên </Table.Th>
                   <Table.Th class="whitespace-nowrap"> SĐT </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 <Table.Tr
-                  v-for="(item, key) in salon.staffs"
+                  v-for="item in salon.staffs"
                   :key="item.id"
                 >
-                  <Table.Td>{{key+1}}</Table.Td>
+                  <Table.Td><img :src="item.avatar?item.avatar:logoURL" width="60" height="60"/></Table.Td>
                   <Table.Td>{{ item.name }}</Table.Td>
                   <Table.Td>{{ item.phone_format }}</Table.Td>
                 </Table.Tr>
