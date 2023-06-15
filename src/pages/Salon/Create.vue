@@ -789,7 +789,7 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
           </div>
         </div>
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 ">
             <Lucide
               icon="User"
               class="w-4 h-4 mr-2 "
