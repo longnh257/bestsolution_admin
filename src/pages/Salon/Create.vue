@@ -189,8 +189,8 @@ const servicesValidations = {
     minValue: helpers.withMessage(
       ({
         $params,
-      }) => `Giá dịch vụ phải > ${$params.min}`,
-      minValue(0)
+      }) => `Giá dịch vụ phải > 0`,
+      minValue(0.01)
     ),
     maxValue: helpers.withMessage(
       ({
@@ -342,8 +342,8 @@ const submit = () => {
     });
   })
     .catch(function (error) {
-      console.log("error: ", error);
       err.value = error.response.data.message;
+      err.value =  err.value == 'Trường số điện thoại là bắt buộc' ? 'Trường số điện thoại đăng nhập là bắt buộc' : err.value
       errorNotification.value?.showToast();
     });
 };
@@ -420,7 +420,7 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
               <FormLabel
                 htmlFor="crud-form-2"
                 class="label-require"
-              >Số điện thoại</FormLabel>
+              >Số điện thoại đăng nhập</FormLabel>
               <FormInput
                 id="crud-form-2"
                 type="text"
@@ -525,12 +525,12 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
               <FormLabel
                 htmlFor="crud-form-2"
                 class="label-require"
-              >Số điện thoại liên hệ</FormLabel>
+              >Số điện thoại salon</FormLabel>
               <FormInput
                 id="crud-form-2"
                 type="text"
                 class="w-full"
-                placeholder="Số điện thoại"
+                placeholder="Số điện thoại salon"
                 v-maska="bindedObject"
                 data-maska="(###) ###-####"
                 @change="maskphone(`salon_phone`)"
@@ -714,14 +714,19 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
                           </template>
                         </td>
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
-                          <FormInput
-                            id="validation-form-1"
-                            v-model.trim="servicesValidate[key].value.price.$model"
-                            type="text"
-                            step="0.01"
-                            :class="{'border-danger': servicesValidate[key].value.price.$error,}"
-                            @change="()=> {service.price = servicesValidate[key].value.price.$model}"
-                          />
+                          <InputGroup>
+                            <FormInput
+                              id="validation-form-1"
+                              v-model.trim="servicesValidate[key].value.price.$model"
+                              type="number"
+                              step="0.01"
+                              :class="{'border-danger': servicesValidate[key].value.price.$error,}"
+                              @change="()=> {service.price = servicesValidate[key].value.price.$model}"
+                            />
+                            <InputGroup.Text id="input-group-1">
+                              $
+                            </InputGroup.Text>
+                          </InputGroup>
                           <template v-if="servicesValidate[key].value.price.$error">
                             <div
                               v-for="(error, index) in servicesValidate[key].value.price.$errors"

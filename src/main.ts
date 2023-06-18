@@ -7,7 +7,7 @@ import { vMaska } from "maska"
 import VueGoogleMaps from '@fawmi/vue-google-maps'
 import axios from "axios"
 
-axios.defaults.baseURL = import.meta.env.VITE_APP_API_DEV
+axios.defaults.baseURL = import.meta.env.VITE_APP_API_LOCAL
 axios.defaults.headers.common['Authorization'] = "Bearer: " + localStorage.getItem("access_token")
 axios.defaults.headers.common['lang'] = 'vi'
 
