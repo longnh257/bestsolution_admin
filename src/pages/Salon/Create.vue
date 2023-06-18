@@ -276,8 +276,46 @@ const deleteService = (id: any) => {
   }
 }
 
-const saveSalon = () => {
+const previewImages = (e: any) => {
+  for (var i = 0; i < e.target.files.length; i++) {
+    let file = e.target.files[i];
+    dt.images.push(file);
+    listImgs.value.push(URL.createObjectURL(file));
+  }
+};
 
+const handleFileChange = async (id: any, type: any, event: Event) => {
+  const files = (event.target as HTMLInputElement).files;
+  if (files && files.length > 0) {
+    const imageFile = files[0];
+
+    const fd = new FormData();
+    fd.append('type', type)
+    fd.append('avatar', imageFile)
+    await axios
+      .post(`upload/upload-avatar`, fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }).then((res) => {
+        console.log(res.data.data);
+        if (type == 1) {
+          const i = staffs.findIndex((staff) => staff.staff_id === id);
+          staffs[i].avatar = res.data.data.avatar
+        }
+        if (type == 2) {
+          const i = services.findIndex((service) => service.service_id === id);
+          services[i].avatar = res.data.data.avatar
+        }
+      }).catch((error) => {
+        err.value = "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png"
+        errorNotification.value?.showToast();
+        console.log(err);
+      })
+  }
+}
+
+const saveSalon = () => {
   submit();
 };
 
@@ -285,8 +323,6 @@ const submit = () => {
   dt.staffs = staffs
   dt.services = services
   let error = false
-
-
   for (var i = 0; i < validate.length; i++) {
     validate[i].value.$touch()
   }
@@ -343,49 +379,10 @@ const submit = () => {
   })
     .catch(function (error) {
       err.value = error.response.data.message;
-      err.value =  err.value == 'Trường số điện thoại là bắt buộc' ? 'Trường số điện thoại đăng nhập là bắt buộc' : err.value
+      err.value = err.value == 'Trường số điện thoại là bắt buộc' ? 'Trường số điện thoại đăng nhập là bắt buộc' : err.value
       errorNotification.value?.showToast();
     });
 };
-
-const previewImages = (e: any) => {
-  for (var i = 0; i < e.target.files.length; i++) {
-    let file = e.target.files[i];
-    dt.images.push(file);
-    listImgs.value.push(URL.createObjectURL(file));
-  }
-};
-
-const handleFileChange = async (id: any, type: any, event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  if (files && files.length > 0) {
-    const imageFile = files[0];
-
-    const fd = new FormData();
-    fd.append('type', type)
-    fd.append('avatar', imageFile)
-    await axios
-      .post(`upload/upload-avatar`, fd, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }).then((res) => {
-        console.log(res.data.data);
-        if (type == 1) {
-          const i = staffs.findIndex((staff) => staff.staff_id === id);
-          staffs[i].avatar = res.data.data.avatar
-        }
-        if (type == 2) {
-          const i = services.findIndex((service) => service.service_id === id);
-          services[i].avatar = res.data.data.avatar
-        }
-      }).catch((error) => {
-        err.value = "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png"
-        errorNotification.value?.showToast();
-        console.log(err);
-      })
-  }
-}
 
 </script>
 

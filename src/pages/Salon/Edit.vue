@@ -30,8 +30,22 @@ import {
 } from "../../base-components/Form";
 import moment from 'moment';
 import { convertToTZ } from "../../utils/helper";
-import VueTimepicker from  'vue3-timepicker/src/VueTimepicker.vue';
+import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
 import 'vue3-timepicker/dist/VueTimepicker.css'
+import {
+  required,
+  minLength,
+  maxLength,
+  maxValue,
+  minValue,
+  email,
+  url,
+  integer,
+  decimal,
+  helpers,
+} from "@vuelidate/validators";
+import { useVuelidate } from "@vuelidate/core";
+import addURL from "../../assets/images/add.png";
 
 const route = useRoute();
 var salon_id = route.params.salon_id;
@@ -43,8 +57,8 @@ const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 const selectedImgIndex = ref();
 const selectedImgID = ref();
-let err = ref([]);
-let scc = ref([]);
+let err: any = ref([]);
+let scc: any = ref([]);
 const salonIndex: any = ref("");
 const salonId: any = ref("");
 const salon = ref();
@@ -89,15 +103,13 @@ const submit = () => {
       })
     }
   })
-  console.log(scheduleData);
-
 
   fd.append("id", salon.value.id);
   fd.append("name", salon.value.name);
   fd.append("address", salon.value.address);
   fd.append("phone", salon.value.phone);
   fd.append("email", salon.value.email ? salon.value.email : '');
-  fd.append("description", salon.value.description?salon.value.description:'');
+  fd.append("description", salon.value.description ? salon.value.description : '');
   fd.append("country", salon.value.country);
   fd.append("city", salon.value.city);
   fd.append("state", salon.value.state);
@@ -108,6 +120,8 @@ const submit = () => {
   fd.append("lat", salon.value.lat);
   fd.append("lng", salon.value.lng);
   fd.append("schedules", JSON.stringify(scheduleData));
+  fd.append("staffs", JSON.stringify(staffs));
+  fd.append("services", JSON.stringify(services));
   fd.append("delete_images", JSON.stringify(deleteImgArr.value));
   for (let index in images.value) {
     fd.append("images", images.value[index]);
@@ -165,14 +179,18 @@ const setDeleteConfirmationModal = (
   selectedImgID.value = imgId;
 };
 
-const maskphone = (key: any) => {
-  if (key === "phone") {
+
+
+const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
+  if (isStaff) {
+    staffs[index].phone = bindedObject.unmasked;
+  } else if (key === "phone") {
     salon.value.phone = bindedObject.unmasked;
   }
   if (key === "salon_phone") {
     salon.value.partner.phone = bindedObject.unmasked;
   }
-};
+}
 
 const getAddressData = async (placeResultData: any) => {
   for (const item of placeResultData.address_components) {
@@ -212,10 +230,30 @@ const deleteImg = () => {
 };
 
 const getSalon = async () => {
-  const response = await axios.get(`salon/${salon_id}`);
-  salon.value = response.data.data;
-  console.log(salon.value);
+  axios.get(`salon/${salon_id}`).then((res) => {
+    salon.value = res.data.data;
+    console.log(salon.value);
+    staffs.splice(0, 1);
+    services.splice(0, 1);
+    validate.splice(0, 1);
+    servicesValidate.splice(0, 1);
+    salon.value.staffs.map((item: any) => {
+      staffs.push(item)
+    })
+    salon.value.services.map((item: any) => {
+      services.push(item)
+    })
+    staffs.map((item) => {
+      validate.push(useVuelidate(validations, item))
+    })
+    services.map((item) => {
+      servicesValidate.push(useVuelidate(servicesValidations, item))
+    })
+  });
 };
+
+
+
 const changePassword = async () => {
   console.log(newPassword.value, newPasswordConfirm.value);
 
@@ -232,6 +270,184 @@ const changePassword = async () => {
       errorNotification.value?.showToast();
     });
 };
+
+
+let staff_id = ref(0)
+let service_id = ref(0)
+
+
+const staffs = reactive(
+  [{ id: 'new' + 0, name: "", phone: "", phone_format: "", avatar: '' }]
+);
+
+const services = reactive(
+  [{ id: 'new' + 0, name: "", price: "", avatar: '' }]
+);
+
+const validations = {
+  name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
+      minLength(3)
+    ),
+    maxLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
+      maxLength(25)
+    ),
+  },
+  phone_format: {
+    required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Số điện thoại phải là 10 số`,
+      minLength(14)
+    ),
+  },
+
+};
+
+const servicesValidations = {
+  name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên dịch vụ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
+      minLength(3)
+    ),
+    maxLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
+      maxLength(25)
+    ),
+  },
+  price: {
+    required: helpers.withMessage(() => 'Vui lòng nhập giá dịch vụ', required),
+    decimal: helpers.withMessage(() => 'Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
+    minValue: helpers.withMessage(
+      ({
+        $params,
+      }) => `Giá dịch vụ phải > 0`,
+      minValue(0.01)
+    ),
+    maxValue: helpers.withMessage(
+      ({
+        $params,
+      }) => `Giá dịch vụ phải < ${$params.max}`,
+      maxValue(99999.99),
+    ),
+  },
+
+};
+
+// Use Vuelidate
+const validate = <any>[]
+
+staffs.map((item) => {
+  validate.push(useVuelidate(validations, item))
+})
+const servicesValidate = <any>[]
+
+services.map((item) => {
+  servicesValidate.push(useVuelidate(servicesValidations, item))
+})
+
+
+const addStaff = () => {
+  staff_id.value = staff_id.value + 1
+  staffs.push({ id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })
+  validate.push(useVuelidate(validations, reactive({ id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })))
+  for (var i = 0; i < validate.length; i++) {
+    validate[i].value.$touch()
+  }
+}
+const addService = () => {
+  service_id.value = service_id.value + 1
+  services.push({ id: 'new' + service_id.value, name: "", price: "", avatar: '' });
+  servicesValidate.push(useVuelidate(servicesValidations, reactive({ id: 'new' + service_id.value, name: "", price: "", avatar: '' })))
+  for (var i = 0; i < servicesValidate.length; i++) {
+    servicesValidate[i].value.$touch()
+  }
+}
+
+const deleteStaff = (id: any) => {
+  const i = staffs.findIndex((staff) => staff.id === id);
+  if (staffs.length > 1) {
+    if (i !== -1) {
+      axios
+        .post(`upload/delete-avatar`, {
+          filename: staffs[i].avatar
+        }).then((res) => {
+          console.log(res);
+        }).catch((err) => {
+          console.log(err);
+        })
+      staffs.splice(i, 1);
+      validate.splice(i, 1)
+    }
+  } else {
+    staffs[i].name = ""
+    staffs[i].phone = ""
+  }
+}
+
+const deleteService = (id: any) => {
+  const i = services.findIndex((staff) => staff.id === id);
+  if (services.length > 1) {
+    if (i !== -1) {
+      axios
+        .post(`upload/delete-avatar`, {
+          filename: services[i].avatar
+        }).then((res) => {
+          console.log(res);
+        }).catch((err) => {
+          console.log(err);
+        })
+      services.splice(i, 1)
+      servicesValidate.splice(i, 1)
+    }
+  } else {
+    services[i].name = ""
+    services[i].price = ""
+  }
+}
+const handleFileChange = async (id: any, type: any, event: Event) => {
+  const files = (event.target as HTMLInputElement).files;
+  if (files && files.length > 0) {
+    const imageFile = files[0];
+
+    const fd = new FormData();
+    fd.append('type', type)
+    fd.append('avatar', imageFile)
+    await axios
+      .post(`upload/upload-avatar`, fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }).then((res) => {
+        console.log(res.data.data);
+        if (type == 1) {
+          const i = staffs.findIndex((staff) => staff.id === id);
+          staffs[i].avatar = res.data.data.avatar
+        }
+        if (type == 2) {
+          const i = services.findIndex((service) => service.id === id);
+          services[i].avatar = res.data.data.avatar
+        }
+      }).catch((error) => {
+        err.value = "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png"
+        errorNotification.value?.showToast();
+        console.log(err);
+      })
+  }
+}
 
 onMounted(() => {
   getSalon();
@@ -411,7 +627,7 @@ onMounted(() => {
                 v-maska="bindedObject"
                 v-model="maskedValue"
                 data-maska="(###) ###-####"
-                @change="maskphone(`phone`)"
+                @change="maskphone(`phone`,false,'')"
               />
             </div>
             <div class="mt-3">
@@ -544,6 +760,312 @@ onMounted(() => {
         </div>
       </div>
       <!-- END: Salon Info -->
+
+      <!-- BEGIN: service & Service Info -->
+      <div class="p-5 mt-5 intro-y box">
+
+        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require">
+            <Lucide
+              icon="User"
+              class="w-4 h-4 mr-2 "
+            /> Thông tin dịch vụ &nbsp;
+          </div>
+          <div class="mt-5">
+            <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
+              <div class="flex-1 w-full mt-3 xl:mt-0">
+                <div class="overflow-x-auto">
+                  <Table class="border">
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16">
+                          Hình Ảnh
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                          Dịch Vụ
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                          Giá Tiền
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+
+                    <tbody>
+                      <tr
+                        v-for="(service, key) in services"
+                        :key="service.id"
+                        :class="service.id"
+                      >
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
+                          <input
+                            type="file"
+                            :key="service.id"
+                            :id="'service_img'+service.id"
+                            @change="($event:Event)=> {
+                      handleFileChange(service.id, 2, $event)
+                    }"
+                            class="hidden"
+                          />
+                          <label
+                            :for="'service_img'+service.id"
+                            class="input-img-label"
+                          >
+                            <img
+                              :src="service.avatar?service.avatar:addURL"
+                              height="60"
+                              width="60"
+                            />
+                          </label>
+                        </td>
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                          <FormInput
+                            id="validation-form-1"
+                            v-model.trim="servicesValidate[key].value.name.$model"
+                            type="text"
+                            name="name"
+                            :class="{'border-danger': servicesValidate[key].value.name.$error,}"
+                            @change="()=> {service.name = servicesValidate[key].value.name.$model}"
+                          />
+                          <template v-if="servicesValidate[key].value.name.$error">
+                            <div
+                              v-for="(error, index) in servicesValidate[key].value.name.$errors"
+                              :key="index"
+                              class="mt-2 text-danger"
+                            >
+                              {{ error.$message }}
+                            </div>
+                          </template>
+                        </td>
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                          <InputGroup>
+                            <FormInput
+                              id="validation-form-1"
+                              v-model.trim="servicesValidate[key].value.price.$model"
+                              type="number"
+                              step="0.01"
+                              :class="{'border-danger': servicesValidate[key].value.price.$error,}"
+                              @change="()=> {service.price = servicesValidate[key].value.price.$model}"
+                            />
+                            <InputGroup.Text id="input-group-1">
+                              $
+                            </InputGroup.Text>
+                          </InputGroup>
+                          <template v-if="servicesValidate[key].value.price.$error">
+                            <div
+                              v-for="(error, index) in servicesValidate[key].value.price.$errors"
+                              :key="index"
+                              class="mt-2 text-danger"
+                            >
+                              {{ error.$message }}
+                            </div>
+                          </template>
+                        </td>
+                        <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
+                          <a
+                            style="cursor: pointer"
+                            @click="()=>{
+                      deleteService(service.id)
+                    }"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="stroke-1.5 w-4 h-4"
+                              style="margin: 0px auto"
+                            >
+                              <path d="M3 6h18"></path>
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                              <line
+                                x1="10"
+                                y1="11"
+                                x2="10"
+                                y2="17"
+                              ></line>
+                              <line
+                                x1="14"
+                                y1="11"
+                                x2="14"
+                                y2="17"
+                              ></line>
+                            </svg>
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                </div>
+                <Button
+                  variant="outline-primary"
+                  class="w-full mt-4 border-dashed"
+                  @click="addService()"
+                >
+                  <Lucide
+                    icon="Plus"
+                    class="w-4 h-4 mr-2"
+                  /> Thêm dịch vụ
+                </Button>
+              </div>
+            </FormInline>
+          </div>
+        </div>
+        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3">
+          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 ">
+            <Lucide
+              icon="User"
+              class="w-4 h-4 mr-2 "
+            /> Thông tin thợ &nbsp;
+          </div>
+          <div class="mt-5">
+            <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
+              <div class="flex-1 w-full mt-3 xl:mt-0">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border">
+                    <thead>
+                      <Table.Tr>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16">
+                          Hình Ảnh
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                          Tên Thợ
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                          Số Điện Thoại
+                        </Table.Th>
+                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
+                      </Table.Tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        class=""
+                        v-for="(staff, key) in staffs"
+                        :key="staff.id"
+                      >
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
+                          <input
+                            type="file"
+                            :key="staff.id"
+                            :id="'staff_img'+staff.id"
+                            @change="($event:Event)=> {
+                      handleFileChange(staff.id, 1, $event)
+                    }"
+                            class="hidden"
+                          />
+                          <label
+                            :for="'staff_img'+staff.id"
+                            class="input-img-label"
+                          >
+                            <img
+                              :src="staff.avatar?staff.avatar:addURL"
+                              height="60"
+                              width="60"
+                            />
+                          </label>
+                        </td>
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                          <FormInput
+                            id="validation-form-1"
+                            v-model.trim="validate[key].value.name.$model"
+                            type="text"
+                            name="name"
+                            @change="()=> {staff.name = validate[key].value.name.$model}"
+                            :class="{'border-danger': validate[key].value.name.$error,}"
+                          />
+                          <template v-if="validate[key].value.name.$error">
+                            <div
+                              v-for="(error, index) in validate[key].value.name.$errors"
+                              :key="index"
+                              class="mt-2 text-danger"
+                            >
+                              {{ error.$message }}
+                            </div>
+                          </template>
+                        </td>
+                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                          <input
+                            class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
+                            type="text"
+                            v-maska="bindedObject"
+                            data-maska="(###) ###-####"
+                            v-model.trim="validate[key].value.phone_format.$model"
+                            @change="maskphone('',true,key)"
+                            :class="{'border-danger': validate[key].value.phone_format.$error,
+                    'border-slate-200':!validate[key].value.phone_format.$error,}"
+                          />
+                          <template v-if="validate[key].value.phone_format.$error">
+                            <div
+                              v-for="(error, index) in validate[key].value.phone_format.$errors"
+                              :key="index"
+                              class="mt-2 text-danger"
+                            >
+                              {{ error.$message }}
+                            </div>
+                          </template>
+                        </td>
+                        <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
+                          <a
+                            style="cursor: pointer"
+                            @click="deleteStaff(staff.id)"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="stroke-1.5 w-4 h-4"
+                              style="margin: 0px auto"
+                            >
+                              <path d="M3 6h18"></path>
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                              <line
+                                x1="10"
+                                y1="11"
+                                x2="10"
+                                y2="17"
+                              ></line>
+                              <line
+                                x1="14"
+                                y1="11"
+                                x2="14"
+                                y2="17"
+                              ></line>
+                            </svg>
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <Button
+                  variant="outline-primary"
+                  class="w-full mt-4 border-dashed"
+                  @click="addStaff()"
+                >
+                  <Lucide
+                    icon="Plus"
+                    class="w-4 h-4 mr-2"
+                  /> Thêm Thợ
+                </Button>
+              </div>
+            </FormInline>
+          </div>
+        </div>
+      </div>
+      <!-- END: service & Service  Info -->
 
     </div>
   </div>
