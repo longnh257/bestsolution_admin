@@ -44,7 +44,7 @@ const sendAccountInfoEmail = (item: any) => {
     .post(`admin/send-mail-create-new-owner`, {
       salon_name: item.name,
       phone: item.phone,
-      password: "123456",
+      password: item.initial_password,
       recipient_email: item.email,
     })
 }
@@ -322,11 +322,10 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 
                   <Menu.Item
                     style="cursor: pointer"
-                    v-if="item.email"
                     @click="sendAccountInfoEmail(item)"
                   >
                     <Lucide
-                      icon="Unlock"
+                      icon="Mail"
                       class="w-4 h-4 mr-2"
                     /> Send Mail
                   </Menu.Item>
