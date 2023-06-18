@@ -120,8 +120,8 @@ const submit = () => {
   fd.append("lat", salon.value.lat);
   fd.append("lng", salon.value.lng);
   fd.append("schedules", JSON.stringify(scheduleData));
-  fd.append("staffs", JSON.stringify(staffs));
-  fd.append("services", JSON.stringify(services));
+  fd.append("staffs", JSON.stringify(salon.value.staffs));
+  fd.append("services", JSON.stringify(salon.value.services));
   fd.append("delete_images", JSON.stringify(deleteImgArr.value));
   for (let index in images.value) {
     fd.append("images", images.value[index]);
