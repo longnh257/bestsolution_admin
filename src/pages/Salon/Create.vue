@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, provide, toRefs } from "vue";
+import { reactive, ref, provide, toRefs, watch } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
 import Notification from "../../base-components/Notification";
@@ -23,6 +23,7 @@ import { useSalonListStore } from "../../stores/salon/salon-list";
 import { useSalonCreateStore } from "../../stores/salon/salon-create";
 import Toastify from "toastify-js";
 import router from "../../router";
+import { Dialog, Menu, Tab } from "../../base-components/Headless";
 import {
   required,
   minLength,
@@ -36,10 +37,11 @@ import {
   helpers,
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
+import addURL from "../../assets/images/add.png";
 import axios from "axios";
 import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
 import 'vue3-timepicker/dist/VueTimepicker.css'
-import addURL from "../../assets/images/add.png";
+
 
 
 const SalonListStore = useSalonListStore();
@@ -62,8 +64,7 @@ provide("bind[errorNotification]", (el: NotificationElement) => {
 provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el
 });
-let staff_id = ref(0)
-let service_id = ref(0)
+
 
 
 const revokePreview = (index: any) => {
@@ -87,8 +88,6 @@ const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
 
 const getAddressData = async ($e: any) => {
   for (const item of $e.address_components) {
-    console.log($e);
-
     if (item.types.includes("country")) {
       dt.salon_country = item.short_name
     }
@@ -121,10 +120,12 @@ const getAddressData = async ($e: any) => {
   const timezoneByLocation: any = await getTimeZoneByLocation(dt.salon_lat, dt.salon_lng)
   if (timezoneByLocation.timeZoneId)
     dt.salon_timezone = timezoneByLocation.timeZoneId
-  /* console.log("tz: " + dt.salon_timezone); */
+  console.log("tz: " + dt.salon_timezone);
+  console.log(dt);
 };
 
-
+let staff_id = ref(0)
+let service_id = ref(0)
 
 const staffs = reactive(
   [
@@ -231,8 +232,6 @@ const addService = () => {
     servicesValidate[i].value.$touch()
   }
 }
-
-
 
 const deleteStaff = (id: any) => {
   const i = staffs.findIndex((staff) => staff.staff_id === id);
@@ -383,6 +382,47 @@ const submit = () => {
       errorNotification.value?.showToast();
     });
 };
+
+
+const copyTimeModal = ref(false);
+const sendButtonRef = ref(null);
+
+const setCopyTimeModal = (value) => {
+  copyTimeModal.value = value;
+};
+
+
+let selectedSchedule = ref({ day: 0, day_name: '', end_time: '', start_time: '' })
+let selectedScheduleIndex = ref(0)
+
+const setSelectedSchedule = (schedule: any, index: any) => {
+  selectedScheduleIndex = index
+  selectedSchedule.value = schedule
+}
+
+let load = ref(false)
+const scheduleSeletedList = ref([])
+
+watch(selectedScheduleIndex, (newValue) => {
+  selectedSchedule.value = dt.schedules[newValue];
+  load.value = true
+  setTimeout(() => {
+    load.value = false
+  }, 1);
+});
+const copyTime = () => {
+  console.log(scheduleSeletedList.value);
+  dt.schedules.filter(item => scheduleSeletedList.value.includes(item.day)).map(item => {
+    item.start_time = selectedSchedule.value.start_time
+    item.end_time = selectedSchedule.value.end_time
+  })
+  console.log(dt.schedules);
+  load.value = true
+  setTimeout(() => {
+    load.value = false
+  }, 1);
+  setCopyTimeModal(false);
+}
 
 </script>
 
@@ -588,6 +628,63 @@ const submit = () => {
                 </div>
               </FormInline>
             </div>
+            <FormLabel
+              htmlFor="crud-form-2"
+              class="mt-3"
+            >Giờ mở cửa</FormLabel>
+            <div
+              class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+              v-if="!load"
+            >
+              <div
+                class="grid grid-cols-12 gap-4 gap-y-3"
+                v-for="(schedule,index) in dt.schedules"
+                :key="index"
+              >
+                <div class="grid grid-cols-12 gap-4 gap-y-3 col-span-12">
+                  <FormInline class="col-span-6">
+                    <FormLabel
+                      htmlFor=""
+                      class="text-left w-20 mt-3"
+                    >
+                      {{ schedule.day_name }}
+                    </FormLabel>
+
+                    <VueTimepicker v-model="schedule.start_time" />
+
+                  </FormInline>
+                  <FormInline class="col-span-6">
+                    <FormLabel
+                      htmlFor=""
+                      class="text-left w-20 mt-3"
+                    >
+                      đến
+                    </FormLabel>
+                    <VueTimepicker v-model="schedule.end_time" />
+                  </FormInline>
+                </div>
+                        <!-- BEGIN: Modal Toggle -->
+                        <div
+                  class="text-center col-span-12"
+                  v-if="schedule.start_time && schedule.end_time"
+                >
+                  <a
+                    as="a"
+                    href="#"
+                    variant="primary"
+                    @click="(event: MouseEvent) => {
+                      event.preventDefault();
+                      setSelectedSchedule(schedule,index)
+                      setCopyTimeModal(true);
+                    }"
+                    style="color:#bd45c2"
+                  >
+                    Sao chép thời gian sang ngày khác
+                  </a>
+                </div>
+                <!-- END: Modal Toggle -->
+              </div>
+            </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
               <FormTextarea
@@ -597,39 +694,6 @@ const submit = () => {
                 rows="6"
               />
             </div>
-            <FormLabel
-              htmlFor="crud-form-2"
-              class="mt-3"
-            >Giờ mở cửa</FormLabel>
-            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-              <div
-                class="flex"
-                v-for="schedule in dt.schedules"
-                :key="schedule.day"
-              >
-                <FormInline class="flex-row flex w-1/2">
-                  <FormLabel
-                    htmlFor=""
-                    class="text-left w-20 mt-3"
-                  >
-                    {{ schedule.day_name }}
-                  </FormLabel>
-
-                  <VueTimepicker v-model="schedule.start_time" />
-
-                </FormInline>
-                <FormInline class="flex-row flex w-1/2">
-                  <FormLabel
-                    htmlFor=""
-                    class="text-left w-20 mt-3"
-                  >
-                    đến
-                  </FormLabel>
-                  <VueTimepicker v-model="schedule.end_time" />
-                </FormInline>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
@@ -1007,4 +1071,121 @@ const submit = () => {
     </Notification>
     <!-- END: Success Notification -->
   </div>
+
+  <!-- BEGIN:Copy Time Modal Content -->
+  <Dialog
+    :open="copyTimeModal"
+    @close="
+                  () => {
+                    setCopyTimeModal(false);
+                  }
+                "
+    :initialFocus="sendButtonRef"
+  >
+    <Dialog.Panel>
+      <Dialog.Title>
+        <h2 class="mr-auto text-base font-medium">
+          Chọn ngày muốn sao chép
+        </h2>
+        {{ scheduleSeletedList }}
+
+      </Dialog.Title>
+      <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
+        <div class="col-span-12 ">
+          <FormSelect v-model="selectedScheduleIndex">
+            <option
+              v-for="(schedule,index) in dt.schedules"
+              :key="index"
+              :value="index"
+            > {{ schedule.day_name }}</option>
+          </FormSelect>
+        </div>
+        <div
+          class="col-span-6 "
+          v-if="!load"
+        >
+          <FormInline class="flex-row">
+            <FormLabel
+              htmlFor=""
+              class="text-left mt-3"
+            >
+              Từ
+            </FormLabel>
+            <VueTimepicker
+              v-model="selectedSchedule.start_time"
+              id="start_time"
+            />
+          </FormInline>
+
+        </div>
+        <div
+          class="col-span-6 "
+          v-if="!load"
+        >
+          <FormInline class="flex-row">
+            <FormLabel
+              htmlFor=""
+              class="text-left mt-3"
+            >
+              đến
+            </FormLabel>
+            <VueTimepicker
+              v-model="selectedSchedule.end_time"
+              id="end_time"
+            />
+          </FormInline>
+
+        </div>
+        <div class="col-span-12 ">
+          <b>Chọn ngày áp dụng</b>
+          <div class="col-span-12 ">
+            <div
+              class="flex items-center mr-4 mt-3"
+              v-for="(schedule,index) in dt.schedules.filter(item=>item.day!=dt.schedules[selectedScheduleIndex].day)"
+              :key="index"
+            >
+              <label
+                class="mr-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
+                :htmlFor="'customer_skin_color-switch-'+index"
+              >
+                {{ schedule.day_name}}
+              </label>
+              <input
+                class=" ml-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
+                :id="'customer_skin_color-switch-'+index"
+                type="checkbox"
+                v-model="scheduleSeletedList"
+                :value="schedule.day"
+              />
+            </div>
+          </div>
+        </div>
+
+      </Dialog.Description>
+      <Dialog.Footer>
+        <Button
+          type="button"
+          variant="outline-secondary"
+          @click="
+                        () => {
+                          setCopyTimeModal(false);
+                        }
+                      "
+          class="w-20 mr-1"
+        >
+          Hủy
+        </Button>
+        <Button
+          variant="primary"
+          type="button"
+          class="w-32"
+          ref="{sendButtonRef}"
+          @click="copyTime()"
+        >
+          Sao Chép
+        </Button>
+      </Dialog.Footer>
+    </Dialog.Panel>
+  </Dialog>
+  <!-- END: Modal Content -->
 </template>

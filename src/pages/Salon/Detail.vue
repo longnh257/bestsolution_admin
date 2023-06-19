@@ -434,7 +434,7 @@ const activeSalon = (id: any) => {
         <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             Giờ làm việc : &nbsp;
-            <span class="italic text-success">(Múi Giờ : {{ salon.tz }})</span>
+            <span class="italic text-success">(Múi Giờ : {{ salon.timezone }} {{ salon.tz }})</span>
           </div>
           <div class="overflow-x-auto">
             <Table class="mt-5">

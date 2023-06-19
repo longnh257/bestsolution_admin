@@ -237,6 +237,7 @@ const deleteImg = () => {
 let selectedSchedule = ref({ id: '', day: '', day_name: '', end_time: '', start_time: '' })
 let selectedScheduleIndex = ref(0)
 
+
 const getSalon = async () => {
   axios.get(`salon/${salon_id}`).then((res) => {
     salon.value = res.data.data;
@@ -479,9 +480,9 @@ watch(selectedScheduleIndex, (newValue) => {
 });
 const copyTime = () => {
   console.log(scheduleSeletedList.value);
-  salon.value.schedules.filter((item,key) => scheduleSeletedList.value.includes(key)).map(item => {
-    item.start_time = selectedSchedule.value.start_time
-    item.end_time = selectedSchedule.value.end_time
+  salon.value.schedules.filter(item => scheduleSeletedList.value.includes(item.day)).map(el => {
+    el.start_time = selectedSchedule.value.start_time
+    el.end_time = selectedSchedule.value.end_time
   })
   console.log(salon.value.schedules);
   load.value = true
@@ -761,7 +762,7 @@ onMounted(() => {
             <FormLabel
               htmlFor="crud-form-2"
               class="mt-3"
-            >Giờ mở cửa <i>(Múi Giờ: {{ salon.tz }})</i></FormLabel>
+            ><strong>Giờ mở cửa: <i class="text-success">(Múi Giờ: {{ salon.timezone }} {{ salon.tz }})</i></strong></FormLabel>
             <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400" v-if="!load">
               <div
                 class="grid grid-cols-12 gap-4 gap-y-3"
@@ -1283,24 +1284,25 @@ onMounted(() => {
 
         </div>
         <div class="col-span-12 ">
+          <b>Chọn ngày áp dụng</b>
           <div class="col-span-12 ">
             <div
               class="flex items-center mr-4 mt-3"
-              v-for="(schedule,index) in salon.schedules.filter(item=>item.id!=salon.schedules[selectedScheduleIndex].id)"
-              :key="index"
+              v-for="schedule in salon.schedules.filter(item=>item.id!=salon.schedules[selectedScheduleIndex].id)"
+              :key="schedule.day"
             >
               <label
                 class="mr-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
-                :htmlFor="'customer_skin_color-switch-'+index"
+                :htmlFor="'customer_skin_color-switch-'+schedule.day"
               >
                 {{ schedule.day_name}}
               </label>
               <input
                 class=" ml-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
-                :id="'customer_skin_color-switch-'+index"
+                :id="'customer_skin_color-switch-'+schedule.day"
                 type="checkbox"
                 v-model="scheduleSeletedList"
-                :value="index"
+                :value="schedule.day"
               />
             </div>
           </div>
@@ -1318,16 +1320,16 @@ onMounted(() => {
                       "
           class="w-20 mr-1"
         >
-          Cancel
+          Hủy
         </Button>
         <Button
           variant="primary"
           type="button"
-          class="w-20"
+          class="w-32"
           ref="{sendButtonRef}"
           @click="copyTime()"
         >
-          Send
+          Sao Chép
         </Button>
       </Dialog.Footer>
     </Dialog.Panel>
