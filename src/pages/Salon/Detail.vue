@@ -453,8 +453,8 @@ const activeSalon = (id: any) => {
                   <Table.Td>{{
                     schedule.day == 0 ? "Chủ Nhật" : `Thứ ${schedule.day + 1}`
                   }}</Table.Td>
-                  <Table.Td>{{ moment(schedule.start_time,'HH:mm:ss').format('HH:mm') }}</Table.Td>
-                  <Table.Td>{{ moment(schedule.end_time,'HH:mm:ss').format('HH:mm') }}</Table.Td>
+                  <Table.Td>{{ schedule.start_time ? moment(schedule.start_time,'HH:mm:ss').format('HH:mm') : 'OFF' }}</Table.Td>
+                  <Table.Td>{{ schedule.end_time ?  moment(schedule.end_time,'HH:mm:ss').format('HH:mm') : "OFF" }}</Table.Td>
                 </Table.Tr>
               </Table.Tbody>
             </Table>
