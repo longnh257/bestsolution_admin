@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _, { forEach } from "lodash";
-import { reactive, ref, onMounted, provide } from "vue";
+import { reactive, ref, onMounted, provide, watch, computed } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
 import axios from "axios";
@@ -65,7 +65,8 @@ const salon = ref();
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
 var salon_id = route.params.salon_id;
-
+const copyTimeModal = ref(false);
+const sendButtonRef = ref(null);
 
 const password = ref("");
 const newPassword = ref("");
@@ -74,6 +75,7 @@ let listImgs: any = ref([]);
 let listStaffImgs: any = ref([]);
 let showPassword = ref(true);
 let showPasswordConfirm = ref(true);
+const scheduleSeletedList = ref([])
 
 const maskedValue = ref("");
 const bindedObject = reactive({ unmasked: "" });
@@ -120,8 +122,8 @@ const submit = () => {
   fd.append("lat", salon.value.lat);
   fd.append("lng", salon.value.lng);
   fd.append("schedules", JSON.stringify(scheduleData));
-  fd.append("staffs", JSON.stringify(salon.value.staffs));
-  fd.append("services", JSON.stringify(salon.value.services));
+  fd.append("staffs", JSON.stringify(staffs));
+  fd.append("services", JSON.stringify(services));
   fd.append("delete_images", JSON.stringify(deleteImgArr.value));
   for (let index in images.value) {
     fd.append("images", images.value[index]);
@@ -178,6 +180,9 @@ const setDeleteConfirmationModal = (
   selectedImgIndex.value = imgIndex;
   selectedImgID.value = imgId;
 };
+const setCopyTimeModal = (value) => {
+  copyTimeModal.value = value;
+};
 
 
 
@@ -229,6 +234,9 @@ const deleteImg = () => {
   console.log(deleteImgArr.value);
 };
 
+let selectedSchedule = ref({ id: '', day: '', day_name: '', end_time: '', start_time: '' })
+let selectedScheduleIndex = ref(0)
+
 const getSalon = async () => {
   axios.get(`salon/${salon_id}`).then((res) => {
     salon.value = res.data.data;
@@ -238,9 +246,14 @@ const getSalon = async () => {
     validate.splice(0, 1);
     servicesValidate.splice(0, 1);
     salon.value.staffs.map((item: any) => {
+      item.staff_id = item.id
+      item.first_name = ''
+      item.last_name = ''
       staffs.push(item)
     })
     salon.value.services.map((item: any) => {
+      item.service_id = item.id
+      item.avatar = item.image
       services.push(item)
     })
     staffs.map((item) => {
@@ -249,6 +262,7 @@ const getSalon = async () => {
     services.map((item) => {
       servicesValidate.push(useVuelidate(servicesValidations, item))
     })
+    selectedSchedule.value = salon.value.schedules[selectedScheduleIndex.value]
   });
 };
 
@@ -277,11 +291,11 @@ let service_id = ref(0)
 
 
 const staffs = reactive(
-  [{ id: 'new' + 0, name: "", phone: "", phone_format: "", avatar: '' }]
+  [{ staff_id: 'new' + 0, name: "", phone: "", phone_format: "", avatar: '' }]
 );
 
 const services = reactive(
-  [{ id: 'new' + 0, name: "", price: "", avatar: '' }]
+  [{ service_id: 'new' + 0, name: "", price: "", avatar: '' }]
 );
 
 const validations = {
@@ -362,15 +376,15 @@ services.map((item) => {
 
 const addStaff = () => {
   staff_id.value = staff_id.value + 1
-  staffs.push({ id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })
-  validate.push(useVuelidate(validations, reactive({ id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })))
+  staffs.push({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })
+  validate.push(useVuelidate(validations, reactive({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })))
   for (var i = 0; i < validate.length; i++) {
     validate[i].value.$touch()
   }
 }
 const addService = () => {
   service_id.value = service_id.value + 1
-  services.push({ id: 'new' + service_id.value, name: "", price: "", avatar: '' });
+  services.push({ service_id: 'new' + service_id.value, name: "", price: "", avatar: '' });
   servicesValidate.push(useVuelidate(servicesValidations, reactive({ id: 'new' + service_id.value, name: "", price: "", avatar: '' })))
   for (var i = 0; i < servicesValidate.length; i++) {
     servicesValidate[i].value.$touch()
@@ -378,7 +392,7 @@ const addService = () => {
 }
 
 const deleteStaff = (id: any) => {
-  const i = staffs.findIndex((staff) => staff.id === id);
+  const i = staffs.findIndex((staff) => staff.staff_id === id);
   if (staffs.length > 1) {
     if (i !== -1) {
       axios
@@ -399,7 +413,7 @@ const deleteStaff = (id: any) => {
 }
 
 const deleteService = (id: any) => {
-  const i = services.findIndex((staff) => staff.id === id);
+  const i = services.findIndex((service) => service.service_id === id);
   if (services.length > 1) {
     if (i !== -1) {
       axios
@@ -434,11 +448,11 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
       }).then((res) => {
         console.log(res.data.data);
         if (type == 1) {
-          const i = staffs.findIndex((staff) => staff.id === id);
+          const i = staffs.findIndex((staff) => staff.staff_id === id);
           staffs[i].avatar = res.data.data.avatar
         }
         if (type == 2) {
-          const i = services.findIndex((service) => service.id === id);
+          const i = services.findIndex((service) => service.service_id === id);
           services[i].avatar = res.data.data.avatar
         }
       }).catch((error) => {
@@ -447,6 +461,34 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
         console.log(err);
       })
   }
+}
+
+const setSelectedSchedule = (schedule: any, index: any) => {
+  selectedScheduleIndex = index
+  selectedSchedule.value = schedule
+}
+
+let load = ref(false)
+
+watch(selectedScheduleIndex, (newValue) => {
+  selectedSchedule.value = salon.value.schedules[newValue];
+  load.value = true
+  setTimeout(() => {
+    load.value = false
+  }, 1);
+});
+const copyTime = () => {
+  console.log(scheduleSeletedList.value);
+  salon.value.schedules.filter((item,key) => scheduleSeletedList.value.includes(key)).map(item => {
+    item.start_time = selectedSchedule.value.start_time
+    item.end_time = selectedSchedule.value.end_time
+  })
+  console.log(salon.value.schedules);
+  load.value = true
+  setTimeout(() => {
+    load.value = false
+  }, 1);
+  setCopyTimeModal(false);
 }
 
 onMounted(() => {
@@ -707,36 +749,6 @@ onMounted(() => {
                 </div>
               </FormInline>
             </div>
-            <FormLabel
-              htmlFor="crud-form-2"
-              class="mt-3"
-            >Giờ mở cửa</FormLabel>
-            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-              <div
-                class="flex"
-                v-for="schedule in salon.schedules"
-                :key="schedule.id"
-              >
-                <FormInline class="flex-row flex w-1/2">
-                  <FormLabel
-                    htmlFor=""
-                    class="text-left w-20 mt-3"
-                  >
-                    {{ schedule.day_name }}
-                  </FormLabel>
-                  <VueTimepicker v-model="schedule.start_time" />
-                </FormInline>
-                <FormInline class="flex-row flex w-1/2">
-                  <FormLabel
-                    htmlFor=""
-                    class="text-left w-20 mt-3"
-                  >
-                    đến
-                  </FormLabel>
-                  <VueTimepicker v-model="schedule.end_time" />
-                </FormInline>
-              </div>
-            </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
               <FormTextarea
@@ -746,25 +758,64 @@ onMounted(() => {
                 rows="6"
               />
             </div>
+            <FormLabel
+              htmlFor="crud-form-2"
+              class="mt-3"
+            >Giờ mở cửa <i>(Múi Giờ: {{ salon.tz }})</i></FormLabel>
+            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400" v-if="!load">
+              <div
+                class="grid grid-cols-12 gap-4 gap-y-3"
+                v-for="(schedule,index) in salon.schedules"
+                :key="schedule.id"
+              >
+
+                <div class="grid grid-cols-12 gap-4 gap-y-3 col-span-12">
+                  <FormInline class="col-span-6">
+                    <FormLabel
+                      htmlFor=""
+                      class="text-left w-20 mt-3"
+                    >
+                      {{ schedule.day_name }}
+                    </FormLabel>
+                    <VueTimepicker v-model="schedule.start_time" />
+                  </FormInline>
+                  <FormInline class="col-span-6">
+                    <FormLabel
+                      htmlFor=""
+                      class="text-left w-20 mt-3"
+                    >
+                      đến
+                    </FormLabel>
+                    <VueTimepicker v-model="schedule.end_time" />
+                  </FormInline>
+                </div>
+                <!-- BEGIN: Modal Toggle -->
+                <div
+                  class="text-center col-span-12"
+                  v-if="schedule.start_time && schedule.end_time"
+                >
+                  <a
+                    as="a"
+                    href="#"
+                    variant="primary"
+                    @click="(event: MouseEvent) => {
+                      event.preventDefault();
+                      setSelectedSchedule(schedule,index)
+                      setCopyTimeModal(true);
+                    }"
+                    style="color:#bd45c2"
+                  >
+                    Sao chép thời gian sang ngày khác
+                  </a>
+                </div>
+                <!-- END: Modal Toggle -->
+              </div>
+            </div>
+
           </div>
         </div>
-        <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
-          <Button
-            variant="primary"
-            type="button"
-            class="w-full py-3 md:w-52"
-            @click="saveSalon"
-          >
-            Lưu
-          </Button>
-        </div>
-      </div>
-      <!-- END: Salon Info -->
 
-      <!-- BEGIN: service & Service Info -->
-      <div class="p-5 mt-5 intro-y box">
-
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+        <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require">
             <Lucide
               icon="User"
@@ -794,21 +845,21 @@ onMounted(() => {
                     <tbody>
                       <tr
                         v-for="(service, key) in services"
-                        :key="service.id"
-                        :class="service.id"
+                        :key="service.service_id"
+                        :class="service.service_id"
                       >
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
                           <input
                             type="file"
-                            :key="service.id"
-                            :id="'service_img'+service.id"
+                            :key="service.service_id"
+                            :id="'service_img'+service.service_id"
                             @change="($event:Event)=> {
-                      handleFileChange(service.id, 2, $event)
+                      handleFileChange(service.service_id, 2, $event)
                     }"
                             class="hidden"
                           />
                           <label
-                            :for="'service_img'+service.id"
+                            :for="'service_img'+service.service_id"
                             class="input-img-label"
                           >
                             <img
@@ -865,7 +916,7 @@ onMounted(() => {
                           <a
                             style="cursor: pointer"
                             @click="()=>{
-                      deleteService(service.id)
+                      deleteService(service.service_id)
                     }"
                           >
                             <svg
@@ -947,20 +998,20 @@ onMounted(() => {
                       <tr
                         class=""
                         v-for="(staff, key) in staffs"
-                        :key="staff.id"
+                        :key="staff.staff_id"
                       >
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
                           <input
                             type="file"
-                            :key="staff.id"
-                            :id="'staff_img'+staff.id"
+                            :key="staff.staff_id"
+                            :id="'staff_img'+staff.staff_id"
                             @change="($event:Event)=> {
-                      handleFileChange(staff.id, 1, $event)
+                      handleFileChange(staff.staff_id, 1, $event)
                     }"
                             class="hidden"
                           />
                           <label
-                            :for="'staff_img'+staff.id"
+                            :for="'staff_img'+staff.staff_id"
                             class="input-img-label"
                           >
                             <img
@@ -1013,7 +1064,7 @@ onMounted(() => {
                         <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
                           <a
                             style="cursor: pointer"
-                            @click="deleteStaff(staff.id)"
+                            @click="deleteStaff(staff.staff_id)"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1064,8 +1115,19 @@ onMounted(() => {
             </FormInline>
           </div>
         </div>
+
+        <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
+          <Button
+            variant="primary"
+            type="button"
+            class="w-full py-3 md:w-52"
+            @click="saveSalon"
+          >
+            Lưu
+          </Button>
+        </div>
       </div>
-      <!-- END: service & Service  Info -->
+      <!-- END: Salon Info -->
 
     </div>
   </div>
@@ -1157,4 +1219,118 @@ onMounted(() => {
     </Dialog.Panel>
   </Dialog>
   <!-- END: Delete Confirmation Modal -->
+
+  <!-- BEGIN:Copy Time Modal Content -->
+  <Dialog
+    :open="copyTimeModal"
+    @close="
+                  () => {
+                    setCopyTimeModal(false);
+                  }
+                "
+    :initialFocus="sendButtonRef"
+  >
+    <Dialog.Panel>
+      <Dialog.Title>
+        <h2 class="mr-auto text-base font-medium">
+          Chọn ngày muốn sao chép
+        </h2>
+      </Dialog.Title>
+      <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
+        <div class="col-span-12 ">
+          <FormSelect v-model="selectedScheduleIndex">
+            <option
+              v-for="(schedule,index) in salon.schedules"
+              :key="index"
+              :value="index"
+            > {{ schedule.day_name }}</option>
+          </FormSelect>
+        </div>
+        <div
+          class="col-span-6 "
+          v-if="!load"
+        >
+          <FormInline class="flex-row">
+            <FormLabel
+              htmlFor=""
+              class="text-left mt-3"
+            >
+              Từ
+            </FormLabel>
+            <VueTimepicker
+              v-model="selectedSchedule.start_time"
+              id="start_time"
+            />
+          </FormInline>
+
+        </div>
+        <div
+          class="col-span-6 "
+          v-if="!load"
+        >
+          <FormInline class="flex-row">
+            <FormLabel
+              htmlFor=""
+              class="text-left mt-3"
+            >
+              đến
+            </FormLabel>
+            <VueTimepicker
+              v-model="selectedSchedule.end_time"
+              id="end_time"
+            />
+          </FormInline>
+
+        </div>
+        <div class="col-span-12 ">
+          <div class="col-span-12 ">
+            <div
+              class="flex items-center mr-4 mt-3"
+              v-for="(schedule,index) in salon.schedules.filter(item=>item.id!=salon.schedules[selectedScheduleIndex].id)"
+              :key="index"
+            >
+              <label
+                class="mr-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
+                :htmlFor="'customer_skin_color-switch-'+index"
+              >
+                {{ schedule.day_name}}
+              </label>
+              <input
+                class=" ml-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
+                :id="'customer_skin_color-switch-'+index"
+                type="checkbox"
+                v-model="scheduleSeletedList"
+                :value="index"
+              />
+            </div>
+          </div>
+        </div>
+
+      </Dialog.Description>
+      <Dialog.Footer>
+        <Button
+          type="button"
+          variant="outline-secondary"
+          @click="
+                        () => {
+                          setCopyTimeModal(false);
+                        }
+                      "
+          class="w-20 mr-1"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          type="button"
+          class="w-20"
+          ref="{sendButtonRef}"
+          @click="copyTime()"
+        >
+          Send
+        </Button>
+      </Dialog.Footer>
+    </Dialog.Panel>
+  </Dialog>
+  <!-- END: Modal Content -->
 </template>

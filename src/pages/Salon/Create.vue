@@ -588,6 +588,15 @@ const submit = () => {
                 </div>
               </FormInline>
             </div>
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
+              <FormTextarea
+                v-model="dt.salon_description"
+                class="mt-4"
+                aria-placeholder="Thông Tin Giới Thiệu Về Salon"
+                rows="6"
+              />
+            </div>
             <FormLabel
               htmlFor="crud-form-2"
               class="mt-3"
@@ -620,15 +629,7 @@ const submit = () => {
                 </FormInline>
               </div>
             </div>
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
-              <FormTextarea
-                v-model="dt.salon_description"
-                class="mt-4"
-                aria-placeholder="Thông Tin Giới Thiệu Về Salon"
-                rows="6"
-              />
-            </div>
+
           </div>
         </div>
       </div>
