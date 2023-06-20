@@ -14,11 +14,24 @@ import {
   FormHelp,
   FormCheck,
   InputGroup,
-  FormSwitch,
 } from "../../base-components/Form";
 import { SKILLS_NAME } from "../../constant";
 import axios from "axios";
 import { useRoute } from "vue-router";
+import {
+  required,
+  minLength,
+  maxLength,
+  maxValue,
+  minValue,
+  email,
+  url,
+  integer,
+  decimal,
+  helpers,
+requiredIf,
+} from "@vuelidate/validators";
+import { useVuelidate } from "@vuelidate/core";
 
 const route = useRoute();
 var salon_id = route.params.salon_id;
@@ -39,7 +52,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
   successNotification.value = el;
 });
 
-const dt = ref({
+const dt = reactive({
   salon_id: salon_id,
   salon_name: "",
   title: "",
@@ -61,17 +74,54 @@ const dt = ref({
   images: <any>[],
 })
 
+
+const validations = {
+  salon_name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
+      minLength(3)
+    ),
+    maxLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
+      maxLength(25)
+    ),
+  },
+  contact_name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên liên hệ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên liên hệ phải có ít nhất  ${$params.min} ký tự`,
+      minLength(3)
+    ),
+    maxLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên liên hệ chỉ được có tối đa ${$params.max} ký tự `,
+      maxLength(25)
+    ),
+  },
+
+};
+const validate = useVuelidate(validations, dt)
+
+
 const getSalon = async () => {
   const response = await axios.get(`salon/${salon_id}`);
   salon.value = response.data.data;
 
-  dt.value.salon_id = salon_id
-  dt.value.contact_name = salon.value.partner.name
+  dt.salon_id = salon_id
+  dt.contact_name = salon.value.partner.name
   maskedValue.value = salon.value.partner.phone
-  dt.value.contact_phone = salon.value.partner.phone
-  dt.value.salon_name = salon.value.name
-  dt.value.salon_state = salon.value.state
-  dt.value.salon_city = salon.value.city
+  dt.contact_phone = salon.value.partner.phone
+  dt.salon_name = salon.value.name
+  dt.salon_state = salon.value.state
+  dt.salon_city = salon.value.city
 
 };
 
@@ -85,26 +135,26 @@ const saveJob = () => {
 
 const createJob = async () => {
   const fd = new FormData();
-  for (let index in dt.value.images) {
-    fd.append("images", dt.value.images[index]);
+  for (let index in dt.images) {
+    fd.append("images", dt.images[index]);
   }
-  console.log(dt.value);
+  console.log(dt);
 
-  fd.append("salon_name", dt.value.salon_name);
-  fd.append("title", dt.value.title);
-  fd.append("contact_name", dt.value.contact_name);
-  fd.append("contact_phone", dt.value.contact_phone);
-  fd.append("salon_state", dt.value.salon_state);
-  fd.append("salon_city", dt.value.salon_city);
-  fd.append("salon_exists_time", dt.value.salon_exists_time);
-  fd.append("customer_skin_color", dt.value.customer_skin_color);
-  fd.append("salary_form", dt.value.salary_form);
-  fd.append("type_salary", dt.value.type_salary);
-  fd.append("is_shuttle", dt.value.is_shuttle);
-  fd.append("is_there_house", dt.value.is_there_house);
-  fd.append("skills", JSON.stringify(dt.value.skills));
-  fd.append("short_description", dt.value.short_description);
-  fd.append("description", dt.value.description);
+  fd.append("salon_name", dt.salon_name);
+  fd.append("title", dt.title);
+  fd.append("contact_name", dt.contact_name);
+  fd.append("contact_phone", dt.contact_phone);
+  fd.append("salon_state", dt.salon_state);
+  fd.append("salon_city", dt.salon_city);
+  fd.append("salon_exists_time", dt.salon_exists_time);
+  fd.append("customer_skin_color", dt.customer_skin_color);
+  fd.append("salary_form", dt.salary_form);
+  fd.append("type_salary", dt.type_salary);
+  fd.append("is_shuttle", dt.is_shuttle);
+  fd.append("is_there_house", dt.is_there_house);
+  fd.append("skills", JSON.stringify(dt.skills));
+  fd.append("short_description", dt.short_description);
+  fd.append("description", dt.description);
 
   return await axios
     .post(`admin/create-job/${salon_id}`, fd, {
@@ -148,7 +198,7 @@ const submit = () => {
 const previewImages = (e: any) => {
   for (var i = 0; i < e.target.files.length; i++) {
     let file = e.target.files[i];
-    dt.value.images.push(file);
+    dt.images.push(file);
     listImgs.value.push(URL.createObjectURL(file));
   }
 };
@@ -156,12 +206,12 @@ const previewImages = (e: any) => {
 const revokePreview = (index: any) => {
   URL.revokeObjectURL(listImgs.value[index]);
   listImgs.value.splice(index, 1);
-  dt.value.images.splice(index, 1);
+  dt.images.splice(index, 1);
 };
 
 
 const maskphone = () => {
-  dt.value.contact_phone = bindedObject.unmasked;
+  dt.contact_phone = bindedObject.unmasked;
 }
 
 </script>
@@ -212,10 +262,20 @@ const maskphone = () => {
               <FormInput
                 id="crud-form-2"
                 type="text"
-                class="w-full"
                 placeholder="Tên liên hệ"
-                v-model="dt.contact_name"
+                v-model.trim="validate.contact_name.$model"
+                :class="{'border-danger': validate.contact_name.$error,}+'w-full'"
               />
+            
+              <template v-if="validate.contact_name.$error">
+                <div
+                  v-for="(error, index) in validate.contact_name.$errors"
+                  :key="index"
+                  class="mt-2 text-danger"
+                >
+                  {{ error.$message }}
+                </div>
+              </template>
             </div>
 
             <div class="grid-cols-2 gap-6 sm:grid">
@@ -547,6 +607,7 @@ const maskphone = () => {
               <div class="mt-5">
                 <label class="label-require">
                   Tuyển Thợ Có Kinh Nghiệm (Skill) Làm :
+                  {{dt.skills}}
                 </label>
                 <div
                   class="flex"
@@ -557,7 +618,8 @@ const maskphone = () => {
                     class="mr-5 mt-3"
                     :key="key"
                   >
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
                       :id="'skill-'+key"
                       type="checkbox"
                       v-model="dt.skills"
