@@ -29,7 +29,7 @@ import {
   integer,
   decimal,
   helpers,
-requiredIf,
+  requiredIf,
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 
@@ -235,7 +235,6 @@ const maskphone = () => {
             /> Thông tin
           </div>
           <div class="mt-5">
-
             <div>
               <FormLabel
                 htmlFor="crud-form-2"
@@ -251,31 +250,37 @@ const maskphone = () => {
                 v-model="dt.title"
               />
             </div>
-
-            <div class="mt-5">
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
-              >
-                Tên liên hệ
-              </FormLabel>
-              <FormInput
-                id="crud-form-2"
-                type="text"
-                placeholder="Tên liên hệ"
-                v-model.trim="validate.contact_name.$model"
-                :class="{'border-danger': validate.contact_name.$error,}+'w-full'"
-              />
-            
-              <template v-if="validate.contact_name.$error">
-                <div
-                  v-for="(error, index) in validate.contact_name.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
+            <div class="mt-5 grid grid-cols-12 gap-4 gap-y-3">
+              <div class="col-span-6">
+                <FormLabel
+                  htmlFor="crud-form-2"
+                  class="label-require"
                 >
-                  {{ error.$message }}
-                </div>
-              </template>
+                  Tên liên hệ
+                </FormLabel>
+                <FormInput
+                  id="crud-form-2"
+                  type="text"
+                  placeholder="Tên liên hệ"
+                  v-model="dt.contact_name"
+                  disabled
+                />
+              </div>
+              <div class="col-span-6">
+                <FormLabel
+                  htmlFor="crud-form-2"
+                  class="label-require"
+                >
+                  Tên liên hệ
+                </FormLabel>
+                <FormInput
+                  id="crud-form-2"
+                  type="text"
+                  placeholder="Tên liên hệ"
+                  v-model="dt.contact_phone"
+                  disabled
+                />
+              </div>
             </div>
 
             <div class="grid-cols-2 gap-6 sm:grid">
@@ -288,8 +293,19 @@ const maskphone = () => {
                   type="text"
                   class="w-full"
                   placeholder="Tên salon"
-                  v-model="dt.salon_name"
+                  v-model.trim="validate.salon_name.$model"
+                  :class="{'border-danger': validate.salon_name.$error,}+'w-full'"
                 />
+                
+                <template v-if="validate.salon_name.$error">
+                  <div
+                    v-for="(error, index) in validate.salon_name.$errors"
+                    :key="index"
+                    class="mt-2 text-danger"
+                  >
+                    {{ error.$message }}
+                  </div>
+                </template>
               </div>
 
               <div class="mt-5">
