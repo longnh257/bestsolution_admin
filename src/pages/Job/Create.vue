@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, provide, onMounted } from "vue";
+import { reactive, ref, provide, onMounted, watch,toRef,computed } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
 import Notification from "../../base-components/Notification";
@@ -32,6 +32,7 @@ import {
   requiredIf,
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
+import { log } from "console";
 
 const route = useRoute();
 var salon_id = route.params.salon_id;
@@ -76,18 +77,32 @@ const dt = reactive({
 
 
 const validations = {
-  salon_name: {
-    required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
+  title: {
     minLength: helpers.withMessage(
       ({
         $params,
-      }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
+      }) => `Tiêu đề phải có ít nhất  ${$params.min} ký tự`,
+      minLength(10)
+    ),
+    maxLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tiêu đề chỉ được có tối đa ${$params.max} ký tự `,
+      maxLength(240)
+    ),
+  },
+  salon_name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập Tên salon', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên salon phải có ít nhất  ${$params.min} ký tự`,
       minLength(3)
     ),
     maxLength: helpers.withMessage(
       ({
         $params,
-      }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
+      }) => `Tên salon chỉ được có tối đa ${$params.max} ký tự `,
       maxLength(25)
     ),
   },
@@ -106,10 +121,35 @@ const validations = {
       maxLength(25)
     ),
   },
-
+  salon_state: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên tiểu bang', required),
+  },
+  salon_city: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên thành phố', required),
+  },
+  salon_exists_time: {
+    required: helpers.withMessage(() => 'Vui lòng nhập thời gian tồn tại của salon', required),
+    decimal: helpers.withMessage(() => 'Chỉ được nhập số (tối đa 1 chữ số thập phân)', (value: any) => /^(\d+)?(\.\d{1})?$/.test(value)),
+  },
+  salary: {
+    required: helpers.withMessage(() => 'Vui lòng nhập thu nhập trung bình của thợ',requiredIf(() => a.value == 1)),
+    decimal: helpers.withMessage(() => 'Chỉ được nhập số (tối đa 2 chữ số thập phân)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
+  },
+  skills: {
+    required: helpers.withMessage(() => 'Vui lòng nhập nhập kinh nghiệm của thợ', required),
+  },
 };
 const validate = useVuelidate(validations, dt)
-
+let a =ref(1)
+console.log(a);
+watch( () => a.value, (newValue,oldValue) => {
+  console.log(newValue,oldValue);
+  console.log( a.value);
+  validate.value.$touch(); // Mark all fields as touched
+  validate.value.$reset(); // Reset previous validation errors
+  validate.value.$validate(); // Validate all fields
+},   { deep: true, immediate: true } // Watch for deep changes in the object;
+)
 
 const getSalon = async () => {
   const response = await axios.get(`salon/${salon_id}`);
@@ -128,6 +168,8 @@ const getSalon = async () => {
 onMounted(async () => {
   await getSalon();
 });
+
+
 
 const saveJob = () => {
   submit();
@@ -213,7 +255,10 @@ const revokePreview = (index: any) => {
 const maskphone = () => {
   dt.contact_phone = bindedObject.unmasked;
 }
-
+const changeCheck = (a:any) => {
+  alert(a)
+  
+}
 </script>
 
 <template>
@@ -228,28 +273,29 @@ const maskphone = () => {
         v-if="salon"
       >
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            <Lucide
-              icon="Home"
-              class="w-4 h-4 mr-2"
-            /> Thông tin
-          </div>
+
           <div class="mt-5">
-            <div>
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
+            <FormLabel htmlFor="crud-form-1">
+              Tiêu đề
+            </FormLabel>
+            <FormInput
+              id="crud-form-1"
+              type="text"
+              class="w-full"
+              placeholder="Tên salon"
+              v-model.trim="validate.title.$model"
+              :class="{'border-danger': validate.title.$error,}+'w-full'"
+            />
+
+            <template v-if="validate.title.$error">
+              <div
+                v-for="(error, index) in validate.title.$errors"
+                :key="index"
+                class="mt-2 text-danger"
               >
-                Tiêu đề
-              </FormLabel>
-              <FormInput
-                id="crud-form-2"
-                type="text"
-                class="w-full"
-                placeholder="Tiêu đề"
-                v-model="dt.title"
-              />
-            </div>
+                {{ error.$message }}
+              </div>
+            </template>
             <div class="mt-5 grid grid-cols-12 gap-4 gap-y-3">
               <div class="col-span-6">
                 <FormLabel
@@ -296,7 +342,7 @@ const maskphone = () => {
                   v-model.trim="validate.salon_name.$model"
                   :class="{'border-danger': validate.salon_name.$error,}+'w-full'"
                 />
-                
+
                 <template v-if="validate.salon_name.$error">
                   <div
                     v-for="(error, index) in validate.salon_name.$errors"
@@ -332,15 +378,26 @@ const maskphone = () => {
                   htmlFor="crud-form-2"
                   class="label-require"
                 >
-                  Thành phố
+                  Tiểu Bang
                 </FormLabel>
                 <FormInput
-                  id="crud-form-2"
+                  id="crud-form-1"
                   type="text"
                   class="w-full"
-                  placeholder="Thành phố cư trú"
-                  v-model="dt.salon_city"
+                  placeholder="Tên salon"
+                  v-model.trim="validate.salon_state.$model"
+                  :class="{'border-danger': validate.salon_state.$error,}+'w-full'"
                 />
+
+                <template v-if="validate.salon_state.$error">
+                  <div
+                    v-for="(error, index) in validate.salon_state.$errors"
+                    :key="index"
+                    class="mt-2 text-danger"
+                  >
+                    {{ error.$message }}
+                  </div>
+                </template>
               </div>
 
               <div class="mt-5">
@@ -348,15 +405,26 @@ const maskphone = () => {
                   htmlFor="crud-form-2"
                   class="label-require"
                 >
-                  Tiểu Bang
+                  Thành phố
                 </FormLabel>
                 <FormInput
-                  id="crud-form-2"
+                  id="crud-form-1"
                   type="text"
                   class="w-full"
-                  placeholder="Bang cư trú"
-                  v-model="dt.salon_state"
+                  placeholder="Tên salon"
+                  v-model.trim="validate.salon_city.$model"
+                  :class="{'border-danger': validate.salon_city.$error,}+'w-full'"
                 />
+
+                <template v-if="validate.salon_city.$error">
+                  <div
+                    v-for="(error, index) in validate.salon_city.$errors"
+                    :key="index"
+                    class="mt-2 text-danger"
+                  >
+                    {{ error.$message }}
+                  </div>
+                </template>
               </div>
             </div>
 
@@ -365,17 +433,25 @@ const maskphone = () => {
                 <FormLabel class="label-require">
                   Tiệm tồn tại bao lâu?
                 </FormLabel>
-                <InputGroup>
+                <InputGroup :class="{'border-danger': validate.salon_exists_time.$error,}+'w-full'">
                   <FormInput
-                    type="number"
-                    v-model="dt.salon_exists_time"
+                    type="text"
                     aria-describedby="input-group-2"
-                    maxlength="3"
+                    v-model.trim="validate.salon_exists_time.$model"
                   />
                   <InputGroup.Text>
                     Năm
                   </InputGroup.Text>
                 </InputGroup>
+                <template v-if="validate.salon_exists_time.$error">
+                  <div
+                    v-for="(error, index) in validate.salon_exists_time.$errors"
+                    :key="index"
+                    class="mt-2 text-danger"
+                  >
+                    {{ error.$message }}
+                  </div>
+                </template>
               </div>
 
               <div class="mt-5">
@@ -439,11 +515,11 @@ const maskphone = () => {
                 <FormLabel class="label-require">
                   Thu nhập trung bình của thợ
                 </FormLabel>
-                <InputGroup>
+                <InputGroup :class="{'border-danger': validate.salary.$error,}+'w-full'">
                   <FormInput
                     type="number"
-                    v-model="dt.salary"
                     aria-describedby="input-group-2"
+                    v-model.trim="validate.salary.$model"
                   />
                   <InputGroup.Text class=" p-0">
                     <select
@@ -456,6 +532,15 @@ const maskphone = () => {
                     </select>
                   </InputGroup.Text>
                 </InputGroup>
+                <template v-if="validate.salary.$error">
+                  <div
+                    v-for="(error, index) in validate.salary.$errors"
+                    :key="index"
+                    class="mt-2 text-danger"
+                  >
+                    {{ error.$message }}
+                  </div>
+                </template>
               </div>
 
               <div class="mt-5">
@@ -464,12 +549,13 @@ const maskphone = () => {
                 </FormLabel>
                 <div class="flex flex-col mt-2 sm:flex-row">
                   <FormCheck class="mr-4">
-                    <FormCheck.Input
+                    <input
                       id="radio-switch-4"
                       type="radio"
                       name="horizontal_radio_button"
                       value="1"
-                      v-model="dt.salary_form"
+                      v-model="a"
+                      @change="()=> changeCheck(a) "
                     />
                     <FormCheck.Label htmlFor="radio-switch-4">
                       Bao Lương
@@ -477,12 +563,13 @@ const maskphone = () => {
                   </FormCheck>
 
                   <FormCheck class="mt-2 mr-4 sm:mt-0">
-                    <FormCheck.Input
+                    <input
                       id="radio-switch-5"
                       type="radio"
                       name="horizontal_radio_button"
                       value="2"
-                      v-model="dt.salary_form"
+                      v-model="a"
+                      @change="()=> changeCheck(a) "
                     />
                     <FormCheck.Label htmlFor="radio-switch-5">
                       Ăn Chia 6/4
@@ -490,12 +577,12 @@ const maskphone = () => {
                   </FormCheck>
 
                   <FormCheck class="mt-2 mr-4 sm:mt-0">
-                    <FormCheck.Input
+                    <input
                       id="radio-switch-6"
                       type="radio"
                       name="horizontal_radio_button"
                       value="3"
-                      v-model="dt.salary_form"
+                      v-model="a"
                     />
                     <FormCheck.Label htmlFor="radio-switch-6">
                       Thương Lượng
@@ -623,8 +710,16 @@ const maskphone = () => {
               <div class="mt-5">
                 <label class="label-require">
                   Tuyển Thợ Có Kinh Nghiệm (Skill) Làm :
-                  {{dt.skills}}
                 </label>
+                <template v-if="validate.skills.$error">
+                  <div
+                    v-for="(error, index) in validate.skills.$errors"
+                    :key="index"
+                    class="mt-2 text-danger"
+                  >
+                    {{ error.$message }}
+                  </div>
+                </template>
                 <div
                   class="flex"
                   style=" flex-flow: wrap;"
@@ -638,7 +733,7 @@ const maskphone = () => {
                       class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
                       :id="'skill-'+key"
                       type="checkbox"
-                      v-model="dt.skills"
+                      v-model.trim="validate.skills.$model"
                       :value="key"
                     />
                     <FormCheck.Label :htmlFor="'skill-'+key">
