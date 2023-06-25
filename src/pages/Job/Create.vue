@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, provide, onMounted, watch,toRef,computed } from "vue";
+import { reactive, ref, provide, onMounted, watch, toRef, computed } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
 import Notification from "../../base-components/Notification";
@@ -33,6 +33,7 @@ import {
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import { log } from "console";
+import { isImage } from "../../utils/helper";
 
 const route = useRoute();
 var salon_id = route.params.salon_id;
@@ -41,7 +42,6 @@ const bindedObject = reactive({ unmasked: "" });
 const maskedValue = ref();
 let listImgs: any = ref([]);
 const salon = ref()
-
 let err = ref("");
 let scc = ref("");
 const errorNotification = ref<NotificationElement>();
@@ -132,24 +132,14 @@ const validations = {
     decimal: helpers.withMessage(() => 'Chỉ được nhập số (tối đa 1 chữ số thập phân)', (value: any) => /^(\d+)?(\.\d{1})?$/.test(value)),
   },
   salary: {
-    required: helpers.withMessage(() => 'Vui lòng nhập thu nhập trung bình của thợ',requiredIf(() => a.value == 1)),
+    required: helpers.withMessage(() => 'Vui lòng nhập thu nhập trung bình của thợ', requiredIf(() => dt.salary_form == '1')),
     decimal: helpers.withMessage(() => 'Chỉ được nhập số (tối đa 2 chữ số thập phân)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
   },
   skills: {
-    required: helpers.withMessage(() => 'Vui lòng nhập nhập kinh nghiệm của thợ', required),
+    required: helpers.withMessage(() => 'Vui lòng nhập kinh nghiệm của thợ', required),
   },
 };
 const validate = useVuelidate(validations, dt)
-let a =ref(1)
-console.log(a);
-watch( () => a.value, (newValue,oldValue) => {
-  console.log(newValue,oldValue);
-  console.log( a.value);
-  validate.value.$touch(); // Mark all fields as touched
-  validate.value.$reset(); // Reset previous validation errors
-  validate.value.$validate(); // Validate all fields
-},   { deep: true, immediate: true } // Watch for deep changes in the object;
-)
 
 const getSalon = async () => {
   const response = await axios.get(`salon/${salon_id}`);
@@ -168,8 +158,6 @@ const getSalon = async () => {
 onMounted(async () => {
   await getSalon();
 });
-
-
 
 const saveJob = () => {
   submit();
@@ -207,7 +195,6 @@ const createJob = async () => {
 }
 
 const publicJob = async (id: any) => {
-
   return await axios
     .post(`admin/publish-job`, {
       id: id,
@@ -216,6 +203,18 @@ const publicJob = async (id: any) => {
 }
 
 const submit = () => {
+  let error = false
+  validate.value.$touch()
+
+  if (validate.value.$invalid) {
+    error = true
+  }
+
+  if (error) {
+    err.value = 'Một số thông tin không hợp lệ vui lòng kiểm tra lại !'
+    errorNotification.value?.showToast();
+    return;
+  }
   createJob()
     .then(function (response) {
       publicJob(response.data.data.id)
@@ -231,17 +230,28 @@ const submit = () => {
 
     })
     .catch(function (error) {
-      console.log(error.response);
       err.value = error.response.data.message;
       errorNotification.value?.showToast();
     });
 };
 
+
+
 const previewImages = (e: any) => {
+  let imgErr = false
   for (var i = 0; i < e.target.files.length; i++) {
     let file = e.target.files[i];
-    dt.images.push(file);
-    listImgs.value.push(URL.createObjectURL(file));
+    if (isImage(file)) {
+      console.log(1);
+      dt.images.push(file);
+      listImgs.value.push(URL.createObjectURL(file));
+    } else {
+      imgErr = true
+    }
+  }
+  if (imgErr) {
+    err.value = "Một số file không hợp lệ chỉ được nhập hình ảnh có đuôi jpg, jpeg, png"
+    errorNotification.value?.showToast();
   }
 };
 
@@ -254,10 +264,6 @@ const revokePreview = (index: any) => {
 
 const maskphone = () => {
   dt.contact_phone = bindedObject.unmasked;
-}
-const changeCheck = (a:any) => {
-  alert(a)
-  
 }
 </script>
 
@@ -275,7 +281,10 @@ const changeCheck = (a:any) => {
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
 
           <div class="mt-5">
-            <FormLabel htmlFor="crud-form-1">
+            <FormLabel
+              htmlFor="crud-form-1"
+              class="label-require"
+            >
               Tiêu đề
             </FormLabel>
             <FormInput
@@ -460,7 +469,8 @@ const changeCheck = (a:any) => {
                 </FormLabel>
                 <div class="flex flex-col mt-2 sm:flex-row">
                   <FormCheck class="mr-4">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="customer_skin_color-switch-4"
                       type="radio"
                       name="customer_skin_color"
@@ -472,7 +482,8 @@ const changeCheck = (a:any) => {
                     </FormCheck.Label>
                   </FormCheck>
                   <FormCheck class="mt-2 mr-4 sm:mt-0">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="customer_skin_color-switch-5"
                       type="radio"
                       name="customer_skin_color"
@@ -484,7 +495,8 @@ const changeCheck = (a:any) => {
                     </FormCheck.Label>
                   </FormCheck>
                   <FormCheck class="mt-2 mr-4 sm:mt-0">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="customer_skin_color-switch-6"
                       type="radio"
                       name="customer_skin_color"
@@ -496,7 +508,8 @@ const changeCheck = (a:any) => {
                     </FormCheck.Label>
                   </FormCheck>
                   <FormCheck class="mt-2 mr-4 sm:mt-0">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="customer_skin_color-switch-7"
                       type="radio"
                       name="customer_skin_color"
@@ -550,12 +563,12 @@ const changeCheck = (a:any) => {
                 <div class="flex flex-col mt-2 sm:flex-row">
                   <FormCheck class="mr-4">
                     <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="radio-switch-4"
                       type="radio"
                       name="horizontal_radio_button"
                       value="1"
-                      v-model="a"
-                      @change="()=> changeCheck(a) "
+                      v-model="dt.salary_form"
                     />
                     <FormCheck.Label htmlFor="radio-switch-4">
                       Bao Lương
@@ -564,12 +577,12 @@ const changeCheck = (a:any) => {
 
                   <FormCheck class="mt-2 mr-4 sm:mt-0">
                     <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="radio-switch-5"
                       type="radio"
                       name="horizontal_radio_button"
                       value="2"
-                      v-model="a"
-                      @change="()=> changeCheck(a) "
+                      v-model="dt.salary_form"
                     />
                     <FormCheck.Label htmlFor="radio-switch-5">
                       Ăn Chia 6/4
@@ -578,11 +591,12 @@ const changeCheck = (a:any) => {
 
                   <FormCheck class="mt-2 mr-4 sm:mt-0">
                     <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="radio-switch-6"
                       type="radio"
                       name="horizontal_radio_button"
                       value="3"
-                      v-model="a"
+                      v-model="dt.salary_form"
                     />
                     <FormCheck.Label htmlFor="radio-switch-6">
                       Thương Lượng
@@ -599,7 +613,8 @@ const changeCheck = (a:any) => {
                 </FormLabel>
                 <div class=" mt-2">
                   <FormCheck class="mt-2">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="shutter-switch2"
                       type="radio"
                       name="shutter-switch"
@@ -612,7 +627,8 @@ const changeCheck = (a:any) => {
                   </FormCheck>
 
                   <FormCheck class="mt-2">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="shutter-switch1"
                       type="radio"
                       name="shutter-switch"
@@ -632,7 +648,8 @@ const changeCheck = (a:any) => {
                 </FormLabel>
                 <div class="mt-2">
                   <FormCheck class="mt-2">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="is_there_house1"
                       type="radio"
                       name="is_there_house"
@@ -645,7 +662,8 @@ const changeCheck = (a:any) => {
                   </FormCheck>
 
                   <FormCheck class="mt-2">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="is_there_house"
                       type="radio"
                       name="is_there_house"
@@ -665,7 +683,8 @@ const changeCheck = (a:any) => {
                 </label>
                 <div class=" ">
                   <FormCheck class="mt-2 mr-5">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="gender-switch"
                       type="radio"
                       name="gender-switch"
@@ -678,7 +697,8 @@ const changeCheck = (a:any) => {
                   </FormCheck>
 
                   <FormCheck class="mt-2 mr-5">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="gender-switch-1"
                       type="radio"
                       name="gender-switch"
@@ -691,7 +711,8 @@ const changeCheck = (a:any) => {
                   </FormCheck>
 
                   <FormCheck class="mt-2 mr-5">
-                    <FormCheck.Input
+                    <input
+                      class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;[type='radio']]:checked:bg-primary [&amp;[type='radio']]:checked:border-primary [&amp;[type='radio']]:checked:border-opacity-10 [&amp;[type='checkbox']]:checked:bg-primary [&amp;[type='checkbox']]:checked:border-primary [&amp;[type='checkbox']]:checked:border-opacity-10 [&amp;:disabled:not(:checked)]:bg-slate-100 [&amp;:disabled:not(:checked)]:cursor-not-allowed [&amp;:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&amp;:disabled:checked]:opacity-70 [&amp;:disabled:checked]:cursor-not-allowed [&amp;:disabled:checked]:dark:bg-darkmode-800/50"
                       id="gender-switch-2"
                       type="radio"
                       name="gender-switch"

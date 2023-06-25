@@ -227,14 +227,14 @@ const normalizeInput = (value: any, previousValue: any) => {
 }
 
 const convertToTZ = (date: any, tz: string) => {
-      
+
       if (!date) return null
       const input = moment(date).format('YYYY-MM-DD HH:mm:ss')
       const fmt = "YYYY-MM-DD HH:mm:ss";  // must match the input
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
       const m = moment.tz(input, fmt, tz)
       const s = m.tz('UTC')
-      
+
       return s.format('HH:mm:ss')
 }
 
@@ -261,7 +261,19 @@ const getTimeZoneByLocation = (lat: string, lng: string) => {
       })
 }
 
+const isImage = (value: File | null): boolean => {
+      if (!value) {
+            return true; // Skip validation if no file is selected
+      }
+
+      const allowedExtensions = ['jpg', 'jpeg', 'png'];
+      const fileExtension = value.name.split('.').pop()?.toLowerCase();
+
+      return allowedExtensions.includes(fileExtension || '');
+};
+
 export {
+      isImage,
       getTimeZoneByLocation,
       convertToTZ,
       normalizeInput,
