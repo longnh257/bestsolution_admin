@@ -21,10 +21,12 @@ interface SalonCreateState {
     data: {
         name: string,
         phone: string,
+        phone_val: string,
         password: string,
         salon_name: string,
         salon_email: string,
         salon_phone: string,
+        salon_phone_val: string,
         salon_address: string,
         salon_description: string,
         salon_number_employees: string,
@@ -132,10 +134,12 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
             data: {
                 name: "",
                 phone: "",
+                phone_val: "",
                 password: "",
                 salon_name: "",
                 salon_email: "",
                 salon_phone: "",
+                salon_phone_val: "",
                 salon_address: "",
                 salon_description: "",
                 salon_number_employees: "",
@@ -223,7 +227,6 @@ export const useSalonCreateStore = defineStore("SalonCreate", {
 
         async createSalon() {
 
-            console.log("create salon ");
             const fd = new FormData();
 
             let staffs = this.data.staffs.filter(item => {

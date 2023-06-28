@@ -5,7 +5,7 @@ import Lucide from "../../base-components/Lucide";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Table from "../../base-components/Table";
-import { normalizeInput, getTimeZoneByLocation, isImage } from "../../utils/helper";
+import { normalizeInput, getTimeZoneByLocation } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
 import {
@@ -35,13 +35,15 @@ import {
   integer,
   decimal,
   helpers,
-  requiredIf,
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import addURL from "../../assets/images/add.png";
 import axios from "axios";
 import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
 import 'vue3-timepicker/dist/VueTimepicker.css'
+
+
+
 const SalonListStore = useSalonListStore();
 const SalonCreateStore = useSalonCreateStore();
 SalonCreateStore.resetData()
@@ -50,6 +52,8 @@ const bindedObject = reactive({ unmasked: "" });
 
 let listImgs: any = ref([]);
 let showPassword = ref(true);
+
+
 let err = ref("")
 let scc = ref("")
 const errorNotification = ref<NotificationElement>();
@@ -136,164 +140,97 @@ const services = reactive(
 );
 
 
-const scheduleValdiate = (value, obj) => {
-
-  if (obj.start_time && !obj.end_time)
-    return true// Validation passes
-  if (obj.start_time > obj.end_time)
-    return false; // Validation fails
-  return true; // Validation passes
-};
-
 const validations = {
-  dt: {
-    name: {
-      required: helpers.withMessage(() => 'Vui lòng nhập tên chủ salon', required)
-    },
-    phone_val: {
-      required: helpers.withMessage(() => 'Vui lòng nhập sđt đăng nhập', required),
-      minLength: helpers.withMessage(
-        ({
-          $params,
-        }) => `Số điện thoại phải là 10 số`,
-        minLength(10)
-      ),
-    },
-    password: {
-      required: helpers.withMessage(() => 'Vui lòng nhập mật khẩu', required),
-      minLength: helpers.withMessage(
-        ({
-          $params,
-        }) => `Mật khẩu phải có ít nhất  ${$params.min} ký tự`,
-        minLength(6)
-      ),
-      maxLength: helpers.withMessage(
-        ({
-          $params,
-        }) => `Mật khẩu chỉ được có tối đa ${$params.max} ký tự `,
-        maxLength(64)
-      ),
-    },
-    salon_name: {
-      required: helpers.withMessage(() => 'Vui lòng nhập tên salon', required)
-    },
-    salon_address: {
-      required: helpers.withMessage(() => 'Địa chỉ salon là bắt buộc, tất cả các thông tin như tiểu bang, thành phố, múi giờ sẽ được lấy từ địa chỉ', required)
-    },
-    salon_phone_val: {
-      required: helpers.withMessage(() => 'Vui lòng nhập sđt salon', required),
-      minLength: helpers.withMessage(
-        ({
-          $params,
-        }) => `Số điện thoại phải là 10 số`,
-        minLength(14)
-      ),
-    },
-    salon_email: {
-      email: helpers.withMessage(() => 'Email không hợp lệ', email),
-    },
-    salon_description: {
-      maxLength: helpers.withMessage(() => 'Mô tả chỉ được nhập tối đa 1000 ký tự', maxLength(1000)),
-    },
-
-    schedules: {
-      $each: helpers.forEach({
-        start_time: {
-          required: helpers.withMessage(() => 'Vui lòng nhập giờ mở cửa', requiredIf((val: any, obj: any) => obj.end_time)),
-        },
-        end_time: {
-          required: helpers.withMessage(() => 'Vui lòng nhập giờ đóng cửa', requiredIf((val: any, obj: any) => obj.start_time)),
-          scheduleValdiate: helpers.withMessage(() => 'Giờ mở cửa không được lớn hơn giờ đóng cửa', scheduleValdiate),
-        },
-      }
-      )
-    },
-
+  name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
+      minLength(3)
+    ),
+    maxLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
+      maxLength(25)
+    ),
   },
-
-  staffs: {
-    $each: helpers.forEach({
-      name: {
-        required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
-        minLength: helpers.withMessage(
-          ({
-            $params,
-          }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
-          minLength(3)
-        ),
-        maxLength: helpers.withMessage(
-          ({
-            $params,
-          }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
-          maxLength(25)
-        ),
-      },
-      phone_val: {
-        required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
-        minLength: helpers.withMessage(
-          ({
-            $params,
-          }) => `Số điện thoại phải là 10 số`,
-          minLength(14)
-        ),
-      },
-    }
-    )
+  phone_val: {
+    required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Số điện thoại phải là 10 số`,
+      minLength(14)
+    ),
   },
-
-  services: {
-    $each: helpers.forEach({
-      name: {
-        required: helpers.withMessage(() => 'Vui lòng nhập tên dịch vụ', required),
-        minLength: helpers.withMessage(
-          ({
-            $params,
-          }) => `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
-          minLength(3)
-        ),
-        maxLength: helpers.withMessage(
-          ({
-            $params,
-          }) => `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
-          maxLength(25)
-        ),
-      },
-      price: {
-        required: helpers.withMessage(() => 'Vui lòng nhập giá dịch vụ', required),
-        decimal: helpers.withMessage(() => 'Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
-        minValue: helpers.withMessage(
-          ({
-            $params,
-          }) => `Giá dịch vụ phải > 0`,
-          minValue(0.01)
-        ),
-        maxValue: helpers.withMessage(
-          ({
-            $params,
-          }) => `Giá dịch vụ phải < 100000`,
-          maxValue(99999.99),
-        ),
-      },
-    }
-    )
-  }
 
 };
 
-const validate = useVuelidate(validations, {
-  dt,
-  staffs,
-  services,
-});
+const servicesValidations = {
+  name: {
+    required: helpers.withMessage(() => 'Vui lòng nhập tên dịch vụ', required),
+    minLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
+      minLength(3)
+    ),
+    maxLength: helpers.withMessage(
+      ({
+        $params,
+      }) => `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
+      maxLength(25)
+    ),
+  },
+  price: {
+    required: helpers.withMessage(() => 'Vui lòng nhập giá dịch vụ', required),
+    decimal: helpers.withMessage(() => 'Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
+    minValue: helpers.withMessage(
+      ({
+        $params,
+      }) => `Giá dịch vụ phải > 0`,
+      minValue(0.01)
+    ),
+    maxValue: helpers.withMessage(
+      ({
+        $params,
+      }) => `Giá dịch vụ phải < ${$params.max}`,
+      maxValue(99999.99),
+    ),
+  },
+
+};
+
+// Use Vuelidate
+const validate = <any>[]
+
+staffs.map((item) => {
+  validate.push(useVuelidate(validations, item))
+})
+const servicesValidate = <any>[]
+
+services.map((item) => {
+  servicesValidate.push(useVuelidate(servicesValidations, item))
+})
+
 
 const addStaff = () => {
   staff_id.value = staff_id.value + 1
   staffs.push({ staff_id: staff_id.value, name: "", phone: "", phone_val: "", avatar: '' })
+  validate.push(useVuelidate(validations, reactive({ staff_id: staff_id.value, name: "", phone: "", phone_val: "", avatar: '' })))
+  for (var i = 0; i < validate.length; i++) {
+    validate[i].value.$touch()
+  }
 }
-
 const addService = () => {
   service_id.value = service_id.value + 1
   services.push({ service_id: service_id.value, name: "", price: "", avatar: '' });
+  servicesValidate.push(useVuelidate(servicesValidations, reactive({ service_id: service_id.value, name: "", price: "", avatar: '' })))
+  for (var i = 0; i < servicesValidate.length; i++) {
+    servicesValidate[i].value.$touch()
+  }
 }
 
 const deleteStaff = (id: any) => {
@@ -309,14 +246,13 @@ const deleteStaff = (id: any) => {
           console.log(err);
         })
       staffs.splice(i, 1);
-      validate.value.$validate()
+      validate.splice(i, 1)
     }
   } else {
     staffs[i].name = ""
     staffs[i].phone = ""
   }
 }
-
 
 const deleteService = (id: any) => {
   const i = services.findIndex((staff) => staff.service_id === id);
@@ -331,7 +267,7 @@ const deleteService = (id: any) => {
           console.log(err);
         })
       services.splice(i, 1)
-      validate.value.$validate()
+      servicesValidate.splice(i, 1)
     }
   } else {
     services[i].name = ""
@@ -339,21 +275,11 @@ const deleteService = (id: any) => {
   }
 }
 
-
 const previewImages = (e: any) => {
-  let imgErr = false
   for (var i = 0; i < e.target.files.length; i++) {
     let file = e.target.files[i];
-    if (isImage(file)) {
-      dt.images.push(file);
-      listImgs.value.push(URL.createObjectURL(file));
-    } else {
-      imgErr = true
-    }
-  }
-  if (imgErr) {
-    err.value = "Một số file không hợp lệ chỉ được nhập hình ảnh có đuôi jpg, jpeg, png"
-    errorNotification.value?.showToast();
+    dt.images.push(file);
+    listImgs.value.push(URL.createObjectURL(file));
   }
 };
 
@@ -383,6 +309,7 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
       }).catch((error) => {
         err.value = "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png"
         errorNotification.value?.showToast();
+        console.log(err);
       })
   }
 }
@@ -394,21 +321,32 @@ const saveSalon = () => {
 const submit = () => {
   dt.staffs = staffs
   dt.services = services
-
   let error = false
-  validate.value.$touch()
-  if (validate.value.$invalid) {
-    error = true
+  for (var i = 0; i < validate.length; i++) {
+    validate[i].value.$touch()
+  }
+  for (var i = 0; i < servicesValidate.length; i++) {
+    servicesValidate[i].value.$touch()
+  }
+  for (var i = 0; i < validate.length; i++) {
+    if (validate[i].value.$invalid) {
+      error = true
+      break;
+    }
+  }
+  for (var i = 0; i < servicesValidate.length; i++) {
+    if (servicesValidate[i].value.$invalid) {
+      error = true
+      break;
+    }
   }
 
   if (error) {
-    err.value = 'Một số thông tin không hợp lệ, vui lòng kiểm tra lại'
+    err.value = 'Thông tin thợ hoặc dịch vụ không hợp lệ'
     errorNotification.value?.showToast();
     return;
   }
 
-  console.log();
-  
 
   SalonCreateStore.createSalon().then(function (response: any) {
     if (response.staff_require) {
@@ -416,13 +354,20 @@ const submit = () => {
       errorNotification.value?.showToast();
       return;
     }
-
     if (response.services_require) {
       err.value = 'Vui lòng nhập ít nhất 1 dịch vụ'
       errorNotification.value?.showToast();
       return;
     }
     SalonListStore.approveSalon(response.data.data.admin.id)
+
+    /*  axios
+       .post(`admin/send-mail-create-new-owner`, {
+         salon_name: dt.salon_name,
+         phone: dt.phone,
+         password: dt.password,
+         recipient_email: 'chunglygiabao@gmail.com',
+       }) */
 
     scc.value = "Tạo Salon Thành Công !"
     successNotification.value?.showToast()
@@ -442,12 +387,12 @@ const submit = () => {
 const copyTimeModal = ref(false);
 const sendButtonRef = ref(null);
 
-const setCopyTimeModal = (value: any) => {
+const setCopyTimeModal = (value) => {
   copyTimeModal.value = value;
 };
 
 
-let selectedSchedule = ref({ day: 0, day_name: 'Thứ 2', end_time: '8:00', start_time: '18:30' })
+let selectedSchedule = ref({ day: 0, day_name: '', end_time: '', start_time: '' })
 let selectedScheduleIndex = ref(0)
 
 const setSelectedSchedule = (schedule: any, index: any) => {
@@ -465,12 +410,13 @@ watch(selectedScheduleIndex, (newValue) => {
     load.value = false
   }, 1);
 });
-
 const copyTime = () => {
+  console.log(scheduleSeletedList.value);
   dt.schedules.filter(item => scheduleSeletedList.value.includes(item.day)).map(item => {
     item.start_time = selectedSchedule.value.start_time
     item.end_time = selectedSchedule.value.end_time
   })
+  console.log(dt.schedules);
   load.value = true
   setTimeout(() => {
     load.value = false
@@ -502,21 +448,11 @@ const copyTime = () => {
               <FormInput
                 id="crud-form-1"
                 type="text"
+                class="w-full"
                 placeholder="Tên chủ salon"
-                v-model.trim="validate.dt.name.$model"
-                :class="{'w-full':true,'border-danger': validate.dt.name.$error,}"
+                v-model="dt.name"
               />
-              <template v-if="validate.dt.name.$error">
-                <div
-                  v-for="(error, index) in validate.dt.name.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
-
             <div class="mt-3">
               <FormLabel
                 htmlFor="crud-form-2"
@@ -530,18 +466,7 @@ const copyTime = () => {
                 v-maska="bindedObject"
                 data-maska="##########"
                 @change="maskphone(`phone`)"
-                v-model.trim="validate.dt.phone_val.$model"
-                :class="{'w-full':true,'border-danger': validate.dt.phone_val.$error,}"
               />
-              <template v-if="validate.dt.phone_val.$error">
-                <div
-                  v-for="(error, index) in validate.dt.phone_val.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
             <div class="mt-3">
               <FormLabel
@@ -552,15 +477,14 @@ const copyTime = () => {
                 <FormInput
                   id="crud-form-3"
                   type="text"
-                  v-model.trim="validate.dt.password.$model"
-                  :class="{'w-full':true,'border-danger': validate.dt.password.$error,}"
+                  v-model="dt.password"
+                  class="w-full"
                   placeholder="Mật Khẩu"
                 />
 
                 <InputGroup.Text
                   id="input-group-1"
                   style="cursor: pointer"
-                  :class="{'border-danger': validate.dt.password.$error,}"
                   @click="showPassword = !showPassword"
                 >
                   <Lucide icon="Eye" />
@@ -570,29 +494,18 @@ const copyTime = () => {
                 <FormInput
                   id="crud-form-3"
                   type="password"
-                  v-model.trim="validate.dt.password.$model"
-                  :class="{'w-full':true,'border-danger': validate.dt.password.$error,}"
+                  v-model="dt.password"
+                  class="w-full"
                   placeholder="Mật Khẩu"
                 />
                 <InputGroup.Text
                   id="input-group-1"
                   style="cursor: pointer"
-                  :class="{'border-danger': validate.dt.password.$error,}"
                   @click="showPassword = !showPassword"
                 >
                   <Lucide icon="EyeOff" />
                 </InputGroup.Text>
               </InputGroup>
-
-              <template v-if="validate.dt.password.$error">
-                <div
-                  v-for="(error, index) in validate.dt.password.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
           </div>
         </div>
@@ -618,18 +531,8 @@ const copyTime = () => {
                 type="text"
                 class="w-full"
                 placeholder="Tên chủ salon"
-                v-model.trim="validate.dt.salon_name.$model"
-                :class="{'w-full':true,'border-danger': validate.dt.salon_name.$error,}"
+                v-model="dt.salon_name"
               />
-              <template v-if="validate.dt.salon_name.$error">
-                <div
-                  v-for="(error, index) in validate.dt.salon_name.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
             <div class="mt-3">
               <FormLabel
@@ -654,16 +557,6 @@ const copyTime = () => {
                 @place_changed="getAddressData"
               >
               </GMapAutocomplete>
-
-              <template v-if="validate.dt.salon_address.$error">
-                <div
-                  v-for="(error, index) in validate.dt.salon_address.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
             <div class="mt-3">
               <FormLabel
@@ -678,38 +571,17 @@ const copyTime = () => {
                 v-maska="bindedObject"
                 data-maska="(###) ###-####"
                 @change="maskphone(`salon_phone`)"
-                v-model.trim="validate.dt.salon_phone_val.$model"
-                :class="{'w-full':true,'border-danger': validate.dt.salon_phone_val.$error,}"
               />
-              <template v-if="validate.dt.salon_phone_val.$error">
-                <div
-                  v-for="(error, index) in validate.dt.salon_phone_val.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Email</FormLabel>
               <FormInput
                 id="crud-form-2"
                 type="email"
+                v-model="dt.salon_email"
                 class="w-full"
                 placeholder="Email"
-                v-model.trim="validate.dt.salon_email.$model"
-                :class="{'w-full':true,'border-danger': validate.dt.salon_email.$error,}"
               />
-              <template v-if="validate.dt.salon_email.$error">
-                <div
-                  v-for="(error, index) in validate.dt.salon_email.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
 
             <div class="mt-3">
@@ -791,28 +663,8 @@ const copyTime = () => {
                     <VueTimepicker v-model="schedule.end_time" />
                   </FormInline>
                 </div>
-                <!-- BEGIN: Modal Toggle -->
-                <div class="text-center col-span-12">
-                  <template v-if="validate.dt.schedules.$each.$response.$errors[index].end_time">
-                    <div
-                      v-for="(error, i) in validate.dt.schedules.$each.$response.$errors[index].end_time"
-                      :key="i"
-                      class="mt-2 text-danger"
-                    >
-                      {{ error.$message }}
-                    </div>
-                  </template>
-                  <template v-if="validate.dt.schedules.$each.$response.$errors[index].start_time">
-                    <div
-                      v-for="(error, i) in validate.dt.schedules.$each.$response.$errors[index].start_time"
-                      :key="i"
-                      class="mt-2 text-danger"
-                    >
-                      {{ error.$message }}
-                    </div>
-                  </template>
-                </div>
-                <div
+                        <!-- BEGIN: Modal Toggle -->
+                        <div
                   class="text-center col-span-12"
                   v-if="schedule.start_time && schedule.end_time"
                 >
@@ -836,28 +688,18 @@ const copyTime = () => {
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
               <FormTextarea
+                v-model="dt.salon_description"
                 class="mt-4"
                 aria-placeholder="Thông Tin Giới Thiệu Về Salon"
                 rows="6"
-                v-model.trim="validate.dt.salon_description.$model"
-                :class="{'w-full':true,'border-danger': validate.dt.salon_description.$error,}"
               />
-              <template v-if="validate.dt.salon_description.$error">
-                <div
-                  v-for="(error, index) in validate.dt.salon_description.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
             </div>
           </div>
         </div>
       </div>
       <!-- END: Salon Info -->
 
-      <!-- BEGIN: STaffs & Service Info -->
+      <!-- BEGIN: service & Service Info -->
       <div class="p-5 mt-5 intro-y box">
 
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
@@ -917,14 +759,15 @@ const copyTime = () => {
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
-                            v-model="service.name"
+                            v-model.trim="servicesValidate[key].value.name.$model"
                             type="text"
                             name="name"
-                            :class="{'border-danger': validate.services.$each.$response.$errors[key].name[0]}"
+                            :class="{'border-danger': servicesValidate[key].value.name.$error,}"
+                            @change="()=> {service.name = servicesValidate[key].value.name.$model}"
                           />
-                          <template v-if="validate.services.$each.$response.$errors[key].name">
+                          <template v-if="servicesValidate[key].value.name.$error">
                             <div
-                              v-for="(error, index) in validate.services.$each.$response.$errors[key].name"
+                              v-for="(error, index) in servicesValidate[key].value.name.$errors"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -936,18 +779,19 @@ const copyTime = () => {
                           <InputGroup>
                             <FormInput
                               id="validation-form-1"
-                              v-model="service.price"
+                              v-model.trim="servicesValidate[key].value.price.$model"
                               type="number"
                               step="0.01"
-                              :class="{'border-danger': validate.services.$each.$response.$errors[key].price[0]}"
+                              :class="{'border-danger': servicesValidate[key].value.price.$error,}"
+                              @change="()=> {service.price = servicesValidate[key].value.price.$model}"
                             />
                             <InputGroup.Text id="input-group-1">
                               $
                             </InputGroup.Text>
                           </InputGroup>
-                          <template v-if="validate.services.$each.$response.$errors[key].price">
+                          <template v-if="servicesValidate[key].value.price.$error">
                             <div
-                              v-for="(error, index) in validate.services.$each.$response.$errors[key].price"
+                              v-for="(error, index) in servicesValidate[key].value.price.$errors"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -1067,14 +911,15 @@ const copyTime = () => {
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
-                            v-model="staff.name"
+                            v-model.trim="validate[key].value.name.$model"
                             type="text"
                             name="name"
-                            :class="{'border-danger': validate.staffs.$each.$response.$errors[key].name[0]}"
+                            @change="()=> {staff.name = validate[key].value.name.$model}"
+                            :class="{'border-danger': validate[key].value.name.$error,}"
                           />
-                          <template v-if="validate.staffs.$each.$response.$errors[key].name">
+                          <template v-if="validate[key].value.name.$error">
                             <div
-                              v-for="(error, index) in validate.staffs.$each.$response.$errors[key].name"
+                              v-for="(error, index) in validate[key].value.name.$errors"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -1088,14 +933,14 @@ const copyTime = () => {
                             type="text"
                             v-maska="bindedObject"
                             data-maska="(###) ###-####"
-                            v-model="staff.phone_val"
+                            v-model.trim="validate[key].value.phone_val.$model"
                             @change="maskphone('',true,key)"
-                            :class="{'border-danger': validate.staffs.$each.$response.$errors[key].phone_val[0],
-                            'border-slate-200':!validate.staffs.$each.$response.$errors[key].phone_val[0],}"
+                            :class="{'border-danger': validate[key].value.phone_val.$error,
+                            'border-slate-200':!validate[key].value.phone_val.$error,}"
                           />
-                          <template v-if="validate.staffs.$each.$response.$errors[key].phone_val[0]">
+                          <template v-if="validate[key].value.phone_val.$error">
                             <div
-                              v-for="(error, index) in validate.staffs.$each.$response.$errors[key].phone_val"
+                              v-for="(error, index) in validate[key].value.phone_val.$errors"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -1158,9 +1003,22 @@ const copyTime = () => {
           </div>
         </div>
       </div>
-      <!-- END: STaffs & Service  Info -->
+      <!-- END: service & Service  Info -->
 
       <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
+        <!-- <Button
+                  type="button"
+                  class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
+                >
+                  Cancel
+                </Button> -->
+        <!--   <Button
+                  type="button"
+                  class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
+                  @click="saveNew"
+                >
+                  Save & Add New Product
+                </Button> -->
         <Button
           variant="primary"
           type="button"
@@ -1229,6 +1087,8 @@ const copyTime = () => {
         <h2 class="mr-auto text-base font-medium">
           Chọn ngày muốn sao chép
         </h2>
+        {{ scheduleSeletedList }}
+
       </Dialog.Title>
       <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
         <div class="col-span-12 ">
@@ -1275,26 +1135,6 @@ const copyTime = () => {
             />
           </FormInline>
 
-        </div>
-        <div class="col-span-12 ">
-          <template v-if="validate.dt.schedules.$each.$response.$errors[selectedScheduleIndex].start_time">
-            <div
-              v-for="(error, i) in validate.dt.schedules.$each.$response.$errors[selectedScheduleIndex].start_time"
-              :key="i"
-              class="mt-2 text-danger"
-            >
-              {{ error.$message }}
-            </div>
-          </template>
-          <template v-if="validate.dt.schedules.$each.$response.$errors[selectedScheduleIndex].end_time">
-            <div
-              v-for="(error, i) in validate.dt.schedules.$each.$response.$errors[selectedScheduleIndex].end_time"
-              :key="i"
-              class="mt-2 text-danger"
-            >
-              {{ error.$message }}
-            </div>
-          </template>
         </div>
         <div class="col-span-12 ">
           <b>Chọn ngày áp dụng</b>
