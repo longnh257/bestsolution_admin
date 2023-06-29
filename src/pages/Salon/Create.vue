@@ -36,6 +36,7 @@ import {
   decimal,
   helpers,
   requiredIf,
+  alpha,
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import addURL from "../../assets/images/add.png";
@@ -63,11 +64,6 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 
 
 
-const revokePreview = (index: any) => {
-  URL.revokeObjectURL(listImgs.value[index]);
-  listImgs.value.splice(index, 1);
-  dt.images.splice(index, 1);
-};
 
 const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
@@ -136,14 +132,14 @@ const services = reactive(
 );
 
 
-const scheduleValdiate = (value, obj) => {
-
+const scheduleValdiate = (value: any, obj: any) => {
   if (obj.start_time && !obj.end_time)
     return true// Validation passes
   if (obj.start_time > obj.end_time)
     return false; // Validation fails
   return true; // Validation passes
 };
+
 
 const validations = {
   dt: {
@@ -161,6 +157,7 @@ const validations = {
     },
     password: {
       required: helpers.withMessage(() => 'Vui lòng nhập mật khẩu', required),
+      regex: helpers.withMessage(() => 'Mật khẩu không được chứa khoảng trắng', (value: any) => /^[^\s]+$/.test(value)),
       minLength: helpers.withMessage(
         ({
           $params,
@@ -342,19 +339,30 @@ const deleteService = (id: any) => {
 
 const previewImages = (e: any) => {
   let imgErr = false
+  let limErr = false
   for (var i = 0; i < e.target.files.length; i++) {
-    let file = e.target.files[i];
+    let file = e.target.files[i]
     if (isImage(file)) {
-      dt.images.push(file);
-      listImgs.value.push(URL.createObjectURL(file));
-    } else {
-      imgErr = true
-    }
+      if (dt.images.length < 20) {
+        dt.images.push(file)
+        listImgs.value.push(URL.createObjectURL(file))
+      } else limErr = true
+    } else imgErr = true
+  }
+  if (limErr) {
+    err.value = "Chỉ được nhập tối đa 20 hình ảnh"
+    errorNotification.value?.showToast();
   }
   if (imgErr) {
     err.value = "Một số file không hợp lệ chỉ được nhập hình ảnh có đuôi jpg, jpeg, png"
     errorNotification.value?.showToast();
   }
+};
+
+const revokePreview = (index: any) => {
+  URL.revokeObjectURL(listImgs.value[index]);
+  listImgs.value.splice(index, 1);
+  dt.images.splice(index, 1);
 };
 
 const handleFileChange = async (id: any, type: any, event: Event) => {
@@ -407,8 +415,6 @@ const submit = () => {
     return;
   }
 
-  console.log();
-  
 
   SalonCreateStore.createSalon().then(function (response: any) {
     if (response.staff_require) {
@@ -756,6 +762,28 @@ const copyTime = () => {
                 </div>
               </FormInline>
             </div>
+
+
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
+              <FormTextarea
+                class="mt-4"
+                aria-placeholder="Thông Tin Giới Thiệu Về Salon"
+                rows="6"
+                v-model.trim="validate.dt.salon_description.$model"
+                :class="{'w-full':true,'border-danger': validate.dt.salon_description.$error,}"
+              />
+              <template v-if="validate.dt.salon_description.$error">
+                <div
+                  v-for="(error, index) in validate.dt.salon_description.$errors"
+                  :key="index"
+                  class="mt-2 text-danger"
+                >
+                  {{ error.$message }}
+                </div>
+              </template>
+            </div>
+
             <FormLabel
               htmlFor="crud-form-2"
               class="mt-3"
@@ -833,25 +861,7 @@ const copyTime = () => {
                 <!-- END: Modal Toggle -->
               </div>
             </div>
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
-              <FormTextarea
-                class="mt-4"
-                aria-placeholder="Thông Tin Giới Thiệu Về Salon"
-                rows="6"
-                v-model.trim="validate.dt.salon_description.$model"
-                :class="{'w-full':true,'border-danger': validate.dt.salon_description.$error,}"
-              />
-              <template v-if="validate.dt.salon_description.$error">
-                <div
-                  v-for="(error, index) in validate.dt.salon_description.$errors"
-                  :key="index"
-                  class="mt-2 text-danger"
-                >
-                  {{ error.$message }}
-                </div>
-              </template>
-            </div>
+           
           </div>
         </div>
       </div>
