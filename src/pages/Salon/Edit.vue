@@ -38,6 +38,7 @@ import {
   maxLength,
   maxValue,
   minValue,
+  requiredIf,
   email,
   url,
   integer,
@@ -50,17 +51,12 @@ import addURL from "../../assets/images/add.png";
 const route = useRoute();
 var salon_id = route.params.salon_id;
 
-const announcementRef = ref<TinySliderElement>();
-const newProjectsRef = ref<TinySliderElement>();
-const todaySchedulesRef = ref<TinySliderElement>();
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 const selectedImgIndex = ref();
 const selectedImgID = ref();
 let err: any = ref([]);
 let scc: any = ref([]);
-const salonIndex: any = ref("");
-const salonId: any = ref("");
 const salon = ref();
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
@@ -68,7 +64,6 @@ var salon_id = route.params.salon_id;
 const copyTimeModal = ref(false);
 const sendButtonRef = ref(null);
 
-const password = ref("");
 const newPassword = ref("");
 const newPasswordConfirm = ref("");
 let listImgs: any = ref([]);
@@ -122,8 +117,8 @@ const submit = () => {
   fd.append("lat", salon.value.lat);
   fd.append("lng", salon.value.lng);
   fd.append("schedules", JSON.stringify(scheduleData));
-  fd.append("staffs", JSON.stringify(staffs));
-  fd.append("services", JSON.stringify(services));
+  fd.append("staffs", JSON.stringify(salon.value.staffs));
+  fd.append("services", JSON.stringify(salon.value.services));
   fd.append("delete_images", JSON.stringify(deleteImgArr.value));
   for (let index in images.value) {
     fd.append("images", images.value[index]);
@@ -188,7 +183,7 @@ const setCopyTimeModal = (value) => {
 
 const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
-    staffs[index].phone = bindedObject.unmasked;
+    salon.value.staffs[index].phone = bindedObject.unmasked;
   } else if (key === "phone") {
     salon.value.phone = bindedObject.unmasked;
   }
@@ -241,28 +236,7 @@ let selectedScheduleIndex = ref(0)
 const getSalon = async () => {
   axios.get(`salon/${salon_id}`).then((res) => {
     salon.value = res.data.data;
-    console.log(salon.value);
-    staffs.splice(0, 1);
-    services.splice(0, 1);
-    validate.splice(0, 1);
-    servicesValidate.splice(0, 1);
-    salon.value.staffs.map((item: any) => {
-      item.staff_id = item.id
-      item.first_name = ''
-      item.last_name = ''
-      staffs.push(item)
-    })
-    salon.value.services.map((item: any) => {
-      item.service_id = item.id
-      item.avatar = item.image
-      services.push(item)
-    })
-    staffs.map((item) => {
-      validate.push(useVuelidate(validations, item))
-    })
-    services.map((item) => {
-      servicesValidate.push(useVuelidate(servicesValidations, item))
-    })
+
     selectedSchedule.value = salon.value.schedules[selectedScheduleIndex.value]
   });
 };
@@ -291,148 +265,210 @@ let staff_id = ref(0)
 let service_id = ref(0)
 
 
-const staffs = reactive(
-  [{ staff_id: 'new' + 0, name: "", phone: "", phone_format: "", avatar: '' }]
-);
+const scheduleValdiate = (value: any, obj: any) => {
+  if (obj.start_time && !obj.end_time)
+    return true// Validation passes
+  if (obj.start_time > obj.end_time)
+    return false; // Validation fails
+  return true; // Validation passes
+};
 
-const services = reactive(
-  [{ service_id: 'new' + 0, name: "", price: "", avatar: '' }]
-);
 
 const validations = {
-  name: {
-    required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
-      minLength(3)
-    ),
-    maxLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
-      maxLength(25)
-    ),
+  salon: {
+    name: {
+      required: helpers.withMessage(() => 'Vui lòng nhập tên chủ salon', required)
+    },
+    phone_val: {
+      required: helpers.withMessage(() => 'Vui lòng nhập sđt đăng nhập', required),
+      minLength: helpers.withMessage(
+        ({
+          $params,
+        }) => `Số điện thoại phải là 10 số`,
+        minLength(10)
+      ),
+    },
+    password: {
+      required: helpers.withMessage(() => 'Vui lòng nhập mật khẩu', required),
+      regex: helpers.withMessage(() => 'Mật khẩu không được chứa khoảng trắng', (value: any) => /^[^\s]+$/.test(value)),
+      minLength: helpers.withMessage(
+        ({
+          $params,
+        }) => `Mật khẩu phải có ít nhất  ${$params.min} ký tự`,
+        minLength(6)
+      ),
+      maxLength: helpers.withMessage(
+        ({
+          $params,
+        }) => `Mật khẩu chỉ được có tối đa ${$params.max} ký tự `,
+        maxLength(64)
+      ),
+    },
+    salon_name: {
+      required: helpers.withMessage(() => 'Vui lòng nhập tên salon', required)
+    },
+    salon_address: {
+      required: helpers.withMessage(() => 'Địa chỉ salon là bắt buộc, tất cả các thông tin như tiểu bang, thành phố, múi giờ sẽ được lấy từ địa chỉ', required)
+    },
+    salon_phone_val: {
+      required: helpers.withMessage(() => 'Vui lòng nhập sđt salon', required),
+      minLength: helpers.withMessage(
+        ({
+          $params,
+        }) => `Số điện thoại phải là 10 số`,
+        minLength(14)
+      ),
+    },
+    salon_email: {
+      email: helpers.withMessage(() => 'Email không hợp lệ', email),
+    },
+    salon_description: {
+      maxLength: helpers.withMessage(() => 'Mô tả chỉ được nhập tối đa 1000 ký tự', maxLength(1000)),
+    },
+
+    schedules: {
+      $each: helpers.forEach({
+        start_time: {
+          required: helpers.withMessage(() => 'Vui lòng nhập giờ mở cửa', requiredIf((val: any, obj: any) => obj.end_time)),
+        },
+        end_time: {
+          required: helpers.withMessage(() => 'Vui lòng nhập giờ đóng cửa', requiredIf((val: any, obj: any) => obj.start_time)),
+          scheduleValdiate: helpers.withMessage(() => 'Giờ mở cửa không được lớn hơn giờ đóng cửa', scheduleValdiate),
+        },
+      }
+      )
+    },
+
+    staffs: {
+      $each: helpers.forEach({
+        name: {
+          required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
+          minLength: helpers.withMessage(
+            ({
+              $params,
+            }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
+            minLength(3)
+          ),
+          maxLength: helpers.withMessage(
+            ({
+              $params,
+            }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
+            maxLength(25)
+          ),
+        },
+        phone_val: {
+          required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
+          minLength: helpers.withMessage(
+            ({
+              $params,
+            }) => `Số điện thoại phải là 10 số`,
+            minLength(14)
+          ),
+        },
+      }
+      )
+    },
+
+    services: {
+      $each: helpers.forEach({
+        name: {
+          required: helpers.withMessage(() => 'Vui lòng nhập tên dịch vụ', required),
+          minLength: helpers.withMessage(
+            ({
+              $params,
+            }) => `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
+            minLength(3)
+          ),
+          maxLength: helpers.withMessage(
+            ({
+              $params,
+            }) => `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
+            maxLength(25)
+          ),
+        },
+        price: {
+          required: helpers.withMessage(() => 'Vui lòng nhập giá dịch vụ', required),
+          decimal: helpers.withMessage(() => 'Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
+          minValue: helpers.withMessage(
+            ({
+              $params,
+            }) => `Giá dịch vụ phải > 0`,
+            minValue(0.01)
+          ),
+          maxValue: helpers.withMessage(
+            ({
+              $params,
+            }) => `Giá dịch vụ phải < 100000`,
+            maxValue(99999.99),
+          ),
+        },
+      }
+      )
+    }
   },
-  phone_format: {
-    required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Số điện thoại phải là 10 số`,
-      minLength(14)
-    ),
-  },
+
+
 
 };
 
-const servicesValidations = {
-  name: {
-    required: helpers.withMessage(() => 'Vui lòng nhập tên dịch vụ', required),
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
-      minLength(3)
-    ),
-    maxLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
-      maxLength(25)
-    ),
-  },
-  price: {
-    required: helpers.withMessage(() => 'Vui lòng nhập giá dịch vụ', required),
-    decimal: helpers.withMessage(() => 'Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
-    minValue: helpers.withMessage(
-      ({
-        $params,
-      }) => `Giá dịch vụ phải > 0`,
-      minValue(0.01)
-    ),
-    maxValue: helpers.withMessage(
-      ({
-        $params,
-      }) => `Giá dịch vụ phải < ${$params.max}`,
-      maxValue(99999.99),
-    ),
-  },
-
-};
-
-// Use Vuelidate
-const validate = <any>[]
-
-staffs.map((item) => {
-  validate.push(useVuelidate(validations, item))
-})
-const servicesValidate = <any>[]
-
-services.map((item) => {
-  servicesValidate.push(useVuelidate(servicesValidations, item))
-})
-
+const validate = useVuelidate(validations, {
+  salon
+});
 
 const addStaff = () => {
   staff_id.value = staff_id.value + 1
-  staffs.push({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })
-  validate.push(useVuelidate(validations, reactive({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })))
-  for (var i = 0; i < validate.length; i++) {
-    validate[i].value.$touch()
-  }
+  salon.value.staffs.push({ staff_id: staff_id.value, name: "", phone: "", phone_val: "", avatar: '' })
 }
+
 const addService = () => {
   service_id.value = service_id.value + 1
-  services.push({ service_id: 'new' + service_id.value, name: "", price: "", avatar: '' });
-  servicesValidate.push(useVuelidate(servicesValidations, reactive({ id: 'new' + service_id.value, name: "", price: "", avatar: '' })))
-  for (var i = 0; i < servicesValidate.length; i++) {
-    servicesValidate[i].value.$touch()
-  }
+  salon.value.services.push({ service_id: service_id.value, name: "", price: "", avatar: '' });
 }
 
 const deleteStaff = (id: any) => {
-  const i = staffs.findIndex((staff) => staff.staff_id === id);
-  if (staffs.length > 1) {
+  const i = salon.value.staffs.findIndex((staff) => staff.staff_id === id);
+  if (salon.value.staffs.length > 1) {
     if (i !== -1) {
       axios
         .post(`upload/delete-avatar`, {
-          filename: staffs[i].avatar
+          filename: salon.value.staffs[i].avatar
         }).then((res) => {
           console.log(res);
         }).catch((err) => {
           console.log(err);
         })
-      staffs.splice(i, 1);
-      validate.splice(i, 1)
+      salon.value.staffs.splice(i, 1);
+      validate.value.$validate()
     }
   } else {
-    staffs[i].name = ""
-    staffs[i].phone = ""
+    salon.value.staffs[i].name = ""
+    salon.value.staffs[i].phone = ""
   }
 }
 
+
 const deleteService = (id: any) => {
-  const i = services.findIndex((service) => service.service_id === id);
-  if (services.length > 1) {
+  const i = salon.value.services.findIndex((staff) => staff.service_id === id);
+  if (salon.value.services.length > 1) {
     if (i !== -1) {
       axios
         .post(`upload/delete-avatar`, {
-          filename: services[i].avatar
+          filename: salon.value.services[i].avatar
         }).then((res) => {
           console.log(res);
         }).catch((err) => {
           console.log(err);
         })
-      services.splice(i, 1)
-      servicesValidate.splice(i, 1)
+      salon.value.services.splice(i, 1)
+      validate.value.$validate()
     }
   } else {
-    services[i].name = ""
-    services[i].price = ""
+    salon.value.services[i].name = ""
+    salon.value.services[i].price = ""
   }
 }
+
+
 const handleFileChange = async (id: any, type: any, event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   if (files && files.length > 0) {
@@ -449,12 +485,12 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
       }).then((res) => {
         console.log(res.data.data);
         if (type == 1) {
-          const i = staffs.findIndex((staff) => staff.staff_id === id);
-          staffs[i].avatar = res.data.data.avatar
+          const i = salon.value.staffs.findIndex((staff) => staff.staff_id === id);
+          salon.value.staffs[i].avatar = res.data.data.avatar
         }
         if (type == 2) {
-          const i = services.findIndex((service) => service.service_id === id);
-          services[i].avatar = res.data.data.avatar
+          const i = salon.value.services.findIndex((service) => service.service_id === id);
+          salon.value.services[i].avatar = res.data.data.avatar
         }
       }).catch((error) => {
         err.value = "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png"
@@ -491,6 +527,9 @@ const copyTime = () => {
   }, 1);
   setCopyTimeModal(false);
 }
+
+console.log(validate.value.salon.staffs);
+console.log(validate.value.salon.staffs.$each.$response);
 
 onMounted(() => {
   getSalon();
@@ -763,7 +802,10 @@ onMounted(() => {
               htmlFor="crud-form-2"
               class="mt-3"
             ><strong>Giờ mở cửa: <i class="text-success">(Múi Giờ: {{ salon.timezone }} {{ salon.tz }})</i></strong></FormLabel>
-            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400" v-if="!load">
+            <div
+              class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+              v-if="!load"
+            >
               <div
                 class="grid grid-cols-12 gap-4 gap-y-3"
                 v-for="(schedule,index) in salon.schedules"
@@ -873,15 +915,15 @@ onMounted(() => {
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
-                            v-model.trim="servicesValidate[key].value.name.$model"
+                            v-model.trim="validate[key].value.name.$model"
                             type="text"
                             name="name"
-                            :class="{'border-danger': servicesValidate[key].value.name.$error,}"
-                            @change="()=> {service.name = servicesValidate[key].value.name.$model}"
+                            :class="{'border-danger': validate[key].value.name.$error,}"
+                            @change="()=> {service.name = validate[key].value.name.$model}"
                           />
-                          <template v-if="servicesValidate[key].value.name.$error">
+                          <template v-if="validate[key].value.name.$error">
                             <div
-                              v-for="(error, index) in servicesValidate[key].value.name.$errors"
+                              v-for="(error, index) in validate[key].value.name.$errors"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -893,19 +935,19 @@ onMounted(() => {
                           <InputGroup>
                             <FormInput
                               id="validation-form-1"
-                              v-model.trim="servicesValidate[key].value.price.$model"
+                              v-model.trim="validate[key].value.price.$model"
                               type="number"
                               step="0.01"
-                              :class="{'border-danger': servicesValidate[key].value.price.$error,}"
-                              @change="()=> {service.price = servicesValidate[key].value.price.$model}"
+                              :class="{'border-danger': validate[key].value.price.$error,}"
+                              @change="()=> {service.price = validate[key].value.price.$model}"
                             />
                             <InputGroup.Text id="input-group-1">
                               $
                             </InputGroup.Text>
                           </InputGroup>
-                          <template v-if="servicesValidate[key].value.price.$error">
+                          <template v-if="validate[key].value.price.$error">
                             <div
-                              v-for="(error, index) in servicesValidate[key].value.price.$errors"
+                              v-for="(error, index) in validate[key].value.price.$errors"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -998,7 +1040,7 @@ onMounted(() => {
                     <tbody>
                       <tr
                         class=""
-                        v-for="(staff, key) in staffs"
+                        v-for="(staff, key) in salon.staffs"
                         :key="staff.staff_id"
                       >
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
@@ -1025,15 +1067,14 @@ onMounted(() => {
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
                           <FormInput
                             id="validation-form-1"
-                            v-model.trim="validate[key].value.name.$model"
+                            v-model="staff.name"
                             type="text"
                             name="name"
-                            @change="()=> {staff.name = validate[key].value.name.$model}"
-                            :class="{'border-danger': validate[key].value.name.$error,}"
+                            :class="{'border-danger': validate.salon.staffs.$each.$response.$errors[key].name,}"
                           />
-                          <template v-if="validate[key].value.name.$error">
+                          <template v-if="validate.salon.staffs.$each.$response.$errors[key].name">
                             <div
-                              v-for="(error, index) in validate[key].value.name.$errors"
+                              v-for="(error, index) in validate.salon.staffs.$each.$response.$errors[key].name"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -1047,14 +1088,14 @@ onMounted(() => {
                             type="text"
                             v-maska="bindedObject"
                             data-maska="(###) ###-####"
-                            v-model.trim="validate[key].value.phone_format.$model"
+                            v-model="staff.phone_format"
                             @change="maskphone('',true,key)"
-                            :class="{'border-danger': validate[key].value.phone_format.$error,
-                    'border-slate-200':!validate[key].value.phone_format.$error,}"
+                            :class="{'border-danger': validate.salon.staffs.$each.$response.$errors[key].phone_format,
+                    'border-slate-200':!validate.salon.staffs.$each.$response.$errors[key].phone_format,}"
                           />
-                          <template v-if="validate[key].value.phone_format.$error">
+                          <template v-if="validate.salon.staffs.$each.$response.$errors[key].phone_format">
                             <div
-                              v-for="(error, index) in validate[key].value.phone_format.$errors"
+                              v-for="(error, index) in validate.salon.staffs.$each.$response.$errors[key].phone_format"
                               :key="index"
                               class="mt-2 text-danger"
                             >

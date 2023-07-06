@@ -113,7 +113,6 @@ provide("bind[successNotification]", (el: NotificationElement) => {
         <Table.Tr
           v-for="(item, index) in props.salons"
           :key="item.id"
-          class="intro-x"
         >
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ item.id }}

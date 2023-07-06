@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import { reactive, ref, provide, toRefs, watch } from "vue";
+import _, { forEach } from "lodash";
+import { reactive, ref, onMounted, provide, watch, computed } from "vue";
 import Button from "../../base-components/Button";
 import Lucide from "../../base-components/Lucide";
+import axios from "axios";
 import Notification from "../../base-components/Notification";
 import { NotificationElement } from "../../base-components/Notification";
 import Table from "../../base-components/Table";
 import { normalizeInput, getTimeZoneByLocation } from "../../utils/helper";
 import Tippy from "../../base-components/Tippy";
 import ClassicEditor from "../../base-components/Ckeditor/ClassicEditor.vue";
+import { useRoute } from "vue-router";
+import Progress from "../../base-components/Progress";
+import TinySlider, {
+  TinySliderElement,
+} from "../../base-components/TinySlider";
+import { Dialog, Menu, Tab } from "../../base-components/Headless";
+import { Tab as HeadlessTab } from "@headlessui/vue";
 import {
   FormInput,
   FormInline,
@@ -19,11 +28,10 @@ import {
   FormSwitch,
   FormTextarea,
 } from "../../base-components/Form";
-import { useSalonListStore } from "../../stores/salon/salon-list";
-import { useSalonCreateStore } from "../../stores/salon/salon-create";
-import Toastify from "toastify-js";
-import router from "../../router";
-import { Dialog, Menu, Tab } from "../../base-components/Headless";
+import moment from 'moment';
+import { convertToTZ } from "../../utils/helper";
+import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
+import 'vue3-timepicker/dist/VueTimepicker.css'
 import {
   required,
   minLength,
@@ -38,107 +46,258 @@ import {
 } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import addURL from "../../assets/images/add.png";
-import axios from "axios";
-import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
-import 'vue3-timepicker/dist/VueTimepicker.css'
 
+const route = useRoute();
+var salon_id = route.params.salon_id;
 
-
-const SalonListStore = useSalonListStore();
-const SalonCreateStore = useSalonCreateStore();
-SalonCreateStore.resetData()
-const dt = SalonCreateStore.data;
-const bindedObject = reactive({ unmasked: "" });
-
-let listImgs: any = ref([]);
-let showPassword = ref(true);
-
-
-let err = ref("")
-let scc = ref("")
+const announcementRef = ref<TinySliderElement>();
+const newProjectsRef = ref<TinySliderElement>();
+const todaySchedulesRef = ref<TinySliderElement>();
+const deleteConfirmationModal = ref(false);
+const deleteButtonRef = ref(null);
+const selectedImgIndex = ref();
+const selectedImgID = ref();
+let err: any = ref([]);
+let scc: any = ref([]);
+const salonIndex: any = ref("");
+const salonId: any = ref("");
+const salon = ref();
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
+var salon_id = route.params.salon_id;
+const copyTimeModal = ref(false);
+const sendButtonRef = ref(null);
+
+const password = ref("");
+const newPassword = ref("");
+const newPasswordConfirm = ref("");
+let listImgs: any = ref([]);
+let listStaffImgs: any = ref([]);
+let showPassword = ref(true);
+let showPasswordConfirm = ref(true);
+const scheduleSeletedList = ref([])
+
+const maskedValue = ref("");
+const bindedObject = reactive({ unmasked: "" });
+
+const saveSalon = () => {
+  submit();
+};
+const saveNew = () => { };
+
+const submit = () => {
+
+  const fd = new FormData();
+  const dateNow = moment().utc().format('YYYY-MM-DD')
+  let scheduleData: any = []
+  salon.value.schedules.map(item => {
+    if (!item.start_time || !item.end_time) {
+      scheduleData.push({
+        day: item.day,
+        start_time: null,
+        end_time: null
+      })
+    } else {
+      scheduleData.push({
+        day: item.day,
+        start_time: item.start_time ? convertToTZ(new Date(`${dateNow} ${item.start_time}`), salon.value.timezone) : null,
+        end_time: item.end_time ? convertToTZ(new Date(`${dateNow} ${item.end_time}`), salon.value.timezone) : null
+      })
+    }
+  })
+
+  fd.append("id", salon.value.id);
+  fd.append("name", salon.value.name);
+  fd.append("address", salon.value.address);
+  fd.append("phone", salon.value.phone);
+  fd.append("email", salon.value.email ? salon.value.email : '');
+  fd.append("description", salon.value.description ? salon.value.description : '');
+  fd.append("country", salon.value.country);
+  fd.append("city", salon.value.city);
+  fd.append("state", salon.value.state);
+  fd.append("zipcode", salon.value.zipcode);
+  fd.append("number_employees", salon.value.number_employees);
+  fd.append("timezone", salon.value.timezone);
+  fd.append("tz", salon.value.tz);
+  fd.append("lat", salon.value.lat);
+  fd.append("lng", salon.value.lng);
+  fd.append("schedules", JSON.stringify(scheduleData));
+  fd.append("staffs", JSON.stringify(staffs));
+  fd.append("services", JSON.stringify(services));
+  fd.append("delete_images", JSON.stringify(deleteImgArr.value));
+  for (let index in images.value) {
+    fd.append("images", images.value[index]);
+  }
+
+
+  axios
+    .post(`admin/update-salon-info`, fd, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    .then(function (response) {
+      // handle success     
+      scc.value = response.data.message;
+      successNotification.value?.showToast();
+    })
+    .catch(function (error) {
+      err.value = error.response.data.message;
+      errorNotification.value?.showToast();
+    });
+};
+
 provide("bind[errorNotification]", (el: NotificationElement) => {
-  errorNotification.value = el
+  errorNotification.value = el;
 });
 provide("bind[successNotification]", (el: NotificationElement) => {
-  successNotification.value = el
+  successNotification.value = el;
 });
 
+const images = ref([""]);
+images.value.splice(0, 1);
 
+const previewImages = (e: any) => {
+  for (var i = 0; i < e.target.files.length; i++) {
+    let file = e.target.files[i];
+    images.value.push(file);
+    listImgs.value.push(URL.createObjectURL(file));
+  }
+};
 
 const revokePreview = (index: any) => {
   URL.revokeObjectURL(listImgs.value[index]);
   listImgs.value.splice(index, 1);
-  dt.images.splice(index, 1);
+  images.value.splice(index, 1);
 };
+
+const setDeleteConfirmationModal = (
+  value: boolean,
+  imgIndex: any = null,
+  imgId: any = null
+) => {
+  deleteConfirmationModal.value = value;
+  selectedImgIndex.value = imgIndex;
+  selectedImgID.value = imgId;
+};
+const setCopyTimeModal = (value) => {
+  copyTimeModal.value = value;
+};
+
+
 
 const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
     staffs[index].phone = bindedObject.unmasked;
-  } else {
-    if (key === "phone") {
-      dt.phone = bindedObject.unmasked;
-    }
-    if (key === "salon_phone") {
-      dt.salon_phone = bindedObject.unmasked;
-    }
+  } else if (key === "phone") {
+    salon.value.phone = bindedObject.unmasked;
   }
-};
+  if (key === "salon_phone") {
+    salon.value.partner.phone = bindedObject.unmasked;
+  }
+}
 
-const getAddressData = async ($e: any) => {
-  for (const item of $e.address_components) {
+const getAddressData = async (placeResultData: any) => {
+  for (const item of placeResultData.address_components) {
     if (item.types.includes("country")) {
-      dt.salon_country = item.short_name
+      salon.value.country = item.short_name;
     }
     if (item.types.includes("administrative_area_level_1")) {
-      dt.salon_state = item.short_name
+      salon.value.state = item.short_name;
     }
     if (item.types.includes("administrative_area_level_2")) {
-      dt.salon_city = item.short_name
-    } else {
-      dt.salon_city = ""
+      salon.value.city = item.short_name;
     }
     if (item.types.includes("postal_code")) {
-      dt.salon_zipcode = item.short_name
+      salon.value.zipcode = item.short_name;
     }
   }
-  if (!dt.salon_city) {
-    dt.salon_city = dt.salon_state
-  }
-
-  dt.salon_lng = $e.geometry.location.lng();
-  dt.salon_lat = $e.geometry.location.lat();
-  dt.salon_address = $e.formatted_address;
-  dt.salon_tz =
+  salon.value.lng = placeResultData.geometry.location.lng();
+  salon.value.lat = placeResultData.geometry.location.lat();
+  salon.value.address = placeResultData.formatted_address;
+  salon.value.tz =
     "UTC " +
-    ($e.utc_offset_minutes < 0 ? "" : "+") +
-    $e.utc_offset_minutes / 60;
-  /*   console.log("salon tz: " + dt.salon_timezone);
-    console.log("tz: " + dt.salon_tz); */
+    (placeResultData.utc_offset_minutes < 0 ? "" : "+") +
+    placeResultData.utc_offset_minutes / 60;
+  console.log(salon.value);
 
-  const timezoneByLocation: any = await getTimeZoneByLocation(dt.salon_lat, dt.salon_lng)
+  const timezoneByLocation: any = await getTimeZoneByLocation(salon.value.lat, salon.value.lng)
   if (timezoneByLocation.timeZoneId)
-    dt.salon_timezone = timezoneByLocation.timeZoneId
-  console.log("tz: " + dt.salon_timezone);
-  console.log(dt);
+    salon.value.timezone = timezoneByLocation.timeZoneId
 };
+let deleteImgArr = ref<any[]>([]);
+const deleteImg = () => {
+
+  deleteImgArr.value.push(selectedImgID.value);
+  salon.value.images.splice(selectedImgIndex.value, 1);
+  deleteConfirmationModal.value = false;
+  console.log(deleteImgArr.value);
+};
+
+let selectedSchedule = ref({ id: '', day: '', day_name: '', end_time: '', start_time: '' })
+let selectedScheduleIndex = ref(0)
+
+
+const getSalon = async () => {
+  axios.get(`salon/${salon_id}`).then((res) => {
+    salon.value = res.data.data;
+    console.log(salon.value);
+    staffs.splice(0, 1);
+    services.splice(0, 1);
+    validate.splice(0, 1);
+    servicesValidate.splice(0, 1);
+    salon.value.staffs.map((item: any) => {
+      item.staff_id = item.id
+      item.first_name = ''
+      item.last_name = ''
+      staffs.push(item)
+    })
+    salon.value.services.map((item: any) => {
+      item.service_id = item.id
+      item.avatar = item.image
+      services.push(item)
+    })
+    staffs.map((item) => {
+      validate.push(useVuelidate(validations, item))
+    })
+    services.map((item) => {
+      servicesValidate.push(useVuelidate(servicesValidations, item))
+    })
+    selectedSchedule.value = salon.value.schedules[selectedScheduleIndex.value]
+  });
+};
+
+
+
+const changePassword = async () => {
+  console.log(newPassword.value, newPasswordConfirm.value);
+
+  await axios.post(`admin/change-password/${salon.value.partner.id}`, {
+    new_password: newPassword.value,
+    confirm_password: newPasswordConfirm.value,
+  }).then(function (response) {
+    // handle success     
+    scc.value = response.data.message;
+    successNotification.value?.showToast();
+  })
+    .catch(function (error) {
+      err.value = error.response.data.message;
+      errorNotification.value?.showToast();
+    });
+};
+
 
 let staff_id = ref(0)
 let service_id = ref(0)
 
+
 const staffs = reactive(
-  [
-    { staff_id: 0, name: '', phone: '', phone_val: '', avatar: '' },
-  ]
+  [{ staff_id: 'new' + 0, name: "", phone: "", phone_format: "", avatar: '' }]
 );
 
 const services = reactive(
-  [
-    { service_id: 0, name: '', price: '', avatar: '' },
-  ]
+  [{ service_id: 'new' + 0, name: "", price: "", avatar: '' }]
 );
-
 
 const validations = {
   name: {
@@ -156,7 +315,7 @@ const validations = {
       maxLength(25)
     ),
   },
-  phone_val: {
+  phone_format: {
     required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
     minLength: helpers.withMessage(
       ({
@@ -218,16 +377,16 @@ services.map((item) => {
 
 const addStaff = () => {
   staff_id.value = staff_id.value + 1
-  staffs.push({ staff_id: staff_id.value, name: "", phone: "", phone_val: "", avatar: '' })
-  validate.push(useVuelidate(validations, reactive({ staff_id: staff_id.value, name: "", phone: "", phone_val: "", avatar: '' })))
+  staffs.push({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })
+  validate.push(useVuelidate(validations, reactive({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })))
   for (var i = 0; i < validate.length; i++) {
     validate[i].value.$touch()
   }
 }
 const addService = () => {
   service_id.value = service_id.value + 1
-  services.push({ service_id: service_id.value, name: "", price: "", avatar: '' });
-  servicesValidate.push(useVuelidate(servicesValidations, reactive({ service_id: service_id.value, name: "", price: "", avatar: '' })))
+  services.push({ service_id: 'new' + service_id.value, name: "", price: "", avatar: '' });
+  servicesValidate.push(useVuelidate(servicesValidations, reactive({ id: 'new' + service_id.value, name: "", price: "", avatar: '' })))
   for (var i = 0; i < servicesValidate.length; i++) {
     servicesValidate[i].value.$touch()
   }
@@ -255,7 +414,7 @@ const deleteStaff = (id: any) => {
 }
 
 const deleteService = (id: any) => {
-  const i = services.findIndex((staff) => staff.service_id === id);
+  const i = services.findIndex((service) => service.service_id === id);
   if (services.length > 1) {
     if (i !== -1) {
       axios
@@ -274,15 +433,6 @@ const deleteService = (id: any) => {
     services[i].price = ""
   }
 }
-
-const previewImages = (e: any) => {
-  for (var i = 0; i < e.target.files.length; i++) {
-    let file = e.target.files[i];
-    dt.images.push(file);
-    listImgs.value.push(URL.createObjectURL(file));
-  }
-};
-
 const handleFileChange = async (id: any, type: any, event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   if (files && files.length > 0) {
@@ -314,97 +464,15 @@ const handleFileChange = async (id: any, type: any, event: Event) => {
   }
 }
 
-const saveSalon = () => {
-  submit();
-};
-
-const submit = () => {
-  dt.staffs = staffs
-  dt.services = services
-  let error = false
-  for (var i = 0; i < validate.length; i++) {
-    validate[i].value.$touch()
-  }
-  for (var i = 0; i < servicesValidate.length; i++) {
-    servicesValidate[i].value.$touch()
-  }
-  for (var i = 0; i < validate.length; i++) {
-    if (validate[i].value.$invalid) {
-      error = true
-      break;
-    }
-  }
-  for (var i = 0; i < servicesValidate.length; i++) {
-    if (servicesValidate[i].value.$invalid) {
-      error = true
-      break;
-    }
-  }
-
-  if (error) {
-    err.value = 'Thông tin thợ hoặc dịch vụ không hợp lệ'
-    errorNotification.value?.showToast();
-    return;
-  }
-
-
-  SalonCreateStore.createSalon().then(function (response: any) {
-    if (response.staff_require) {
-      err.value = 'Vui lòng nhập ít nhất 1 thợ'
-      errorNotification.value?.showToast();
-      return;
-    }
-    if (response.services_require) {
-      err.value = 'Vui lòng nhập ít nhất 1 dịch vụ'
-      errorNotification.value?.showToast();
-      return;
-    }
-    SalonListStore.approveSalon(response.data.data.admin.id)
-
-    /*  axios
-       .post(`admin/send-mail-create-new-owner`, {
-         salon_name: dt.salon_name,
-         phone: dt.phone,
-         password: dt.password,
-         recipient_email: 'chunglygiabao@gmail.com',
-       }) */
-
-    scc.value = "Tạo Salon Thành Công !"
-    successNotification.value?.showToast()
-
-    router.push({
-      name: 'salon-list',
-    });
-  })
-    .catch(function (error) {
-      err.value = error.response.data.message;
-      err.value = err.value == 'Trường số điện thoại là bắt buộc' ? 'Trường số điện thoại đăng nhập là bắt buộc' : err.value
-      errorNotification.value?.showToast();
-    });
-};
-
-
-const copyTimeModal = ref(false);
-const sendButtonRef = ref(null);
-
-const setCopyTimeModal = (value) => {
-  copyTimeModal.value = value;
-};
-
-
-let selectedSchedule = ref({ day: 0, day_name: '', end_time: '', start_time: '' })
-let selectedScheduleIndex = ref(0)
-
 const setSelectedSchedule = (schedule: any, index: any) => {
   selectedScheduleIndex = index
   selectedSchedule.value = schedule
 }
 
 let load = ref(false)
-const scheduleSeletedList = ref([])
 
 watch(selectedScheduleIndex, (newValue) => {
-  selectedSchedule.value = dt.schedules[newValue];
+  selectedSchedule.value = salon.value.schedules[newValue];
   load.value = true
   setTimeout(() => {
     load.value = false
@@ -412,11 +480,11 @@ watch(selectedScheduleIndex, (newValue) => {
 });
 const copyTime = () => {
   console.log(scheduleSeletedList.value);
-  dt.schedules.filter(item => scheduleSeletedList.value.includes(item.day)).map(item => {
-    item.start_time = selectedSchedule.value.start_time
-    item.end_time = selectedSchedule.value.end_time
+  salon.value.schedules.filter(item => scheduleSeletedList.value.includes(item.day)).map(el => {
+    el.start_time = selectedSchedule.value.start_time
+    el.end_time = selectedSchedule.value.end_time
   })
-  console.log(dt.schedules);
+  console.log(salon.value.schedules);
   load.value = true
   setTimeout(() => {
     load.value = false
@@ -424,60 +492,51 @@ const copyTime = () => {
   setCopyTimeModal(false);
 }
 
+onMounted(() => {
+  getSalon();
+});
 </script>
 
 <template>
   <div class="flex items-center mt-8 intro-y">
-    <h2 class="mr-auto text-lg font-medium">Thêm Mới Salon</h2>
+    <h2 class="mr-auto text-lg font-medium">Chỉnh sửa Salon</h2>
   </div>
-  <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6">
+  <div
+    class="grid grid-cols-11 pb-20 mt-5 gap-x-6"
+    v-if="salon"
+  >
     <div class="col-span-11 intro-y 2xl:col-span-9">
-      <!-- BEGIN: Account Info -->
+
+      <!-- BEGIN: Salon Info -->
       <div class="p-5 mt-5 intro-y box">
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
             <Lucide
-              icon="User"
+              icon="Home"
               class="w-4 h-4 mr-2"
-            /> Thông tin tài khoản
+            /> Thông tin Tài Khoản
           </div>
-
           <div class="mt-5">
-            <div>
-              <FormLabel class="label-require">Tên chủ salon</FormLabel>
-              <FormInput
-                id="crud-form-1"
-                type="text"
-                class="w-full"
-                placeholder="Tên chủ salon"
-                v-model="dt.name"
-              />
-            </div>
             <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
-              >Số điện thoại đăng nhập</FormLabel>
+              <FormLabel>Số điện thoại</FormLabel>
               <FormInput
                 id="crud-form-2"
                 type="text"
                 class="w-full"
                 placeholder="Số điện thoại dùng để đăng nhập"
-                v-maska="bindedObject"
-                data-maska="##########"
-                @change="maskphone(`phone`)"
+                v-model="salon.partner.phone_format"
+                disabled="true"
               />
             </div>
+
             <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-3"
-                class="label-require"
-              >Mật Khẩu</FormLabel>
+              <FormLabel htmlFor="crud-form-3">Mật Khẩu Mới</FormLabel>
+
               <InputGroup v-if="!showPassword">
                 <FormInput
                   id="crud-form-3"
                   type="text"
-                  v-model="dt.password"
+                  v-model="newPassword"
                   class="w-full"
                   placeholder="Mật Khẩu"
                 />
@@ -494,7 +553,7 @@ const copyTime = () => {
                 <FormInput
                   id="crud-form-3"
                   type="password"
-                  v-model="dt.password"
+                  v-model="newPassword"
                   class="w-full"
                   placeholder="Mật Khẩu"
                 />
@@ -507,10 +566,59 @@ const copyTime = () => {
                 </InputGroup.Text>
               </InputGroup>
             </div>
+
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-3">Nhập Lại Mật Khẩu Mới</FormLabel>
+
+              <InputGroup v-if="!showPasswordConfirm">
+                <FormInput
+                  id="crud-form-3"
+                  type="text"
+                  v-model="newPasswordConfirm"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
+                />
+
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPasswordConfirm = !showPasswordConfirm"
+                >
+                  <Lucide icon="Eye" />
+                </InputGroup.Text>
+              </InputGroup>
+              <InputGroup v-else>
+                <FormInput
+                  id="crud-form-3"
+                  type="password"
+                  v-model="newPasswordConfirm"
+                  class="w-full"
+                  placeholder="Mật Khẩu"
+                />
+                <InputGroup.Text
+                  id="input-group-1"
+                  style="cursor: pointer"
+                  @click="showPasswordConfirm = !showPasswordConfirm"
+                >
+                  <Lucide icon="EyeOff" />
+                </InputGroup.Text>
+              </InputGroup>
+            </div>
           </div>
         </div>
+        <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
+          <Button
+            variant="primary"
+            type="button"
+            class="w-full py-3 md:w-52"
+            @click="changePassword"
+          >
+            Lưu
+          </Button>
+        </div>
       </div>
-      <!-- END: Account Info -->
+      <!-- END: Salon Info -->
+
       <!-- BEGIN: Salon Info -->
       <div class="p-5 mt-5 intro-y box">
         <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
@@ -522,28 +630,21 @@ const copyTime = () => {
           </div>
           <div class="mt-5">
             <div>
-              <FormLabel
-                htmlFor="crud-form-1"
-                class="label-require"
-              >Tên Salon</FormLabel>
+              <FormLabel htmlFor="crud-form-1">Tên Salon</FormLabel>
               <FormInput
                 id="crud-form-1"
                 type="text"
                 class="w-full"
                 placeholder="Tên chủ salon"
-                v-model="dt.salon_name"
+                v-model="salon.name"
               />
             </div>
             <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
-              >Địa chỉ salon</FormLabel>
+              <FormLabel htmlFor="crud-form-2">Địa chỉ salon</FormLabel>
               <br />
               <GMapAutocomplete
                 id="map"
                 class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 w-full"
-                language="en"
                 style="
                   padding: 8px 12px;
                   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -552,43 +653,64 @@ const copyTime = () => {
                     var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
                   border-radius: 0.375rem;
                   --tw-border-opacity: 1;
-                  border: solid 1px rgb(226 232 240 / var(--tw-border-opacity));"
-                placeholder="Nhập địa chỉ"
+                  border: solid 1px rgb(226 232 240 / var(--tw-border-opacity));
+                "
+                :placeholder="salon.full_address"
                 @place_changed="getAddressData"
               >
               </GMapAutocomplete>
             </div>
             <div class="mt-3">
-              <FormLabel
-                htmlFor="crud-form-2"
-                class="label-require"
-              >Số điện thoại salon</FormLabel>
+              <FormLabel htmlFor="crud-form-2">Số điện thoại liên hệ</FormLabel>
               <FormInput
                 id="crud-form-2"
                 type="text"
                 class="w-full"
-                placeholder="Số điện thoại salon"
+                :placeholder="salon.phone"
                 v-maska="bindedObject"
+                v-model="maskedValue"
                 data-maska="(###) ###-####"
-                @change="maskphone(`salon_phone`)"
+                @change="maskphone(`phone`,false,'')"
               />
             </div>
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Email</FormLabel>
               <FormInput
                 id="crud-form-2"
-                type="email"
-                v-model="dt.salon_email"
+                type="text"
+                v-model="salon.email"
                 class="w-full"
                 placeholder="Email"
               />
             </div>
-
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
                 <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
                   <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
+                    <div
+                      v-for="(image, index) in salon.images"
+                      :key="image"
+                      class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
+                    >
+                      <img
+                        class="rounded-md"
+                        alt=""
+                        :src="image.image"
+                      />
+                      <Tippy
+                        content="Remove this image?"
+                        class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
+                      >
+                        <Lucide
+                          icon="X"
+                          class="w-4 h-4"
+                          @click="
+                            setDeleteConfirmationModal(true, index, image.id)
+                          "
+                        />
+                      </Tippy>
+                    </div>
                     <div
                       v-for="(image, index) in listImgs"
                       :key="image"
@@ -628,19 +750,26 @@ const copyTime = () => {
                 </div>
               </FormInline>
             </div>
+            <div class="mt-3">
+              <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
+              <FormTextarea
+                v-model="salon.description"
+                class="mt-4"
+                aria-placeholder="Thông Tin Giới Thiệu Về Salon"
+                rows="6"
+              />
+            </div>
             <FormLabel
               htmlFor="crud-form-2"
               class="mt-3"
-            >Giờ mở cửa</FormLabel>
-            <div
-              class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
-              v-if="!load"
-            >
+            ><strong>Giờ mở cửa: <i class="text-success">(Múi Giờ: {{ salon.timezone }} {{ salon.tz }})</i></strong></FormLabel>
+            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400" v-if="!load">
               <div
                 class="grid grid-cols-12 gap-4 gap-y-3"
-                v-for="(schedule,index) in dt.schedules"
-                :key="index"
+                v-for="(schedule,index) in salon.schedules"
+                :key="schedule.id"
               >
+
                 <div class="grid grid-cols-12 gap-4 gap-y-3 col-span-12">
                   <FormInline class="col-span-6">
                     <FormLabel
@@ -649,9 +778,7 @@ const copyTime = () => {
                     >
                       {{ schedule.day_name }}
                     </FormLabel>
-
                     <VueTimepicker v-model="schedule.start_time" />
-
                   </FormInline>
                   <FormInline class="col-span-6">
                     <FormLabel
@@ -663,8 +790,8 @@ const copyTime = () => {
                     <VueTimepicker v-model="schedule.end_time" />
                   </FormInline>
                 </div>
-                        <!-- BEGIN: Modal Toggle -->
-                        <div
+                <!-- BEGIN: Modal Toggle -->
+                <div
                   class="text-center col-span-12"
                   v-if="schedule.start_time && schedule.end_time"
                 >
@@ -685,24 +812,11 @@ const copyTime = () => {
                 <!-- END: Modal Toggle -->
               </div>
             </div>
-            <div class="mt-3">
-              <FormLabel htmlFor="crud-form-2">Mô tả về Salon</FormLabel>
-              <FormTextarea
-                v-model="dt.salon_description"
-                class="mt-4"
-                aria-placeholder="Thông Tin Giới Thiệu Về Salon"
-                rows="6"
-              />
-            </div>
+
           </div>
         </div>
-      </div>
-      <!-- END: Salon Info -->
 
-      <!-- BEGIN: service & Service Info -->
-      <div class="p-5 mt-5 intro-y box">
-
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
+        <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
           <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require">
             <Lucide
               icon="User"
@@ -731,9 +845,9 @@ const copyTime = () => {
 
                     <tbody>
                       <tr
-                        class=""
                         v-for="(service, key) in services"
                         :key="service.service_id"
+                        :class="service.service_id"
                       >
                         <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
                           <input
@@ -741,8 +855,8 @@ const copyTime = () => {
                             :key="service.service_id"
                             :id="'service_img'+service.service_id"
                             @change="($event:Event)=> {
-                              handleFileChange(service.service_id, 2, $event)
-                            }"
+                      handleFileChange(service.service_id, 2, $event)
+                    }"
                             class="hidden"
                           />
                           <label
@@ -803,8 +917,8 @@ const copyTime = () => {
                           <a
                             style="cursor: pointer"
                             @click="()=>{
-                              deleteService(service.service_id)
-                            }"
+                      deleteService(service.service_id)
+                    }"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -893,8 +1007,8 @@ const copyTime = () => {
                             :key="staff.staff_id"
                             :id="'staff_img'+staff.staff_id"
                             @change="($event:Event)=> {
-                              handleFileChange(staff.staff_id, 1, $event)
-                            }"
+                      handleFileChange(staff.staff_id, 1, $event)
+                    }"
                             class="hidden"
                           />
                           <label
@@ -933,14 +1047,14 @@ const copyTime = () => {
                             type="text"
                             v-maska="bindedObject"
                             data-maska="(###) ###-####"
-                            v-model.trim="validate[key].value.phone_val.$model"
+                            v-model.trim="validate[key].value.phone_format.$model"
                             @change="maskphone('',true,key)"
-                            :class="{'border-danger': validate[key].value.phone_val.$error,
-                            'border-slate-200':!validate[key].value.phone_val.$error,}"
+                            :class="{'border-danger': validate[key].value.phone_format.$error,
+                    'border-slate-200':!validate[key].value.phone_format.$error,}"
                           />
-                          <template v-if="validate[key].value.phone_val.$error">
+                          <template v-if="validate[key].value.phone_format.$error">
                             <div
-                              v-for="(error, index) in validate[key].value.phone_val.$errors"
+                              v-for="(error, index) in validate[key].value.phone_format.$errors"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -1002,32 +1116,20 @@ const copyTime = () => {
             </FormInline>
           </div>
         </div>
-      </div>
-      <!-- END: service & Service  Info -->
 
-      <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
-        <!-- <Button
-                  type="button"
-                  class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
-                >
-                  Cancel
-                </Button> -->
-        <!--   <Button
-                  type="button"
-                  class="w-full py-3 border-slate-300 dark:border-darkmode-400 text-slate-500 md:w-52"
-                  @click="saveNew"
-                >
-                  Save & Add New Product
-                </Button> -->
-        <Button
-          variant="primary"
-          type="button"
-          class="w-full py-3 md:w-52"
-          @click="saveSalon"
-        >
-          Tạo Salon
-        </Button>
+        <div class="flex flex-col justify-end gap-2 mt-5 md:flex-row">
+          <Button
+            variant="primary"
+            type="button"
+            class="w-full py-3 md:w-52"
+            @click="saveSalon"
+          >
+            Lưu
+          </Button>
+        </div>
       </div>
+      <!-- END: Salon Info -->
+
     </div>
   </div>
   <div class="p-5">
@@ -1054,7 +1156,7 @@ const copyTime = () => {
     <Notification
       refKey="successNotification"
       :options="{
-      duration: 5000,
+        duration: 5000,
     }"
       class="flex"
     >
@@ -1071,6 +1173,53 @@ const copyTime = () => {
     </Notification>
     <!-- END: Success Notification -->
   </div>
+  <!-- BEGIN: Delete Confirmation Modal -->
+  <Dialog
+    :open="deleteConfirmationModal"
+    @close="
+      () => {
+        setDeleteConfirmationModal(false);
+      }
+    "
+    :initialFocus="deleteButtonRef"
+  >
+    <Dialog.Panel>
+      <div class="p-5 text-center">
+        <Lucide
+          icon="XCircle"
+          class="w-16 h-16 mx-auto mt-3 text-danger"
+        />
+        <div class="mt-5 text-3xl">Xóa?</div>
+        <div class="mt-2 text-slate-500">
+          Bạn có thật sự muốn xóa hình ảnh nay ?<br />
+        </div>
+      </div>
+      <div class="px-5 pb-8 text-center">
+        <Button
+          variant="danger"
+          type="button"
+          class="w-24 mr-2"
+          ref="deleteButtonRef"
+          @click="($event) => deleteImg()"
+        >
+          Xóa
+        </Button>
+        <Button
+          variant="outline-secondary"
+          type="button"
+          @click="
+            () => {
+              setDeleteConfirmationModal(false);
+            }
+          "
+          class="w-24 mr-1"
+        >
+          Hủy
+        </Button>
+      </div>
+    </Dialog.Panel>
+  </Dialog>
+  <!-- END: Delete Confirmation Modal -->
 
   <!-- BEGIN:Copy Time Modal Content -->
   <Dialog
@@ -1087,14 +1236,12 @@ const copyTime = () => {
         <h2 class="mr-auto text-base font-medium">
           Chọn ngày muốn sao chép
         </h2>
-        {{ scheduleSeletedList }}
-
       </Dialog.Title>
       <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
         <div class="col-span-12 ">
           <FormSelect v-model="selectedScheduleIndex">
             <option
-              v-for="(schedule,index) in dt.schedules"
+              v-for="(schedule,index) in salon.schedules"
               :key="index"
               :value="index"
             > {{ schedule.day_name }}</option>
@@ -1141,18 +1288,18 @@ const copyTime = () => {
           <div class="col-span-12 ">
             <div
               class="flex items-center mr-4 mt-3"
-              v-for="(schedule,index) in dt.schedules.filter(item=>item.day!=dt.schedules[selectedScheduleIndex].day)"
-              :key="index"
+              v-for="schedule in salon.schedules.filter(item=>item.id!=salon.schedules[selectedScheduleIndex].id)"
+              :key="schedule.day"
             >
               <label
                 class="mr-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
-                :htmlFor="'customer_skin_color-switch-'+index"
+                :htmlFor="'customer_skin_color-switch-'+schedule.day"
               >
                 {{ schedule.day_name}}
               </label>
               <input
                 class=" ml-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
-                :id="'customer_skin_color-switch-'+index"
+                :id="'customer_skin_color-switch-'+schedule.day"
                 type="checkbox"
                 v-model="scheduleSeletedList"
                 :value="schedule.day"
