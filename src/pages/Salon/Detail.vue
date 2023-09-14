@@ -47,9 +47,7 @@ const salon = ref();
 let access_token = localStorage.getItem("access_token");
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
-
-
-
+let login_history = ref([]);
 
 provide("bind[errorNotification]", (el: NotificationElement) => {
   errorNotification.value = el;
@@ -60,8 +58,14 @@ provide("bind[successNotification]", (el: NotificationElement) => {
 
 onMounted(() => {
   getSalon();
+  getLoginHistory();
 });
 
+const getLoginHistory = async () => {
+  const response = await axios.get(`salon/history-in-out?id=${salon_id}`);
+  login_history.value = response.data.data;
+  console.log("login history ", login_history.value[0]);
+};
 const getSalon = async () => {
   const response = await axios.get(`salon/${salon_id}`);
   salon.value = response.data.data;
@@ -72,10 +76,7 @@ const approveSalon = (id: any) => {
   salon.value.status = 1;
   salon.value.partner.is_approve = 1;
   axios
-    .post(
-      "salon/approve",
-      { id: id },
-    )
+    .post("salon/approve", { id: id })
     .then(function (response) {
       scc.value = response.data.message;
       successNotification.value?.showToast();
@@ -85,25 +86,18 @@ const approveSalon = (id: any) => {
       console.log(error);
     });
 };
-const setDeleteConfirmationModal = (
-  value: boolean,
-  salonId: any = null
-) => {
+const setDeleteConfirmationModal = (value: boolean, salonId: any = null) => {
   deleteConfirmationModal.value = value;
   selectedSalonId.value = salonId;
 };
 const deleteSalon = (salonId: any) => {
   deleteConfirmationModal.value = false;
   axios
-    .post(
-      "admin/delete-salon",
-      { id: selectedSalonId.value },
-
-    )
+    .post("admin/delete-salon", { id: selectedSalonId.value })
     .then(function (response) {
       scc.value = response.data.message;
       successNotification.value?.showToast();
-      router.push("/salon/")
+      router.push("/salon/");
     })
     .catch(function (error) {
       err.value = error.response.data.message;
@@ -134,17 +128,13 @@ const activeSalon = (id: any) => {
       console.log(error);
     });
 };
-
 </script>
 
 <template>
   <div class="flex items-center mt-8 intro-y">
     <h2 class="mr-auto text-lg font-medium">Thông Tin Salon</h2>
   </div>
-  <div
-    class="grid grid-cols-12 gap-6 mt-5"
-    v-if="salon"
-  >
+  <div class="grid grid-cols-12 gap-6 mt-5" v-if="salon">
     <div class="col-span-12 lg:col-span-8 2xl:col-span-9">
       <!-- BEGIN: Projects -->
       <div class="col-span-12 intro-y box 2xl:col-span-6">
@@ -158,33 +148,18 @@ const activeSalon = (id: any) => {
             variant="outline-secondary"
             class="p-2 slider-btn prev-btn"
             @click="prevNewProjects"
-            style="
-            position:absolute;
-            z-index: 1000;
-            top: 50%;
-            "
+            style="position: absolute; z-index: 1000; top: 50%"
           >
-            <Lucide
-              icon="ChevronLeft"
-              class="w-4 h-4"
-            />
+            <Lucide icon="ChevronLeft" class="w-4 h-4" />
           </a>
           <a
             href="##"
             variant="outline-secondary"
             class="p-2 slider-btn next-btn"
             @click="nextNewProjects"
-            style="
-            position:absolute;
-            top: 50%;
-            z-index: 1000;
-            right: 20px;
-            "
+            style="position: absolute; top: 50%; z-index: 1000; right: 20px"
           >
-            <Lucide
-              icon="ChevronRight"
-              class="w-4 h-4"
-            />
+            <Lucide icon="ChevronRight" class="w-4 h-4" />
           </a>
         </div>
         <div
@@ -199,41 +174,32 @@ const activeSalon = (id: any) => {
           class="py-5"
           v-if="salon.images.length > 0"
         >
-          <div
-            class="px-5"
-            v-for="item in salon.images"
-            :key="item.id"
-          >
+          <div class="px-5" v-for="item in salon.images" :key="item.id">
             <img
               class="rounded-md mx-auto"
               :alt="item.created_at"
               :src="item.image"
-              style="height: 300px;object-fit: contain;"
+              style="height: 300px; object-fit: contain"
             />
           </div>
         </TinySlider>
-        <div
-          v-else
-          class="text-center py-5"
-        >Chưa có hình ảnh</div>
+        <div v-else class="text-center py-5">Chưa có hình ảnh</div>
       </div>
       <!-- END: Projects -->
       <!-- BEGIN: Product Information -->
       <div class="p-5 mt-5 intro-y box">
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+        <div
+          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
             Chi Tiết
           </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
+          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
             <div class="text-left">
               <div class="flex items-center">
-                <div
-                  class="font-semibold mr-2"
-                  style="min-width: fit-content"
-                >
+                <div class="font-semibold mr-2" style="min-width: fit-content">
                   Tên Salon :
                 </div>
                 <span>
@@ -242,16 +208,10 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
+          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
             <div class="text-left">
               <div class="flex items-center">
-                <div
-                  class="font-semibold mr-2"
-                  style="min-width: fit-content"
-                >
+                <div class="font-semibold mr-2" style="min-width: fit-content">
                   Email :
                 </div>
                 <span>
@@ -260,16 +220,10 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
+          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
             <div class="text-left">
               <div class="flex items-center">
-                <div
-                  class="font-semibold mr-2"
-                  style="min-width: fit-content"
-                >
+                <div class="font-semibold mr-2" style="min-width: fit-content">
                   Địa chỉ :
                 </div>
                 <span>
@@ -278,16 +232,10 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
+          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
             <div class="text-left">
               <div class="flex items-center">
-                <div
-                  class="font-semibold mr-2"
-                  style="min-width: fit-content"
-                >
+                <div class="font-semibold mr-2" style="min-width: fit-content">
                   Số Điện Thoại liên hệ :
                 </div>
                 <span>
@@ -296,33 +244,20 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
+          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
             <div class="text-left">
               <div class="flex">
-                <div
-                  class="font-semibold mr-2"
-                  style="min-width: fit-content"
-                >
+                <div class="font-semibold mr-2" style="min-width: fit-content">
                   Mô Tả :
                 </div>
-                <span v-html="salon.description">
-                </span>
+                <span v-html="salon.description"> </span>
               </div>
             </div>
           </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
+          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
             <div class="text-left">
               <div class="flex">
-                <div
-                  class="font-semibold mr-2"
-                  style="min-width: fit-content"
-                >
+                <div class="font-semibold mr-2" style="min-width: fit-content">
                   Tổng số booking :
                 </div>
                 <router-link
@@ -332,7 +267,7 @@ const activeSalon = (id: any) => {
                   }"
                   v-if="salon.total_booking"
                   class="text-info"
-                  target='_blank'
+                  target="_blank"
                 >
                   <span v-html="salon.total_booking"> </span>
                 </router-link>
@@ -341,20 +276,15 @@ const activeSalon = (id: any) => {
                   v-html="salon.total_booking"
                   title="Xem list booking"
                   v-else
-                > </span>
+                >
+                </span>
               </div>
             </div>
           </div>
-          <div
-            class="mt-2"
-            style="font-size: 15px; line-height: 2rem"
-          >
+          <div class="mt-2" style="font-size: 15px; line-height: 2rem">
             <div class="text-left">
               <div class="flex">
-                <div
-                  class="font-semibold mr-2"
-                  style="min-width: fit-content"
-                >
+                <div class="font-semibold mr-2" style="min-width: fit-content">
                   Rating :
                 </div>
                 <span
@@ -366,14 +296,15 @@ const activeSalon = (id: any) => {
               </div>
             </div>
           </div>
-
         </div>
         <!--   ///////////////////  SALON SERVICES  ////////////////////////  -->
         <div
           class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
           id="services_list"
         >
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
             Danh sách Dịch vụ :
           </div>
           <div class="overflow-x-auto">
@@ -386,11 +317,13 @@ const activeSalon = (id: any) => {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                <Table.Tr
-                  v-for="item in salon.services"
-                  :key="item.id"
-                >
-                  <Table.Td><img :src="item.image?item.image:logoURL" width="60" height="60"/></Table.Td>
+                <Table.Tr v-for="item in salon.services" :key="item.id">
+                  <Table.Td
+                    ><img
+                      :src="item.image ? item.image : logoURL"
+                      width="60"
+                      height="60"
+                  /></Table.Td>
                   <Table.Td>{{ item.name }}</Table.Td>
                   <Table.Td>{{ item.price }} $</Table.Td>
                 </Table.Tr>
@@ -404,7 +337,9 @@ const activeSalon = (id: any) => {
           class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
           id="staffs_list"
         >
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
             Danh sách Thợ :
           </div>
           <div class="overflow-x-auto">
@@ -417,11 +352,13 @@ const activeSalon = (id: any) => {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                <Table.Tr
-                  v-for="item in salon.staffs"
-                  :key="item.id"
-                >
-                  <Table.Td><img :src="item.avatar?item.avatar:logoURL" width="60" height="60"/></Table.Td>
+                <Table.Tr v-for="item in salon.staffs" :key="item.id">
+                  <Table.Td
+                    ><img
+                      :src="item.avatar ? item.avatar : logoURL"
+                      width="60"
+                      height="60"
+                  /></Table.Td>
                   <Table.Td>{{ item.name }}</Table.Td>
                   <Table.Td>{{ item.phone_format }}</Table.Td>
                 </Table.Tr>
@@ -431,10 +368,16 @@ const activeSalon = (id: any) => {
         </div>
         <!-- END SALON STAFFS -->
         <!--   ///////////////////  SALON SCHEDULE  ////////////////////////  -->
-        <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
+        <div
+          class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
             Giờ làm việc : &nbsp;
-            <span class="italic text-success">(Múi Giờ : {{ salon.timezone }} {{ salon.tz }})</span>
+            <span class="italic text-success"
+              >(Múi Giờ : {{ salon.timezone }} {{ salon.tz }})</span
+            >
           </div>
           <div class="overflow-x-auto">
             <Table class="mt-5">
@@ -453,8 +396,16 @@ const activeSalon = (id: any) => {
                   <Table.Td>{{
                     schedule.day == 0 ? "Chủ Nhật" : `Thứ ${schedule.day + 1}`
                   }}</Table.Td>
-                  <Table.Td>{{ schedule.start_time ? moment(schedule.start_time,'HH:mm:ss').format('HH:mm') : 'OFF' }}</Table.Td>
-                  <Table.Td>{{ schedule.end_time ?  moment(schedule.end_time,'HH:mm:ss').format('HH:mm') : "OFF" }}</Table.Td>
+                  <Table.Td>{{
+                    schedule.start_time
+                      ? moment(schedule.start_time, "HH:mm:ss").format("HH:mm")
+                      : "OFF"
+                  }}</Table.Td>
+                  <Table.Td>{{
+                    schedule.end_time
+                      ? moment(schedule.end_time, "HH:mm:ss").format("HH:mm")
+                      : "OFF"
+                  }}</Table.Td>
                 </Table.Tr>
               </Table.Tbody>
             </Table>
@@ -465,10 +416,11 @@ const activeSalon = (id: any) => {
       <!-- END: Product Information -->
     </div>
     <!-- BEGIN: Profile Menu -->
-    <div class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block">
-      <div class="mt-5 intro-y box lg:mt-0">
+    <div
+      class="flex flex-col-reverse col-span-12 lg:col-span-4 2xl:col-span-3 lg:block"
+    >
+      <div class="mt-5 mb-5 intro-y box lg:mt-0">
         <div class="relative flex items-center p-5">
-
           <div class="w-12 h-12 image-fit">
             <img
               v-if="salon.images[0]"
@@ -482,37 +434,30 @@ const activeSalon = (id: any) => {
               {{ salon.partner.name }}
             </div>
             <div class="text-slate-500 flex">
-              <Lucide
-                icon="Phone"
-                class="w-4 h-4 mr-2"
-              />{{ salon.partner.phone_format }}
+              <Lucide icon="Phone" class="w-4 h-4 mr-2" />{{
+                salon.partner.phone_format
+              }}
             </div>
           </div>
         </div>
         <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
           <router-link
-            :to="{name:'salon-edit' , params:{salon_id:salon.id}}"
+            :to="{ name: 'salon-edit', params: { salon_id: salon.id } }"
             class="flex"
           >
-            <Lucide
-              icon="Edit"
-              class="w-4 h-4 mr-2"
-            />
+            <Lucide icon="Edit" class="w-4 h-4 mr-2" />
             Sửa thông tin salon
           </router-link>
         </div>
         <div class="p-5 border-t border-slate-200/60 dark:border-darkmode-400">
           <router-link
             :to="{
-                          name: 'job-create',
-                          params: { salon_id: salon.id },
-                        }"
-            style="display:flex !important"
+              name: 'job-create',
+              params: { salon_id: salon.id },
+            }"
+            style="display: flex !important"
           >
-            <Lucide
-              icon="Send"
-              class="w-4 h-4 mr-2"
-            />
+            <Lucide icon="Send" class="w-4 h-4 mr-2" />
             Đăng Tin Tuyển Dụng
           </router-link>
         </div>
@@ -528,12 +473,9 @@ const activeSalon = (id: any) => {
                         }
                       "
           >
-            <Lucide
-              icon="Activity"
-              class="w-4 h-4 mr-2"
-            /> Phê duyệt
+            <Lucide icon="Activity" class="w-4 h-4 mr-2" /> Phê duyệt
           </a>
-         
+
           <a
             class="flex items-center text-success"
             href="#"
@@ -545,10 +487,7 @@ const activeSalon = (id: any) => {
                         }
                       "
           >
-            <Lucide
-              icon="Unlock"
-              class="w-4 h-4 mr-2"
-            /> Mở Khóa
+            <Lucide icon="Unlock" class="w-4 h-4 mr-2" /> Mở Khóa
           </a>
           <a
             class="flex items-center text-danger"
@@ -561,13 +500,12 @@ const activeSalon = (id: any) => {
                         }
                       "
           >
-            <Lucide
-              icon="Lock"
-              class="w-4 h-4 mr-2"
-            /> Khóa
+            <Lucide icon="Lock" class="w-4 h-4 mr-2" /> Khóa
           </a>
         </div>
-        <div class="flex p-5 border-t border-slate-200/60 dark:border-darkmode-400 justify-center">
+        <div
+          class="flex p-5 border-t border-slate-200/60 dark:border-darkmode-400 justify-center"
+        >
           <Button
             variant="danger"
             type="button"
@@ -583,6 +521,28 @@ const activeSalon = (id: any) => {
           </Button>
         </div>
       </div>
+      <div class="mt-5 intro-y box lg:mt-0">
+        <div class="relative flex items-center p-5">
+          <strong> Lịch sử đăng nhập </strong>
+        </div>
+          <div v-for="(history, key) in login_history" :key="key">
+            <div
+              v-for="item in history.list_check_in_out"
+              :key="item.id"
+              class="p-5 border-t border-slate-200/60 dark:border-darkmode-400"
+            >
+              <strong
+                :class="[item.status == 1 ? 'text-success' : 'text-danger']"
+              >
+                {{ item.type }}
+              </strong>
+              vào ngày
+              <strong>
+                {{ item.date + " " + item.time_format }}
+              </strong>
+            </div>
+          </div>
+      </div>
     </div>
     <!-- END: Profile Menu -->
   </div>
@@ -593,14 +553,10 @@ const activeSalon = (id: any) => {
       refKey="errorNotification"
       :options="{
         duration: 5000,
-    }"
+      }"
       class="flex"
     >
-      <Lucide
-        icon="AlertTriangle"
-        class="text-success"
-        style="color: red"
-      />
+      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Có lỗi xảy ra!</div>
         <div class="mt-1 text-slate-500">
@@ -612,13 +568,10 @@ const activeSalon = (id: any) => {
       refKey="successNotification"
       :options="{
         duration: 5000,
-    }"
+      }"
       class="flex"
     >
-      <Lucide
-        icon="CheckCircle"
-        class="text-success"
-      />
+      <Lucide icon="CheckCircle" class="text-success" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Thành Công</div>
         <div class="mt-1 text-slate-500">
@@ -640,10 +593,7 @@ const activeSalon = (id: any) => {
   >
     <Dialog.Panel>
       <div class="p-5 text-center">
-        <Lucide
-          icon="XCircle"
-          class="w-16 h-16 mx-auto mt-3 text-danger"
-        />
+        <Lucide icon="XCircle" class="w-16 h-16 mx-auto mt-3 text-danger" />
         <div class="mt-5 text-3xl">Xóa Salon?</div>
         <div class="mt-2 text-slate-500">
           Bạn có thật sự muốn xóa salon nay ?<br />

@@ -97,10 +97,14 @@ provide("bind[successNotification]", (el: NotificationElement) => {
           </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Rating
+          </Table.Th>  
+          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+            Đăng nhập
           </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Trạng thái
           </Table.Th>
+        
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Ngày Tạo
           </Table.Th>
@@ -213,13 +217,27 @@ provide("bind[successNotification]", (el: NotificationElement) => {
                         }"
               class="text-info"
             >
-              {{ item.total_staff }}
+            {{ item.total_staff }}
             </router-link>
           </Table.Td>
+         
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ item.rating }} Sao
             <br>
             ({{ item.total_feedback }} Feedback)
+          </Table.Td>
+
+          <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            <router-link
+              :to="{
+                          name: 'salon-detail',
+                          params: { salon_id: item.id },
+                        }"
+              class="text-info"
+            >
+   
+              {{ item.login_count >1 ? item.login_count+' lần' : "Chưa đăng nhập" }}
+            </router-link>
           </Table.Td>
           <Table.Td
             class="first:rounded-l-md last:rounded-r-md text-center text-danger bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"

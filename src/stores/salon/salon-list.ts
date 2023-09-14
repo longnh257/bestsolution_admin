@@ -9,7 +9,8 @@ interface SalonListState {
   page: number,
   txtSearch: string,
   msg: string,
-  loading: boolean
+  loading: boolean,
+  status: number|string,
 }
 
 const access_token = localStorage.getItem("access_token");
@@ -24,6 +25,7 @@ export const useSalonListStore = defineStore("SalonList", {
       msg: "",
       txtSearch: "",
       loading: false,
+      status: "",
     }
   ),
   getters: {
@@ -38,6 +40,7 @@ export const useSalonListStore = defineStore("SalonList", {
           page: this.page,
           txt_search: this.txtSearch,
           num_per_page: this.recPerPage,
+          status: this.status,
         },
       })
       this.salons = res.data.data

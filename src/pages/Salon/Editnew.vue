@@ -28,16 +28,17 @@ import {
   FormSwitch,
   FormTextarea,
 } from "../../base-components/Form";
-import moment from 'moment';
+import moment from "moment";
 import { convertToTZ } from "../../utils/helper";
-import VueTimepicker from 'vue3-timepicker/src/VueTimepicker.vue';
-import 'vue3-timepicker/dist/VueTimepicker.css'
+import VueTimepicker from "vue3-timepicker/src/VueTimepicker.vue";
+import "vue3-timepicker/dist/VueTimepicker.css";
 import {
   required,
   minLength,
   maxLength,
   maxValue,
   minValue,
+  requiredIf,
   email,
   url,
   integer,
@@ -50,17 +51,12 @@ import addURL from "../../assets/images/add.png";
 const route = useRoute();
 var salon_id = route.params.salon_id;
 
-const announcementRef = ref<TinySliderElement>();
-const newProjectsRef = ref<TinySliderElement>();
-const todaySchedulesRef = ref<TinySliderElement>();
 const deleteConfirmationModal = ref(false);
 const deleteButtonRef = ref(null);
 const selectedImgIndex = ref();
 const selectedImgID = ref();
 let err: any = ref([]);
 let scc: any = ref([]);
-const salonIndex: any = ref("");
-const salonId: any = ref("");
 const salon = ref();
 const errorNotification = ref<NotificationElement>();
 const successNotification = ref<NotificationElement>();
@@ -68,14 +64,13 @@ var salon_id = route.params.salon_id;
 const copyTimeModal = ref(false);
 const sendButtonRef = ref(null);
 
-const password = ref("");
 const newPassword = ref("");
 const newPasswordConfirm = ref("");
 let listImgs: any = ref([]);
 let listStaffImgs: any = ref([]);
 let showPassword = ref(true);
 let showPasswordConfirm = ref(true);
-const scheduleSeletedList = ref([])
+const scheduleSeletedList = ref([]);
 
 const maskedValue = ref("");
 const bindedObject = reactive({ unmasked: "" });
@@ -83,35 +78,47 @@ const bindedObject = reactive({ unmasked: "" });
 const saveSalon = () => {
   submit();
 };
-const saveNew = () => { };
+const saveNew = () => {};
 
 const submit = () => {
-
   const fd = new FormData();
-  const dateNow = moment().utc().format('YYYY-MM-DD')
-  let scheduleData: any = []
-  salon.value.schedules.map(item => {
+  const dateNow = moment().utc().format("YYYY-MM-DD");
+  let scheduleData: any = [];
+  salon.value.schedules.map((item) => {
     if (!item.start_time || !item.end_time) {
       scheduleData.push({
         day: item.day,
         start_time: null,
-        end_time: null
-      })
+        end_time: null,
+      });
     } else {
       scheduleData.push({
         day: item.day,
-        start_time: item.start_time ? convertToTZ(new Date(`${dateNow} ${item.start_time}`), salon.value.timezone) : null,
-        end_time: item.end_time ? convertToTZ(new Date(`${dateNow} ${item.end_time}`), salon.value.timezone) : null
-      })
+        start_time: item.start_time
+          ? convertToTZ(
+              new Date(`${dateNow} ${item.start_time}`),
+              salon.value.timezone
+            )
+          : null,
+        end_time: item.end_time
+          ? convertToTZ(
+              new Date(`${dateNow} ${item.end_time}`),
+              salon.value.timezone
+            )
+          : null,
+      });
     }
-  })
+  });
 
   fd.append("id", salon.value.id);
   fd.append("name", salon.value.name);
   fd.append("address", salon.value.address);
   fd.append("phone", salon.value.phone);
-  fd.append("email", salon.value.email ? salon.value.email : '');
-  fd.append("description", salon.value.description ? salon.value.description : '');
+  fd.append("email", salon.value.email ? salon.value.email : "");
+  fd.append(
+    "description",
+    salon.value.description ? salon.value.description : ""
+  );
   fd.append("country", salon.value.country);
   fd.append("city", salon.value.city);
   fd.append("state", salon.value.state);
@@ -122,13 +129,12 @@ const submit = () => {
   fd.append("lat", salon.value.lat);
   fd.append("lng", salon.value.lng);
   fd.append("schedules", JSON.stringify(scheduleData));
-  fd.append("staffs", JSON.stringify(staffs));
-  fd.append("services", JSON.stringify(services));
+  fd.append("staffs", JSON.stringify(salon.value.staffs));
+  fd.append("services", JSON.stringify(salon.value.services));
   fd.append("delete_images", JSON.stringify(deleteImgArr.value));
   for (let index in images.value) {
     fd.append("images", images.value[index]);
   }
-
 
   axios
     .post(`admin/update-salon-info`, fd, {
@@ -137,7 +143,7 @@ const submit = () => {
       },
     })
     .then(function (response) {
-      // handle success     
+      // handle success
       scc.value = response.data.message;
       successNotification.value?.showToast();
     })
@@ -184,18 +190,16 @@ const setCopyTimeModal = (value) => {
   copyTimeModal.value = value;
 };
 
-
-
 const maskphone = (key: any, isStaff: boolean = false, index: any = null) => {
   if (isStaff) {
-    staffs[index].phone = bindedObject.unmasked;
+    salon.value.staffs[index].phone = bindedObject.unmasked;
   } else if (key === "phone") {
     salon.value.phone = bindedObject.unmasked;
   }
   if (key === "salon_phone") {
     salon.value.partner.phone = bindedObject.unmasked;
   }
-}
+};
 
 const getAddressData = async (placeResultData: any) => {
   for (const item of placeResultData.address_components) {
@@ -221,276 +225,356 @@ const getAddressData = async (placeResultData: any) => {
     placeResultData.utc_offset_minutes / 60;
   console.log(salon.value);
 
-  const timezoneByLocation: any = await getTimeZoneByLocation(salon.value.lat, salon.value.lng)
+  const timezoneByLocation: any = await getTimeZoneByLocation(
+    salon.value.lat,
+    salon.value.lng
+  );
   if (timezoneByLocation.timeZoneId)
-    salon.value.timezone = timezoneByLocation.timeZoneId
+    salon.value.timezone = timezoneByLocation.timeZoneId;
 };
 let deleteImgArr = ref<any[]>([]);
 const deleteImg = () => {
-
   deleteImgArr.value.push(selectedImgID.value);
   salon.value.images.splice(selectedImgIndex.value, 1);
   deleteConfirmationModal.value = false;
   console.log(deleteImgArr.value);
 };
 
-let selectedSchedule = ref({ id: '', day: '', day_name: '', end_time: '', start_time: '' })
-let selectedScheduleIndex = ref(0)
-
+let selectedSchedule = ref({
+  id: "",
+  day: "",
+  day_name: "",
+  end_time: "",
+  start_time: "",
+});
+let selectedScheduleIndex = ref(0);
 
 const getSalon = async () => {
   axios.get(`salon/${salon_id}`).then((res) => {
     salon.value = res.data.data;
+    salon.value.services.map((item) => {
+      item.avatar = item.image;
+      console.log(item.avatar);
+    });
+    selectedSchedule.value = salon.value.schedules[selectedScheduleIndex.value];
     console.log(salon.value);
-    staffs.splice(0, 1);
-    services.splice(0, 1);
-    validate.splice(0, 1);
-    servicesValidate.splice(0, 1);
-    salon.value.staffs.map((item: any) => {
-      item.staff_id = item.id
-      item.first_name = ''
-      item.last_name = ''
-      staffs.push(item)
-    })
-    salon.value.services.map((item: any) => {
-      item.service_id = item.id
-      item.avatar = item.image
-      services.push(item)
-    })
-    staffs.map((item) => {
-      validate.push(useVuelidate(validations, item))
-    })
-    services.map((item) => {
-      servicesValidate.push(useVuelidate(servicesValidations, item))
-    })
-    selectedSchedule.value = salon.value.schedules[selectedScheduleIndex.value]
   });
 };
-
-
 
 const changePassword = async () => {
   console.log(newPassword.value, newPasswordConfirm.value);
 
-  await axios.post(`admin/change-password/${salon.value.partner.id}`, {
-    new_password: newPassword.value,
-    confirm_password: newPasswordConfirm.value,
-  }).then(function (response) {
-    // handle success     
-    scc.value = response.data.message;
-    successNotification.value?.showToast();
-  })
+  await axios
+    .post(`admin/change-password/${salon.value.partner.id}`, {
+      new_password: newPassword.value,
+      confirm_password: newPasswordConfirm.value,
+    })
+    .then(function (response) {
+      // handle success
+      scc.value = response.data.message;
+      successNotification.value?.showToast();
+    })
     .catch(function (error) {
       err.value = error.response.data.message;
       errorNotification.value?.showToast();
     });
 };
 
+let staff_id = ref(0);
+let service_id = ref(0);
 
-let staff_id = ref(0)
-let service_id = ref(0)
-
-
-const staffs = reactive(
-  [{ staff_id: 'new' + 0, name: "", phone: "", phone_format: "", avatar: '' }]
-);
-
-const services = reactive(
-  [{ service_id: 'new' + 0, name: "", price: "", avatar: '' }]
-);
+const scheduleValdiate = (value: any, obj: any) => {
+  if (obj.start_time && !obj.end_time) return true; // Validation passes
+  if (obj.start_time > obj.end_time) return false; // Validation fails
+  return true; // Validation passes
+};
 
 const validations = {
-  name: {
-    required: helpers.withMessage(() => 'Vui lòng nhập tên thợ', required),
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên nhân viên phải có ít nhất  ${$params.min} ký tự`,
-      minLength(3)
-    ),
-    maxLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên nhân viên chỉ được có tối đa ${$params.max} ký tự `,
-      maxLength(25)
-    ),
-  },
-  phone_format: {
-    required: helpers.withMessage(() => 'Vui lòng nhập sđt thợ', required),
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Số điện thoại phải là 10 số`,
-      minLength(14)
-    ),
-  },
+  salon: {
+    name: {
+      required: helpers.withMessage(
+        () => "Vui lòng nhập tên chủ salon",
+        required
+      ),
+    },
+    phone_format: {
+      required: helpers.withMessage(
+        () => "Vui lòng nhập sđt đăng nhập",
+        required
+      ),
+      minLength: helpers.withMessage(
+        ({ $params }) => `Số điện thoại phải là 10 số`,
+        minLength(10)
+      ),
+    },
+    password: {
+      required: helpers.withMessage(() => "Vui lòng nhập mật khẩu", required),
+      regex: helpers.withMessage(
+        () => "Mật khẩu không được chứa khoảng trắng",
+        (value: any) => /^[^\s]+$/.test(value)
+      ),
+      minLength: helpers.withMessage(
+        ({ $params }) => `Mật khẩu phải có ít nhất  ${$params.min} ký tự`,
+        minLength(6)
+      ),
+      maxLength: helpers.withMessage(
+        ({ $params }) => `Mật khẩu chỉ được có tối đa ${$params.max} ký tự `,
+        maxLength(64)
+      ),
+    },
+    salon_name: {
+      required: helpers.withMessage(() => "Vui lòng nhập tên salon", required),
+    },
+    salon_address: {
+      required: helpers.withMessage(
+        () =>
+          "Địa chỉ salon là bắt buộc, tất cả các thông tin như tiểu bang, thành phố, múi giờ sẽ được lấy từ địa chỉ",
+        required
+      ),
+    },
+    salon_phone_format: {
+      required: helpers.withMessage(() => "Vui lòng nhập sđt salon", required),
+      minLength: helpers.withMessage(
+        ({ $params }) => `Số điện thoại phải là 10 số`,
+        minLength(14)
+      ),
+    },
+    salon_email: {
+      email: helpers.withMessage(() => "Email không hợp lệ", email),
+    },
+    salon_description: {
+      maxLength: helpers.withMessage(
+        () => "Mô tả chỉ được nhập tối đa 1000 ký tự",
+        maxLength(1000)
+      ),
+    },
 
+    schedules: {
+      $each: helpers.forEach({
+        start_time: {
+          required: helpers.withMessage(
+            () => "Vui lòng nhập giờ mở cửa",
+            requiredIf((val: any, obj: any) => obj.end_time)
+          ),
+        },
+        end_time: {
+          required: helpers.withMessage(
+            () => "Vui lòng nhập giờ đóng cửa",
+            requiredIf((val: any, obj: any) => obj.start_time)
+          ),
+          scheduleValdiate: helpers.withMessage(
+            () => "Giờ mở cửa không được lớn hơn giờ đóng cửa",
+            scheduleValdiate
+          ),
+        },
+      }),
+    },
+
+    staffs: {
+      $each: helpers.forEach({
+        name: {
+          required: helpers.withMessage(
+            () => "Vui lòng nhập tên thợ",
+            required
+          ),
+          minLength: helpers.withMessage(
+            ({ $params }) => `Tên thợ phải có ít nhất  ${$params.min} ký tự`,
+            minLength(3)
+          ),
+          maxLength: helpers.withMessage(
+            ({ $params }) => `Tên thợ chỉ được có tối đa ${$params.max} ký tự `,
+            maxLength(25)
+          ),
+        },
+        phone_format: {
+          required: helpers.withMessage(
+            () => "Vui lòng nhập sđt thợ",
+            required
+          ),
+          minLength: helpers.withMessage(
+            ({ $params }) => `Số điện thoại phải là 10 số`,
+            minLength(14)
+          ),
+        },
+      }),
+    },
+
+    services: {
+      $each: helpers.forEach({
+        name: {
+          required: helpers.withMessage(
+            () => "Vui lòng nhập tên dịch vụ",
+            required
+          ),
+          minLength: helpers.withMessage(
+            ({ $params }) =>
+              `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
+            minLength(3)
+          ),
+          maxLength: helpers.withMessage(
+            ({ $params }) =>
+              `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
+            maxLength(25)
+          ),
+        },
+        price: {
+          required: helpers.withMessage(
+            () => "Vui lòng nhập giá dịch vụ",
+            required
+          ),
+          decimal: helpers.withMessage(
+            () => "Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)",
+            (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)
+          ),
+          minValue: helpers.withMessage(
+            ({ $params }) => `Giá dịch vụ phải > 0`,
+            minValue(0.01)
+          ),
+          maxValue: helpers.withMessage(
+            ({ $params }) => `Giá dịch vụ phải < 100000`,
+            maxValue(99999.99)
+          ),
+        },
+      }),
+    },
+  },
 };
 
-const servicesValidations = {
-  name: {
-    required: helpers.withMessage(() => 'Vui lòng nhập tên dịch vụ', required),
-    minLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên dịch vụ phải có ít nhất  ${$params.min} ký tự`,
-      minLength(3)
-    ),
-    maxLength: helpers.withMessage(
-      ({
-        $params,
-      }) => `Tên dịch vụ chỉ được có tối đa ${$params.max} ký tự `,
-      maxLength(25)
-    ),
-  },
-  price: {
-    required: helpers.withMessage(() => 'Vui lòng nhập giá dịch vụ', required),
-    decimal: helpers.withMessage(() => 'Giá chỉ được nhập số (tối đa 2 chữ số thập phân vd: 9.99)', (value: any) => /^(\d+)?(\.\d{1,2})?$/.test(value)),
-    minValue: helpers.withMessage(
-      ({
-        $params,
-      }) => `Giá dịch vụ phải > 0`,
-      minValue(0.01)
-    ),
-    maxValue: helpers.withMessage(
-      ({
-        $params,
-      }) => `Giá dịch vụ phải < ${$params.max}`,
-      maxValue(99999.99),
-    ),
-  },
-
-};
-
-// Use Vuelidate
-const validate = <any>[]
-
-staffs.map((item) => {
-  validate.push(useVuelidate(validations, item))
-})
-const servicesValidate = <any>[]
-
-services.map((item) => {
-  servicesValidate.push(useVuelidate(servicesValidations, item))
-})
-
+const validate = useVuelidate(validations, {
+  salon,
+});
 
 const addStaff = () => {
-  staff_id.value = staff_id.value + 1
-  staffs.push({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })
-  validate.push(useVuelidate(validations, reactive({ staff_id: 'new' + staff_id.value, name: "", phone: "", phone_format: "", avatar: '' })))
-  for (var i = 0; i < validate.length; i++) {
-    validate[i].value.$touch()
-  }
-}
+  staff_id.value = staff_id.value + 1;
+  salon.value.staffs.push({
+    staff_id: staff_id.value,
+    name: "",
+    phone: "",
+    phone_format: "",
+    avatar: "",
+  });
+};
+
 const addService = () => {
-  service_id.value = service_id.value + 1
-  services.push({ service_id: 'new' + service_id.value, name: "", price: "", avatar: '' });
-  servicesValidate.push(useVuelidate(servicesValidations, reactive({ id: 'new' + service_id.value, name: "", price: "", avatar: '' })))
-  for (var i = 0; i < servicesValidate.length; i++) {
-    servicesValidate[i].value.$touch()
-  }
-}
+  service_id.value = service_id.value + 1;
+  salon.value.services.push({
+    service_id: service_id.value,
+    name: "",
+    price: "",
+    avatar: "",
+  });
+};
 
 const deleteStaff = (id: any) => {
-  const i = staffs.findIndex((staff) => staff.staff_id === id);
-  if (staffs.length > 1) {
+  const i = salon.value.staffs.findIndex((staff) => staff.staff_id === id);
+  if (salon.value.staffs.length > 1) {
     if (i !== -1) {
       axios
         .post(`upload/delete-avatar`, {
-          filename: staffs[i].avatar
-        }).then((res) => {
-          console.log(res);
-        }).catch((err) => {
-          console.log(err);
+          filename: salon.value.staffs[i].avatar,
         })
-      staffs.splice(i, 1);
-      validate.splice(i, 1)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      salon.value.staffs.splice(i, 1);
+      validate.value.$validate();
     }
   } else {
-    staffs[i].name = ""
-    staffs[i].phone = ""
+    salon.value.staffs[i].name = "";
+    salon.value.staffs[i].phone = "";
   }
-}
+};
 
 const deleteService = (id: any) => {
-  const i = services.findIndex((service) => service.service_id === id);
-  if (services.length > 1) {
+  const i = salon.value.services.findIndex((staff) => staff.service_id === id);
+  if (salon.value.services.length > 1) {
     if (i !== -1) {
       axios
         .post(`upload/delete-avatar`, {
-          filename: services[i].avatar
-        }).then((res) => {
-          console.log(res);
-        }).catch((err) => {
-          console.log(err);
+          filename: salon.value.services[i].avatar,
         })
-      services.splice(i, 1)
-      servicesValidate.splice(i, 1)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      salon.value.services.splice(i, 1);
+      validate.value.$validate();
     }
   } else {
-    services[i].name = ""
-    services[i].price = ""
+    salon.value.services[i].name = "";
+    salon.value.services[i].price = "";
   }
-}
-const handleFileChange = async (id: any, type: any, event: Event) => {
+};
+
+const handleFileChange = async (key: number, type: any, event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   if (files && files.length > 0) {
     const imageFile = files[0];
 
     const fd = new FormData();
-    fd.append('type', type)
-    fd.append('avatar', imageFile)
+    fd.append("type", type);
+    fd.append("avatar", imageFile);
     await axios
       .post(`upload/upload-avatar`, fd, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }).then((res) => {
+      })
+      .then((res) => {
         console.log(res.data.data);
+        console.log(key);
+
         if (type == 1) {
-          const i = staffs.findIndex((staff) => staff.staff_id === id);
-          staffs[i].avatar = res.data.data.avatar
+          salon.value.staffs[key].avatar = res.data.data.avatar;
         }
         if (type == 2) {
-          const i = services.findIndex((service) => service.service_id === id);
-          services[i].avatar = res.data.data.avatar
+          salon.value.services[key].image = res.data.data.avatar;
+          salon.value.services[key].avatar = res.data.data.avatar;
         }
-      }).catch((error) => {
-        err.value = "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png"
+      })
+      .catch((error) => {
+        err.value =
+          "Hình ảnh vừa nhập không hợp lệ, vui lòng chỉ nhập hình ảnh có đuôi file jpg,jpeg,png";
         errorNotification.value?.showToast();
         console.log(err);
-      })
+      });
   }
-}
+};
 
 const setSelectedSchedule = (schedule: any, index: any) => {
-  selectedScheduleIndex = index
-  selectedSchedule.value = schedule
-}
+  selectedScheduleIndex = index;
+  selectedSchedule.value = schedule;
+};
 
-let load = ref(false)
+let load = ref(false);
 
 watch(selectedScheduleIndex, (newValue) => {
   selectedSchedule.value = salon.value.schedules[newValue];
-  load.value = true
+  load.value = true;
   setTimeout(() => {
-    load.value = false
+    load.value = false;
   }, 1);
 });
 const copyTime = () => {
   console.log(scheduleSeletedList.value);
-  salon.value.schedules.filter(item => scheduleSeletedList.value.includes(item.day)).map(el => {
-    el.start_time = selectedSchedule.value.start_time
-    el.end_time = selectedSchedule.value.end_time
-  })
+  salon.value.schedules
+    .filter((item) => scheduleSeletedList.value.includes(item.day))
+    .map((el) => {
+      el.start_time = selectedSchedule.value.start_time;
+      el.end_time = selectedSchedule.value.end_time;
+    });
   console.log(salon.value.schedules);
-  load.value = true
+  load.value = true;
   setTimeout(() => {
-    load.value = false
+    load.value = false;
   }, 1);
   setCopyTimeModal(false);
-}
+};
 
 onMounted(() => {
   getSalon();
@@ -501,20 +585,18 @@ onMounted(() => {
   <div class="flex items-center mt-8 intro-y">
     <h2 class="mr-auto text-lg font-medium">Chỉnh sửa Salon</h2>
   </div>
-  <div
-    class="grid grid-cols-11 pb-20 mt-5 gap-x-6"
-    v-if="salon"
-  >
+  <div class="grid grid-cols-11 pb-20 mt-5 gap-x-6" v-if="salon">
     <div class="col-span-11 intro-y 2xl:col-span-9">
-
       <!-- BEGIN: Salon Info -->
       <div class="p-5 mt-5 intro-y box">
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            <Lucide
-              icon="Home"
-              class="w-4 h-4 mr-2"
-            /> Thông tin Tài Khoản
+        <div
+          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
+            <Lucide icon="Home" class="w-4 h-4 mr-2" />
+            Thông tin Tài Khoản
           </div>
           <div class="mt-5">
             <div class="mt-3">
@@ -621,12 +703,14 @@ onMounted(() => {
 
       <!-- BEGIN: Salon Info -->
       <div class="p-5 mt-5 intro-y box">
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400">
-            <Lucide
-              icon="Home"
-              class="w-4 h-4 mr-2"
-            /> Thông tin Salon
+        <div
+          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
+            <Lucide icon="Home" class="w-4 h-4 mr-2" />
+            Thông tin Salon
           </div>
           <div class="mt-5">
             <div>
@@ -670,7 +754,7 @@ onMounted(() => {
                 v-maska="bindedObject"
                 v-model="maskedValue"
                 data-maska="(###) ###-####"
-                @change="maskphone(`phone`,false,'')"
+                @change="maskphone(`phone`, false, '')"
               />
             </div>
             <div class="mt-3">
@@ -686,18 +770,16 @@ onMounted(() => {
             <div class="mt-3">
               <FormLabel htmlFor="crud-form-2">Hình ảnh</FormLabel>
               <FormInline class="flex-col items-start mt-3 xl:flex-row">
-                <div class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400">
+                <div
+                  class="flex-1 w-full pt-4 mt-3 border-2 border-dashed rounded-md xl:mt-0 dark:border-darkmode-400"
+                >
                   <div class="grid grid-cols-10 gap-5 pl-4 pr-5">
                     <div
                       v-for="(image, index) in salon.images"
                       :key="image"
                       class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
                     >
-                      <img
-                        class="rounded-md"
-                        alt=""
-                        :src="image.image"
-                      />
+                      <img class="rounded-md" alt="" :src="image.image" />
                       <Tippy
                         content="Remove this image?"
                         class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
@@ -716,28 +798,20 @@ onMounted(() => {
                       :key="image"
                       class="relative col-span-5 cursor-pointer md:col-span-2 h-28 image-fit zoom-in"
                     >
-                      <img
-                        class="rounded-md"
-                        alt=""
-                        :src="image"
-                      />
+                      <img class="rounded-md" alt="" :src="image" />
                       <Tippy
                         content="Remove this image?"
                         class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 -mt-2 -mr-2 text-white rounded-full bg-danger"
                         @click="revokePreview(index)"
                       >
-                        <Lucide
-                          icon="X"
-                          class="w-4 h-4"
-                        />
+                        <Lucide icon="X" class="w-4 h-4" />
                       </Tippy>
                     </div>
                   </div>
-                  <div class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer">
-                    <Lucide
-                      icon="Image"
-                      class="w-4 h-4 mr-2"
-                    />
+                  <div
+                    class="relative flex items-center justify-center px-4 pb-4 mt-5 cursor-pointer"
+                  >
+                    <Lucide icon="Image" class="w-4 h-4 mr-2" />
                     <span class="mr-1 text-primary"> Tải lên file</span>
                     <FormInput
                       id="horizontal-form-1"
@@ -759,32 +833,32 @@ onMounted(() => {
                 rows="6"
               />
             </div>
-            <FormLabel
-              htmlFor="crud-form-2"
-              class="mt-3"
-            ><strong>Giờ mở cửa: <i class="text-success">(Múi Giờ: {{ salon.timezone }} {{ salon.tz }})</i></strong></FormLabel>
-            <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400" v-if="!load">
+            <FormLabel htmlFor="crud-form-2" class="mt-3"
+              ><strong
+                >Giờ mở cửa:
+                <i class="text-success"
+                  >(Múi Giờ: {{ salon.timezone }} {{ salon.tz }})</i
+                ></strong
+              >
+            </FormLabel>
+            <div
+              class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+              v-if="!load"
+            >
               <div
                 class="grid grid-cols-12 gap-4 gap-y-3"
-                v-for="(schedule,index) in salon.schedules"
+                v-for="(schedule, index) in salon.schedules"
                 :key="schedule.id"
               >
-
                 <div class="grid grid-cols-12 gap-4 gap-y-3 col-span-12">
                   <FormInline class="col-span-6">
-                    <FormLabel
-                      htmlFor=""
-                      class="text-left w-20 mt-3"
-                    >
+                    <FormLabel htmlFor="" class="text-left w-20 mt-3">
                       {{ schedule.day_name }}
                     </FormLabel>
                     <VueTimepicker v-model="schedule.start_time" />
                   </FormInline>
                   <FormInline class="col-span-6">
-                    <FormLabel
-                      htmlFor=""
-                      class="text-left w-20 mt-3"
-                    >
+                    <FormLabel htmlFor="" class="text-left w-20 mt-3">
                       đến
                     </FormLabel>
                     <VueTimepicker v-model="schedule.end_time" />
@@ -800,11 +874,11 @@ onMounted(() => {
                     href="#"
                     variant="primary"
                     @click="(event: MouseEvent) => {
-                      event.preventDefault();
-                      setSelectedSchedule(schedule,index)
-                      setCopyTimeModal(true);
-                    }"
-                    style="color:#bd45c2"
+                    event.preventDefault();
+                    setSelectedSchedule(schedule, index)
+                    setCopyTimeModal(true);
+                  }"
+                    style="color: #bd45c2"
                   >
                     Sao chép thời gian sang ngày khác
                   </a>
@@ -812,76 +886,100 @@ onMounted(() => {
                 <!-- END: Modal Toggle -->
               </div>
             </div>
-
           </div>
         </div>
 
-        <div class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require">
-            <Lucide
-              icon="User"
-              class="w-4 h-4 mr-2 "
-            /> Thông tin dịch vụ &nbsp;
+        <div
+          class="p-5 mt-5 border rounded-md border-slate-200/60 dark:border-darkmode-400"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 label-require"
+          >
+            <Lucide icon="User" class="w-4 h-4 mr-2" />
+            Thông tin dịch vụ &nbsp;
           </div>
           <div class="mt-5">
-            <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
+            <FormInline
+              class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0"
+            >
               <div class="flex-1 w-full mt-3 xl:mt-0">
                 <div class="overflow-x-auto">
                   <Table class="border">
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16">
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16"
+                        >
                           Hình Ảnh
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require"
+                        >
                           Dịch Vụ
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require"
+                        >
                           Giá Tiền
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800"
+                        ></Table.Th>
                       </Table.Tr>
                     </Table.Thead>
 
                     <tbody>
                       <tr
-                        v-for="(service, key) in services"
+                        v-for="(service, key) in salon.services"
                         :key="service.service_id"
                         :class="service.service_id"
                       >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
+                        <td
+                          class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16"
+                        >
                           <input
                             type="file"
                             :key="service.service_id"
-                            :id="'service_img'+service.service_id"
-                            @change="($event:Event)=> {
-                      handleFileChange(service.service_id, 2, $event)
-                    }"
+                            :id="'service_img' + service.service_id"
+                            @change="handleFileChange(key, 2, $event)"
                             class="hidden"
                           />
                           <label
-                            :for="'service_img'+service.service_id"
+                            :for="'service_img' + service.service_id"
                             class="input-img-label"
                           >
                             <img
-                              :src="service.avatar?service.avatar:addURL"
+                              :src="service.image ? service.image : addURL"
                               height="60"
                               width="60"
                             />
                           </label>
                         </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                        <td
+                          class="py-3 border-b dark:border-darkmode-300 !px-2 align-top"
+                        >
                           <FormInput
                             id="validation-form-1"
-                            v-model.trim="servicesValidate[key].value.name.$model"
+                            v-model="service.name"
                             type="text"
                             name="name"
-                            :class="{'border-danger': servicesValidate[key].value.name.$error,}"
-                            @change="()=> {service.name = servicesValidate[key].value.name.$model}"
+                            :class="{
+                              'border-danger':
+                                validate.salon.services.$each.$response.$errors[
+                                  key
+                                ].name[0],
+                            }"
                           />
-                          <template v-if="servicesValidate[key].value.name.$error">
+                          <template
+                            v-if="
+                              validate.salon.services.$each.$response.$errors[
+                                key
+                              ].name
+                            "
+                          >
                             <div
-                              v-for="(error, index) in servicesValidate[key].value.name.$errors"
+                              v-for="(error, index) in validate.salon.services
+                                .$each.$response.$errors[key].name"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -889,23 +987,35 @@ onMounted(() => {
                             </div>
                           </template>
                         </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                        <td
+                          class="py-3 border-b dark:border-darkmode-300 !px-2 align-top"
+                        >
                           <InputGroup>
                             <FormInput
                               id="validation-form-1"
-                              v-model.trim="servicesValidate[key].value.price.$model"
+                              v-model="service.price"
                               type="number"
                               step="0.01"
-                              :class="{'border-danger': servicesValidate[key].value.price.$error,}"
-                              @change="()=> {service.price = servicesValidate[key].value.price.$model}"
+                              :class="{
+                                'border-danger':
+                                  validate.salon.services.$each.$response
+                                    .$errors[key].price[0],
+                              }"
                             />
                             <InputGroup.Text id="input-group-1">
                               $
                             </InputGroup.Text>
                           </InputGroup>
-                          <template v-if="servicesValidate[key].value.price.$error">
+                          <template
+                            v-if="
+                              validate.salon.services.$each.$response.$errors[
+                                key
+                              ].price
+                            "
+                          >
                             <div
-                              v-for="(error, index) in servicesValidate[key].value.price.$errors"
+                              v-for="(error, index) in validate.salon.services
+                                .$each.$response.$errors[key].price"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -913,12 +1023,17 @@ onMounted(() => {
                             </div>
                           </template>
                         </td>
-                        <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
+
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500"
+                        >
                           <a
                             style="cursor: pointer"
-                            @click="()=>{
-                      deleteService(service.service_id)
-                    }"
+                            @click="
+                              () => {
+                                deleteService(service.service_id);
+                              }
+                            "
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -934,20 +1049,14 @@ onMounted(() => {
                               style="margin: 0px auto"
                             >
                               <path d="M3 6h18"></path>
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                              <line
-                                x1="10"
-                                y1="11"
-                                x2="10"
-                                y2="17"
-                              ></line>
-                              <line
-                                x1="14"
-                                y1="11"
-                                x2="14"
-                                y2="17"
-                              ></line>
+                              <path
+                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                              ></path>
+                              <path
+                                d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                              ></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
                             </svg>
                           </a>
                         </td>
@@ -960,80 +1069,108 @@ onMounted(() => {
                   class="w-full mt-4 border-dashed"
                   @click="addService()"
                 >
-                  <Lucide
-                    icon="Plus"
-                    class="w-4 h-4 mr-2"
-                  /> Thêm dịch vụ
+                  <Lucide icon="Plus" class="w-4 h-4 mr-2" />
+                  Thêm dịch vụ
                 </Button>
               </div>
             </FormInline>
           </div>
         </div>
-        <div class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3">
-          <div class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400 ">
-            <Lucide
-              icon="User"
-              class="w-4 h-4 mr-2 "
-            /> Thông tin thợ &nbsp;
+        <div
+          class="p-5 border rounded-md border-slate-200/60 dark:border-darkmode-400 mt-3"
+        >
+          <div
+            class="flex items-center pb-5 text-base font-medium border-b border-slate-200/60 dark:border-darkmode-400"
+          >
+            <Lucide icon="User" class="w-4 h-4 mr-2" />
+            Thông tin thợ &nbsp;
           </div>
           <div class="mt-5">
-            <FormInline class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0">
+            <FormInline
+              class="flex-col items-start mt-5 xl:flex-row first:mt-0 first:pt-0"
+            >
               <div class="flex-1 w-full mt-3 xl:mt-0">
                 <div class="overflow-x-auto">
                   <table class="w-full text-left border">
                     <thead>
                       <Table.Tr>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16">
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap w-16"
+                        >
                           Hình Ảnh
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require"
+                        >
                           Tên Thợ
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require"
+                        >
                           Số Điện Thoại
                         </Table.Th>
-                        <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
+                        <Table.Th
+                          class="!px-2 bg-slate-50 dark:bg-darkmode-800"
+                        ></Table.Th>
                       </Table.Tr>
                     </thead>
                     <tbody>
                       <tr
                         class=""
-                        v-for="(staff, key) in staffs"
+                        v-for="(staff, key) in salon.staffs"
                         :key="staff.staff_id"
                       >
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16">
+                        <td
+                          class="py-3 border-b dark:border-darkmode-300 !px-2 align-top w-16"
+                        >
                           <input
                             type="file"
                             :key="staff.staff_id"
-                            :id="'staff_img'+staff.staff_id"
-                            @change="($event:Event)=> {
-                      handleFileChange(staff.staff_id, 1, $event)
-                    }"
+                            :id="'staff_img' + staff.staff_id"
+                            @change="($event: Event) => {
+                            handleFileChange(key, 1, $event)
+                          }"
                             class="hidden"
                           />
                           <label
-                            :for="'staff_img'+staff.staff_id"
+                            :for="'staff_img' + staff.staff_id"
                             class="input-img-label"
                           >
                             <img
-                              :src="staff.avatar?staff.avatar:addURL"
+                              :src="staff.avatar ? staff.avatar : addURL"
                               height="60"
                               width="60"
                             />
                           </label>
                         </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                        <td
+                          class="py-3 border-b dark:border-darkmode-300 !px-2 align-top"
+                        >
                           <FormInput
                             id="validation-form-1"
-                            v-model.trim="validate[key].value.name.$model"
+                            v-model="staff.name"
                             type="text"
                             name="name"
-                            @change="()=> {staff.name = validate[key].value.name.$model}"
-                            :class="{'border-danger': validate[key].value.name.$error,}"
+                            :class="{
+                              'border-danger':
+                                validate.salon.staffs.$each.$response.$errors[
+                                  key
+                                ].name[0],
+                              'border-slate-200':
+                                !validate.salon.staffs.$each.$response.$errors[
+                                  key
+                                ].name[0],
+                            }"
                           />
-                          <template v-if="validate[key].value.name.$error">
+                          <template
+                            v-if="
+                              validate.salon.staffs.$each.$response.$errors[key]
+                                .name
+                            "
+                          >
                             <div
-                              v-for="(error, index) in validate[key].value.name.$errors"
+                              v-for="(error, index) in validate.salon.staffs
+                                .$each.$response.$errors[key].name"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -1041,20 +1178,36 @@ onMounted(() => {
                             </div>
                           </template>
                         </td>
-                        <td class="py-3 border-b dark:border-darkmode-300 !px-2 align-top">
+                        <td
+                          class="py-3 border-b dark:border-darkmode-300 !px-2 align-top"
+                        >
                           <input
                             class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 [&amp;[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 flex-1 min-w-[6rem]"
                             type="text"
                             v-maska="bindedObject"
                             data-maska="(###) ###-####"
-                            v-model.trim="validate[key].value.phone_format.$model"
-                            @change="maskphone('',true,key)"
-                            :class="{'border-danger': validate[key].value.phone_format.$error,
-                    'border-slate-200':!validate[key].value.phone_format.$error,}"
+                            v-model="staff.phone_format"
+                            @change="maskphone('', true, key)"
+                            :class="{
+                              'border-danger':
+                                validate.salon.staffs.$each.$response.$errors[
+                                  key
+                                ].phone_format[0],
+                              'border-slate-200':
+                                !validate.salon.staffs.$each.$response.$errors[
+                                  key
+                                ].phone_format[0],
+                            }"
                           />
-                          <template v-if="validate[key].value.phone_format.$error">
+                          <template
+                            v-if="
+                              validate.salon.staffs.$each.$response.$errors[key]
+                                .phone_format
+                            "
+                          >
                             <div
-                              v-for="(error, index) in validate[key].value.phone_format.$errors"
+                              v-for="(error, index) in validate.salon.staffs
+                                .$each.$response.$errors[key].phone_format"
                               :key="index"
                               class="mt-2 text-danger"
                             >
@@ -1062,7 +1215,10 @@ onMounted(() => {
                             </div>
                           </template>
                         </td>
-                        <td class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500">
+
+                        <td
+                          class="px-5 py-3 border-b dark:border-darkmode-300 !pl-4 text-slate-500"
+                        >
                           <a
                             style="cursor: pointer"
                             @click="deleteStaff(staff.staff_id)"
@@ -1081,20 +1237,14 @@ onMounted(() => {
                               style="margin: 0px auto"
                             >
                               <path d="M3 6h18"></path>
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                              <line
-                                x1="10"
-                                y1="11"
-                                x2="10"
-                                y2="17"
-                              ></line>
-                              <line
-                                x1="14"
-                                y1="11"
-                                x2="14"
-                                y2="17"
-                              ></line>
+                              <path
+                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                              ></path>
+                              <path
+                                d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                              ></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
                             </svg>
                           </a>
                         </td>
@@ -1107,10 +1257,8 @@ onMounted(() => {
                   class="w-full mt-4 border-dashed"
                   @click="addStaff()"
                 >
-                  <Lucide
-                    icon="Plus"
-                    class="w-4 h-4 mr-2"
-                  /> Thêm Thợ
+                  <Lucide icon="Plus" class="w-4 h-4 mr-2" />
+                  Thêm Thợ
                 </Button>
               </div>
             </FormInline>
@@ -1129,7 +1277,6 @@ onMounted(() => {
         </div>
       </div>
       <!-- END: Salon Info -->
-
     </div>
   </div>
   <div class="p-5">
@@ -1138,14 +1285,10 @@ onMounted(() => {
       refKey="errorNotification"
       :options="{
         duration: 5000,
-    }"
+      }"
       class="flex"
     >
-      <Lucide
-        icon="AlertTriangle"
-        class="text-success"
-        style="color: red"
-      />
+      <Lucide icon="AlertTriangle" class="text-success" style="color: red" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Có lỗi xảy ra!</div>
         <div class="mt-1 text-slate-500">
@@ -1157,13 +1300,10 @@ onMounted(() => {
       refKey="successNotification"
       :options="{
         duration: 5000,
-    }"
+      }"
       class="flex"
     >
-      <Lucide
-        icon="CheckCircle"
-        class="text-success"
-      />
+      <Lucide icon="CheckCircle" class="text-success" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Thành Công</div>
         <div class="mt-1 text-slate-500">
@@ -1185,10 +1325,7 @@ onMounted(() => {
   >
     <Dialog.Panel>
       <div class="p-5 text-center">
-        <Lucide
-          icon="XCircle"
-          class="w-16 h-16 mx-auto mt-3 text-danger"
-        />
+        <Lucide icon="XCircle" class="w-16 h-16 mx-auto mt-3 text-danger" />
         <div class="mt-5 text-3xl">Xóa?</div>
         <div class="mt-2 text-slate-500">
           Bạn có thật sự muốn xóa hình ảnh nay ?<br />
@@ -1225,81 +1362,62 @@ onMounted(() => {
   <Dialog
     :open="copyTimeModal"
     @close="
-                  () => {
-                    setCopyTimeModal(false);
-                  }
-                "
+      () => {
+        setCopyTimeModal(false);
+      }
+    "
     :initialFocus="sendButtonRef"
   >
     <Dialog.Panel>
       <Dialog.Title>
-        <h2 class="mr-auto text-base font-medium">
-          Chọn ngày muốn sao chép
-        </h2>
+        <h2 class="mr-auto text-base font-medium">Chọn ngày muốn sao chép</h2>
       </Dialog.Title>
       <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
-        <div class="col-span-12 ">
+        <div class="col-span-12">
           <FormSelect v-model="selectedScheduleIndex">
             <option
-              v-for="(schedule,index) in salon.schedules"
+              v-for="(schedule, index) in salon.schedules"
               :key="index"
               :value="index"
-            > {{ schedule.day_name }}</option>
+            >
+              {{ schedule.day_name }}
+            </option>
           </FormSelect>
         </div>
-        <div
-          class="col-span-6 "
-          v-if="!load"
-        >
+        <div class="col-span-6" v-if="!load">
           <FormInline class="flex-row">
-            <FormLabel
-              htmlFor=""
-              class="text-left mt-3"
-            >
-              Từ
-            </FormLabel>
+            <FormLabel htmlFor="" class="text-left mt-3"> Từ</FormLabel>
             <VueTimepicker
               v-model="selectedSchedule.start_time"
               id="start_time"
             />
           </FormInline>
-
         </div>
-        <div
-          class="col-span-6 "
-          v-if="!load"
-        >
+        <div class="col-span-6" v-if="!load">
           <FormInline class="flex-row">
-            <FormLabel
-              htmlFor=""
-              class="text-left mt-3"
-            >
-              đến
-            </FormLabel>
-            <VueTimepicker
-              v-model="selectedSchedule.end_time"
-              id="end_time"
-            />
+            <FormLabel htmlFor="" class="text-left mt-3"> đến</FormLabel>
+            <VueTimepicker v-model="selectedSchedule.end_time" id="end_time" />
           </FormInline>
-
         </div>
-        <div class="col-span-12 ">
+        <div class="col-span-12">
           <b>Chọn ngày áp dụng</b>
-          <div class="col-span-12 ">
+          <div class="col-span-12">
             <div
               class="flex items-center mr-4 mt-3"
-              v-for="schedule in salon.schedules.filter(item=>item.id!=salon.schedules[selectedScheduleIndex].id)"
+              v-for="schedule in salon.schedules.filter(
+                (item) => item.id != salon.schedules[selectedScheduleIndex].id
+              )"
               :key="schedule.day"
             >
               <label
                 class="mr-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
-                :htmlFor="'customer_skin_color-switch-'+schedule.day"
+                :htmlFor="'customer_skin_color-switch-' + schedule.day"
               >
-                {{ schedule.day_name}}
+                {{ schedule.day_name }}
               </label>
               <input
-                class=" ml-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
-                :id="'customer_skin_color-switch-'+schedule.day"
+                class="ml-auto transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
+                :id="'customer_skin_color-switch-' + schedule.day"
                 type="checkbox"
                 v-model="scheduleSeletedList"
                 :value="schedule.day"
@@ -1307,17 +1425,16 @@ onMounted(() => {
             </div>
           </div>
         </div>
-
       </Dialog.Description>
       <Dialog.Footer>
         <Button
           type="button"
           variant="outline-secondary"
           @click="
-                        () => {
-                          setCopyTimeModal(false);
-                        }
-                      "
+            () => {
+              setCopyTimeModal(false);
+            }
+          "
           class="w-20 mr-1"
         >
           Hủy

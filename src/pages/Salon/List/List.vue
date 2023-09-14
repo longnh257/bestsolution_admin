@@ -4,6 +4,7 @@ import Button from "../../../base-components/Button";
 import Pagination from "../../../base-components/Pagination";
 import { FormInput, FormSelect } from "../../../base-components/Form";
 import Table from "../../../base-components/Table";
+import Lucide from "../../../base-components/Lucide";
 import router from "../../../router";
 import Paginate from "../../../../node_modules/vuejs-paginate-next/dist/vuejs-paginate-next.es";
 import { useSalonListStore } from "../../../stores/salon/salon-list";
@@ -23,7 +24,9 @@ const clickCallback = () => {
 <template >
   <h2 class="mt-10 text-lg font-medium intro-y">Danh Sách Salon</h2>
   <div class="grid grid-cols-12 gap-6 mt-5">
-    <div class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap">
+    <div
+      class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
+    >
       <Button
         variant="primary"
         class="mr-2 shadow-md"
@@ -34,9 +37,20 @@ const clickCallback = () => {
       <div class="hidden mx-auto md:block text-slate-500">
         <!-- Showing 1 to 10 of 150 entries -->
       </div>
-      <div class="w-full mt-3 sm:w-auto sm:mt-0 sm:ml-auto md:ml-0">
+      <div class="w-full mt-3 sm:w-auto sm:mt-0 sm:ml-auto flex md:ml-0">
+        <FormSelect
+          class="w-30 !box sm:mt-0 ml-auto mr-4 block"
+          v-model="SalonListStore.status"
+          @change="SalonListStore.getSalonList()"
+        >
+          <option value="">Lọc Trạng Thái Salon</option>
+          <option value="1">Chờ Phê Duyệt</option>
+          <option value="2">Đang Hoạt Động</option>
+          <option value="3">Đang Bị Khóa</option>
+        </FormSelect>
+       
         <div class="relative w-56 text-slate-500">
-          <form @submit.prevent="">
+          <form class="" @submit.prevent="">
             <FormInput
               type="text"
               class="w-56 pr-10 !box"
@@ -51,13 +65,34 @@ const clickCallback = () => {
             />
           </form>
         </div>
+       <!--  <div class="padding-2 ml-3"
+          title="Làm mới bộ lọc"
+          style="align-self:center;"
+          @click="() => {
+            SalonListStore.txtSearch = '';
+            SalonListStore.status = '';
+            SalonListStore.getSalonList();
+          }"
+        >
+          <Lucide
+          icon="RotateCcw"
+          style="cursor: pointer"
+          class=" inset-y-0 right-0 w-4 h-4 "
+        />
+        </div> -->
       </div>
     </div>
     <!-- BEGIN: Data List -->
     <!-- BEGIN: Pagination -->
-    <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
+    <div
+      class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
+    >
       <paginate
-        v-if="!SalonListStore.loading && SalonListStore.totalPage && SalonListStore.totalPage != 1"
+        v-if="
+          !SalonListStore.loading &&
+          SalonListStore.totalPage &&
+          SalonListStore.totalPage != 1
+        "
         v-model="SalonListStore.page"
         :page-count="SalonListStore.totalPage"
         :page-range="5"
@@ -77,12 +112,17 @@ const clickCallback = () => {
       </paginate>
       <FormSelect
         class="w-30 mt-3 !box sm:mt-0 ml-auto"
-        v-if="!SalonListStore.loading && (SalonListStore.salons.length >10 || SalonListStore.totalPage > 1)"
+        v-if="
+          !SalonListStore.loading &&
+          (SalonListStore.salons.length > 10 || SalonListStore.totalPage > 1)
+        "
         v-model="SalonListStore.recPerPage"
-        @change="()=> {
-          SalonListStore.page = 1
-          SalonListStore.getSalonList()
-          }"
+        @change="
+          () => {
+            SalonListStore.page = 1;
+            SalonListStore.getSalonList();
+          }
+        "
       >
         <option>10</option>
         <option>25</option>
@@ -91,36 +131,33 @@ const clickCallback = () => {
     </div>
     <!-- END: Pagination -->
 
-    <div
-      v-if="SalonListStore.loading"
-      class="col-span-12"
-    >
+    <div v-if="SalonListStore.loading" class="col-span-12">
       <div class="w-8 mx-auto mt-5">
         <LoadingIcon icon="puff" />
       </div>
     </div>
-    <div
-      v-else
-      class="col-span-12"
-    >
+    <div v-else class="col-span-12">
       <ListDetail
         :salons="SalonListStore.salons"
-        v-if=" SalonListStore.salons.length != 0"
+        v-if="SalonListStore.salons.length != 0"
       />
-      <div
-        v-else
-        class="col-span-12"
-      >
+      <div v-else class="col-span-12">
         <div class="w-100 mx-auto mt-10 text-center">
-          <h1 style="font-weight:700;font-size:18px">Chưa có salon nào.</h1>
+          <h1 style="font-weight: 700; font-size: 18px">Chưa có salon nào.</h1>
         </div>
       </div>
     </div>
     <!-- END: Data List -->
     <!-- BEGIN: Pagination -->
-    <div class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap">
+    <div
+      class="flex flex-wrap items-center col-span-12 intro-y sm:flex-row sm:flex-nowrap"
+    >
       <paginate
-        v-if="!SalonListStore.loading && SalonListStore.totalPage && SalonListStore.totalPage != 1"
+        v-if="
+          !SalonListStore.loading &&
+          SalonListStore.totalPage &&
+          SalonListStore.totalPage != 1
+        "
         v-model="SalonListStore.page"
         :page-count="SalonListStore.totalPage"
         :page-range="5"
@@ -140,12 +177,17 @@ const clickCallback = () => {
       </paginate>
       <FormSelect
         class="w-30 mt-3 !box sm:mt-0 ml-auto"
-        v-if="!SalonListStore.loading && (SalonListStore.salons.length >10 || SalonListStore.totalPage > 1)"
+        v-if="
+          !SalonListStore.loading &&
+          (SalonListStore.salons.length > 10 || SalonListStore.totalPage > 1)
+        "
         v-model="SalonListStore.recPerPage"
-        @change="()=> {
-          SalonListStore.page = 1
-          SalonListStore.getSalonList()
-          }"
+        @change="
+          () => {
+            SalonListStore.page = 1;
+            SalonListStore.getSalonList();
+          }
+        "
       >
         <option>10</option>
         <option>25</option>
