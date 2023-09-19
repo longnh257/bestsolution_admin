@@ -11,6 +11,8 @@ interface SalonListState {
   msg: string,
   loading: boolean,
   status: number|string,
+  order_by: string,
+  order: string,
 }
 
 const access_token = localStorage.getItem("access_token");
@@ -26,6 +28,8 @@ export const useSalonListStore = defineStore("SalonList", {
       txtSearch: "",
       loading: false,
       status: "",
+      order_by: "",
+      order: "",
     }
   ),
   getters: {
@@ -41,6 +45,8 @@ export const useSalonListStore = defineStore("SalonList", {
           txt_search: this.txtSearch,
           num_per_page: this.recPerPage,
           status: this.status,
+          order_by: this.order_by,
+          order: this.order,
         },
       })
       this.salons = res.data.data
@@ -81,7 +87,6 @@ export const useSalonListStore = defineStore("SalonList", {
           { id: selectedId },
         ).then((res) => {
           console.log(res.data.message);
-
           this.msg = res.data.message
           this.salons[index].status = !this.salons[index].status
         }).catch((res) => {

@@ -83,6 +83,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
           <Table.Th class="border-b-0 whitespace-nowrap"> ID </Table.Th>
           <Table.Th class="border-b-0 whitespace-nowrap"> Hình Ảnh </Table.Th>
           <Table.Th class="border-b-0 whitespace-nowrap"> Salon </Table.Th>
+          <Table.Th class="border-b-0 whitespace-nowrap"> Chủ Tiệm </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap">
             Địa chỉ
           </Table.Th>
@@ -183,6 +184,28 @@ provide("bind[successNotification]", (el: NotificationElement) => {
               {{ item.phone }}
             </div>
           </Table.Td>
+          <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
+            <router-link
+              :to="{
+                          name: 'salon-detail',
+                          params: { salon_id: item.id },
+                        }"
+              style="display:flex !important"
+            >
+              {{ item.partner.name }}
+            </router-link>
+            <div
+              class="text-slate-500 text-xs whitespace-nowrap mt-0.5"
+              style="display: flex; align-items: center"
+            >
+              <Lucide
+                icon="PhoneCall"
+                class="block mx-auto"
+                style="margin: 0 3px; width: 13px"
+              />
+              {{ item.partner.phone }}
+            </div>
+          </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
             {{ item.address }}
           </Table.Td>
@@ -262,7 +285,7 @@ provide("bind[successNotification]", (el: NotificationElement) => {
             Đang Hoạt Động
           </Table.Td>
           <Table.Td class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]">
-            {{  moment(new Date(item.created_at)).format("DD/MM/YYYY")}}
+           {{ moment(new Date(item.created_at)).format("DD/MM/YYYY")}}
           </Table.Td>
 
           <Table.Td class="first:rounded-l-md last:rounded-r-md bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b] py-0 relative before:block before:w-px before:h-8 before:bg-slate-200 before:absolute before:left-0 before:inset-y-0 before:my-auto before:dark:bg-darkmode-400">

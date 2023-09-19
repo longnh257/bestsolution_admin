@@ -538,7 +538,7 @@ const activeSalon = (id: any) => {
               </strong>
               vào ngày
               <strong>
-                {{ item.date + " " + item.time_format }}
+                {{ item.date + " " + item.time_format }} -  {{  item.device_type }} - {{item.device_info }} 
               </strong>
             </div>
           </div>
