@@ -19,6 +19,7 @@ const clickCallback = () => {
   SalonListStore.getSalonList();
   window.scrollTo(0, 0);
 };
+
 </script>
 
 <template >
@@ -26,6 +27,7 @@ const clickCallback = () => {
   <div class="grid grid-cols-12 gap-6 mt-5">
     <div
       class="flex flex-wrap items-center col-span-12 mt-2 intro-y sm:flex-nowrap"
+      v-if="SalonListStore.search_loading"
     >
       <Button
         variant="primary"
@@ -38,6 +40,7 @@ const clickCallback = () => {
         <!-- Showing 1 to 10 of 150 entries -->
       </div>
       <div class="w-full mt-3 sm:w-auto sm:mt-0 sm:ml-auto flex md:ml-0">
+        
         <FormSelect
           class="w-30 !box sm:mt-0 ml-auto mr-4 block"
           v-model="SalonListStore.status"
@@ -81,6 +84,13 @@ const clickCallback = () => {
         />
         </div> -->
       </div>
+      <Button
+        variant="secondary"
+        class="shadow-md ml-2"
+        @click="SalonListStore.resetState()"
+      >
+        Reset Filter
+      </Button>
     </div>
     <!-- BEGIN: Data List -->
     <!-- BEGIN: Pagination -->

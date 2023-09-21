@@ -10,6 +10,7 @@ interface SalonListState {
   txtSearch: string,
   msg: string,
   loading: boolean,
+  search_loading: boolean,
   status: number|string,
   order_by: string,
   order: string,
@@ -27,9 +28,10 @@ export const useSalonListStore = defineStore("SalonList", {
       msg: "",
       txtSearch: "",
       loading: false,
+      search_loading: true,
       status: "",
-      order_by: "",
-      order: "",
+      order_by: "id",
+      order: "DESC",
     }
   ),
   getters: {
@@ -106,6 +108,17 @@ export const useSalonListStore = defineStore("SalonList", {
         }).catch((res) => {
           this.msg = res.data.message
         })
+    },
+    resetState() {
+      this.search_loading = false
+      setTimeout(() => {
+        this.search_loading = true
+      }, 100);
+      this.txtSearch = "",
+      this.status = "",
+      this.order_by = "id",
+      this.order = "DESC"
+      this.getSalonList()
     },
   }
 })
