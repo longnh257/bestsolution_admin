@@ -891,7 +891,7 @@ const copyTime = () => {
                           Dịch Vụ
                         </Table.Th>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800 text-slate-500 whitespace-nowrap label-require">
-                          Giá Tiền
+                          Giá Tiền ($)
                         </Table.Th>
                         <Table.Th class="!px-2 bg-slate-50 dark:bg-darkmode-800"></Table.Th>
                       </Table.Tr>

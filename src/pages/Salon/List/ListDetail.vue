@@ -93,7 +93,6 @@ const setCol = (col = "id") => {
 
 
 <template>
-
   <div class="col-span-12 overflow-auto intro-y lg:overflow-visible">
     <Table class="border-spacing-y-[10px] border-separate -mt-2">
       <Table.Thead>
@@ -113,7 +112,7 @@ const setCol = (col = "id") => {
                 margin: 0;
                 width: 16px;
                 top: 50%;
-                transform: translateY(-53%);
+                transform: translateY(-55%);
                 cursor: pointer;
               "
           /></Table.Th>
@@ -133,14 +132,50 @@ const setCol = (col = "id") => {
                 margin: 0;
                 width: 16px;
                 top: 50%;
-                transform: translateY(-53%);
+                transform: translateY(-55%);
                 cursor: pointer;
               "
             />
           </Table.Th>
-          <Table.Th class="border-b-0 whitespace-nowrap"> Chủ Tiệm </Table.Th>
-          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+          <Table.Th class="border-b-0 whitespace-nowrap relative">
+            Chủ Tiệm
+            <Lucide
+              :icon="[
+                SalonListStore.order_by == 'partner_name' &&
+                SalonListStore.order == 'DESC'
+                  ? 'ArrowDown'
+                  : 'ArrowUp',
+              ]"
+              @click="setCol('partner_name')"
+              class="text-success block mx-auto absolute left-1"
+              style="
+                margin: 0;
+                width: 16px;
+                top: 50%;
+                transform: translateY(-55%);
+                cursor: pointer;
+              "
+            />
+          </Table.Th>
+          <Table.Th class="text-left border-b-0 whitespace-nowrap relative">
             Địa chỉ
+            <Lucide
+              :icon="[
+                SalonListStore.order_by == 'address' &&
+                SalonListStore.order == 'DESC'
+                  ? 'ArrowDown'
+                  : 'ArrowUp',
+              ]"
+              @click="setCol('address')"
+              class="text-success block mx-auto absolute left-1"
+              style="
+                margin: 0;
+                width: 16px;
+                top: 50%;
+                transform: translateY(-55%);
+                cursor: pointer;
+              "
+            />
           </Table.Th>
           <Table.Th class="text-center border-b-0 whitespace-nowrap relative">
             Booking
@@ -151,31 +186,116 @@ const setCol = (col = "id") => {
                   ? 'ArrowDown'
                   : 'ArrowUp',
               ]"
-              class="text-success block mx-auto absolute left-1"
               @click="setCol('booking')"
+              class="text-success block mx-auto absolute left-1"
               style="
                 margin: 0;
                 width: 16px;
                 top: 50%;
-                transform: translateY(-53%);
+                transform: translateY(-55%);
                 cursor: pointer;
               "
             />
           </Table.Th>
-          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+          <Table.Th class="text-center border-b-0 whitespace-nowrap relative">
             Dịch Vụ
+            <Lucide
+              :icon="[
+                SalonListStore.order_by == 'service' &&
+                SalonListStore.order == 'DESC'
+                  ? 'ArrowDown'
+                  : 'ArrowUp',
+              ]"
+              @click="setCol('service')"
+              class="text-success block mx-auto absolute left-1"
+              style="
+                margin: 0;
+                width: 16px;
+                top: 50%;
+                transform: translateY(-55%);
+                cursor: pointer;
+              "
+            />
           </Table.Th>
-          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+          <Table.Th class="text-center border-b-0 whitespace-nowrap relative">
             Thợ
+            <Lucide
+              :icon="[
+                SalonListStore.order_by == 'staff' &&
+                SalonListStore.order == 'DESC'
+                  ? 'ArrowDown'
+                  : 'ArrowUp',
+              ]"
+              @click="setCol('staff')"
+              class="text-success block mx-auto absolute left-1"
+              style="
+                margin: 0;
+                width: 16px;
+                top: 50%;
+                transform: translateY(-55%);
+                cursor: pointer;
+              "
+            />
           </Table.Th>
-          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+          <Table.Th class="text-center border-b-0 whitespace-nowrap relative">
             Rating
+            <Lucide
+              :icon="[
+                SalonListStore.order_by == 'rating' &&
+                SalonListStore.order == 'DESC'
+                  ? 'ArrowDown'
+                  : 'ArrowUp',
+              ]"
+              @click="setCol('rating')"
+              class="text-success block mx-auto absolute left-5"
+              style="
+                margin: 0;
+                width: 16px;
+                top: 50%;
+                transform: translateY(-55%);
+                cursor: pointer;
+              "
+            />
           </Table.Th>
-          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+          <Table.Th class="text-center border-b-0 whitespace-nowrap relative">
             Đăng nhập
+            <Lucide
+              :icon="[
+                SalonListStore.order_by == 'login_count' &&
+                SalonListStore.order == 'DESC'
+                  ? 'ArrowDown'
+                  : 'ArrowUp',
+              ]"
+              @click="setCol('login_count')"
+              class="text-success block mx-auto absolute left-1"
+              style="
+                margin: 0;
+                width: 16px;
+                top: 50%;
+                transform: translateY(-55%);
+                cursor: pointer;
+              "
+            />
           </Table.Th>
-          <Table.Th class="text-center border-b-0 whitespace-nowrap">
+          <Table.Th class="text-center border-b-0 whitespace-nowrap relative">
             Trạng thái
+            <Lucide
+              :icon="[
+                SalonListStore.order_by == 'status' &&
+                SalonListStore.order == 'DESC'
+                  ? 'ArrowDown'
+                  : 'ArrowUp',
+              ]"
+              @click="setCol('status')"
+              class="text-success block mx-auto absolute left-3"
+              style="
+                margin: 0;
+                width: 16px;
+                top: 50%;
+                transform: translateY(-55%);
+                cursor: pointer;
+              "
+            />
           </Table.Th>
 
           <Table.Th class="text-center border-b-0 whitespace-nowrap relative">
@@ -188,12 +308,12 @@ const setCol = (col = "id") => {
                   : 'ArrowUp',
               ]"
               @click="setCol('created_at')"
-              class="text-success block mx-auto absolute left-1"
+              class="text-success block mx-auto absolute left-3"
               style="
                 margin: 0;
                 width: 16px;
                 top: 50%;
-                transform: translateY(-53%);
+                transform: translateY(-55%);
                 cursor: pointer;
               "
             />
@@ -297,7 +417,7 @@ const setCol = (col = "id") => {
             </div>
           </Table.Td>
           <Table.Td
-            class="first:rounded-l-md last:rounded-r-md text-center bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
+            class="first:rounded-l-md last:rounded-r-md text-left bg-white border-b-0 dark:bg-darkmode-600 shadow-[20px_3px_20px_#0000000b]"
           >
             {{ item.address }}
           </Table.Td>
@@ -360,11 +480,7 @@ const setCol = (col = "id") => {
               }"
               class="text-info"
             >
-              {{
-                item.login_count > 1
-                  ? item.login_count + " lần"
-                  : "Chưa đăng nhập"
-              }}
+              {{ item.login_count }}
             </router-link>
           </Table.Td>
           <Table.Td
